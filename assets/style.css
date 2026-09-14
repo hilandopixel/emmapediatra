@@ -1,12 +1,12 @@
 /* style.css - Estilos globales y personalizados de la Web de Nutrición */
 
 :root {
-    --color-primary: #317b77;
-    --color-secondary: #054358;
-	--color-third: #3db28a;
-	--color-grey: #dadada;
+    --color-primary:#d01156;
+    --color-secondary: #ea4b8e;
+	--color-third: #ea4c3b;
+	--color-grey: ##555555;
 	--color-light-yellow: #fff8b4;
-    --color-bg-base: #f8fafc;
+    --color-bg-base: #f0a5bc;
     --color-text-main: #0f172a;
     --color-text-muted: #64748b;
     --color-border-subtle: rgba(49, 123, 119, 0.1);
