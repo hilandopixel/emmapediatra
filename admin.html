@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración | Nutrición Dani Luque</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/style.css">
+
+    <!-- QUILL.JS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 antialiased py-12 px-4 sm:px-6">
+
+    <main class="max-w-5xl mx-auto space-y-10">
+        
+        <!-- PANTALLA DE LOGIN -->
+        <section id="login-section" class="max-w-md mx-auto bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6 mt-20">
+            <div class="text-center space-y-2">
+                <h1 class="text-2xl font-extrabold text-slate-900">Acceso Privado</h1>
+                <p class="text-xs text-slate-500">Inicia sesión con tu cuenta de administrador</p>
+            </div>
+
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label for="login-email" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Email</label>
+                    <input type="email" id="login-email" required placeholder="admin@ejemplo.com" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-teal-500 text-sm">
+                </div>
+                <div>
+                    <label for="login-password" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Contraseña</label>
+                    <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-teal-500 text-sm">
+                </div>
+                <button type="submit" id="btn-login" class="w-full py-3.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl transition shadow-md shadow-teal-600/20 cursor-pointer text-sm">
+                    Iniciar Sesión
+                </button>
+            </form>
+        </section>
+
+        <!-- PANEL DE ADMINISTRACIÓN -->
+        <div id="admin-panel" class="hidden space-y-8">
+            
+            <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <div>
+                    <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Panel de Control de Contenidos</h1>
+                    <p id="user-email-display" class="text-xs text-teal-600 font-mono mt-1"></p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="index.html" class="text-xs font-semibold text-slate-600 bg-slate-100 px-4 py-2 rounded-xl hover:bg-slate-200 transition">
+                        &larr; Ver Sitio
+                    </a>
+                    <button id="btn-logout" class="text-xs font-semibold text-red-600 bg-red-50 px-4 py-2 rounded-xl hover:bg-red-100 transition cursor-pointer">
+                        Cerrar Sesión
+                    </button>
+                </div>
+            </header>
+
+            <!-- NAVEGACIÓN SECCIONES ADMIN -->
+            <div class="flex space-x-3 border-b border-slate-200 pb-1">
+                <button id="nav-btn-posts" class="py-2 px-5 font-bold text-sm border-b-2 border-teal-600 text-teal-600 cursor-pointer">📝 Artículos del Blog</button>
+                <button id="nav-btn-i18n" class="py-2 px-5 font-bold text-sm text-slate-400 border-b-2 border-transparent hover:text-slate-600 cursor-pointer">🌐 Traducciones de la Web</button>
+            </div>
+
+            <!-- SECCIÓN 1: GESTIÓN DE BLOG -->
+            <div id="section-posts" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <section class="lg:col-span-2 bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-4">
+                        <h2 id="form-title" class="text-lg font-bold text-slate-900">Crear Nuevo Artículo</h2>
+                        <button type="button" id="btn-cancelar-edicion" class="hidden text-xs text-red-600 font-semibold bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-100 transition cursor-pointer">
+                            Cancelar Edición
+                        </button>
+                    </div>
+
+                    <form id="create-post-form" class="space-y-6">
+                        <input type="hidden" id="edit-mode-slug" value="">
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="nuevo-slug" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Slug (URL amigable)</label>
+                                <input type="text" id="nuevo-slug" required placeholder="guia-nutricion-real" class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 focus:outline-none focus:border-teal-500 text-sm font-mono">
+                            </div>
+                            <div>
+                                <label for="nuevo-tags" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Tags (comas)</label>
+                                <input type="text" id="nuevo-tags" placeholder="salud, recetas, habitos" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:border-teal-500 text-sm">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Imagen Destacada</label>
+                            <input type="file" id="input-imagen" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 transition cursor-pointer">
+                            <input type="hidden" id="nuevo-imagen-base64">
+                            <div id="preview-container" class="mt-4 hidden">
+                                <img id="preview-imagen" src="" alt="Vista previa" class="w-full max-h-48 object-cover rounded-xl border border-slate-200">
+                            </div>
+                        </div>
+
+                        <div class="border-t border-slate-100 pt-6">
+                            <div class="flex space-x-2 border-b border-slate-200 mb-6">
+                                <button type="button" id="tab-es" class="py-2 px-4 font-bold text-sm border-b-2 border-teal-600 text-teal-600 cursor-pointer">Español (ES)</button>
+                                <button type="button" id="tab-en" class="py-2 px-4 font-bold text-sm text-slate-400 border-b-2 border-transparent cursor-pointer">English (EN)</button>
+                            </div>
+
+                            <div id="form-lang-es" class="space-y-4">
+                                <div>
+                                    <label for="es-titulo" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Título (ES)</label>
+                                    <input type="text" id="es-titulo" required placeholder="Guía de nutrición real" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm">
+                                </div>
+                                <div>
+                                    <label for="es-extracto" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Extracto (ES)</label>
+                                    <textarea id="es-extracto" rows="2" required placeholder="Resumen corto..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm"></textarea>
+                                </div>
+                                <div>
+                                    <label for="es-meta-desc" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Meta Desc SEO (ES)</label>
+                                    <textarea id="es-meta-desc" rows="2" maxlength="160" placeholder="Meta descripción..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Contenido (ES)</label>
+                                    <div id="editor-es" class="bg-white min-h-[250px]"></div>
+                                </div>
+                            </div>
+
+                            <div id="form-lang-en" class="space-y-4 hidden">
+                                <div>
+                                    <label for="en-titulo" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Title (EN)</label>
+                                    <input type="text" id="en-titulo" placeholder="Real Nutrition Guide" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm">
+                                </div>
+                                <div>
+                                    <label for="en-extracto" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Excerpt (EN)</label>
+                                    <textarea id="en-extracto" rows="2" placeholder="Short summary..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm"></textarea>
+                                </div>
+                                <div>
+                                    <label for="en-meta-desc" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Meta Desc SEO (EN)</label>
+                                    <textarea id="en-meta-desc" rows="2" maxlength="160" placeholder="Meta description..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Content (EN)</label>
+                                    <div id="editor-en" class="bg-white min-h-[250px]"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btn-guardar" class="w-full py-4 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl transition shadow-md cursor-pointer">
+                            Guardar y Publicar Artículo
+                        </button>
+                    </form>
+                </section>
+
+                <section class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-4 h-fit">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <h2 class="text-base font-bold text-slate-900">Artículos Guardados</h2>
+                        <button id="btn-recargar" class="text-xs text-teal-600 font-semibold hover:underline">Actualizar</button>
+                    </div>
+
+                    <div id="lista-articulos-container" class="space-y-3 max-h-[650px] overflow-y-auto pr-1">
+                        <p class="text-xs text-slate-400 font-light">Cargando publicaciones...</p>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- SECCIÓN 2: GESTIÓN DE TRADUCCIONES TRADUCIBLES (NUEVO) -->
+            <div id="section-i18n" class="hidden bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-4 gap-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">Traducciones del Sitio Web</h2>
+                        <p class="text-xs text-slate-500 font-light">Modifica los textos estáticos de la portada en ambos idiomas.</p>
+                    </div>
+                    <button id="btn-guardar-i18n" class="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl text-xs transition shadow-md cursor-pointer">
+                        Guardar Cambios en Firestore
+                    </button>
+                </div>
+
+                <div id="i18n-editor-container" class="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
+                    <p class="text-xs text-slate-400 animate-pulse">Cargando traducciones desde Firestore...</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script type="module">
+        import { db, initHeader } from "./firebase-config.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { collection, doc, setDoc, getDoc, getDocs, orderBy, query, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { translations as defaultTranslations } from "/assets/i18n.js";
+
+        const auth = getAuth();
+        initHeader();
+
+        // NAVEGACIÓN SECCIONES ADMIN
+        const navBtnPosts = document.getElementById('nav-btn-posts');
+        const navBtnI18n = document.getElementById('nav-btn-i18n');
+        const sectionPosts = document.getElementById('section-posts');
+        const sectionI18n = document.getElementById('section-i18n');
+
+        navBtnPosts.addEventListener('click', () => {
+            sectionPosts.classList.remove('hidden');
+            sectionI18n.classList.add('hidden');
+            navBtnPosts.className = "py-2 px-5 font-bold text-sm border-b-2 border-teal-600 text-teal-600 cursor-pointer";
+            navBtnI18n.className = "py-2 px-5 font-bold text-sm text-slate-400 border-b-2 border-transparent hover:text-slate-600 cursor-pointer";
+        });
+
+        navBtnI18n.addEventListener('click', () => {
+            sectionI18n.classList.remove('hidden');
+            sectionPosts.classList.add('hidden');
+            navBtnI18n.className = "py-2 px-5 font-bold text-sm border-b-2 border-teal-600 text-teal-600 cursor-pointer";
+            navBtnPosts.className = "py-2 px-5 font-bold text-sm text-slate-400 border-b-2 border-transparent hover:text-slate-600 cursor-pointer";
+            cargarTraduccionesAdmin();
+        });
+
+        // Control Auth
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const cb = document.getElementById('contact-bar');
+                if (cb) cb.remove();
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('admin-panel').classList.remove('hidden');
+                document.getElementById('user-email-display').innerText = `Sesión: ${user.email}`;
+                cargarArticulosAdmin();
+            } else {
+                document.getElementById('login-section').classList.remove('hidden');
+                document.getElementById('admin-panel').classList.add('hidden');
+            }
+        });
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value);
+            } catch (err) { alert("❌ Credenciales incorrectas."); }
+        });
+
+        document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
+
+        // Inicializar Quill para ES y EN
+        const quillES = new Quill('#editor-es', { theme: 'snow', modules: { toolbar: [['bold', 'italic'], [{ 'list': 'bullet' }], ['link', 'image']] } });
+        const quillEN = new Quill('#editor-en', { theme: 'snow', modules: { toolbar: [['bold', 'italic'], [{ 'list': 'bullet' }], ['link', 'image']] } });
+
+        // Pestañas ES/EN en Formulario Post
+        const tabES = document.getElementById('tab-es');
+        const tabEN = document.getElementById('tab-en');
+        const formES = document.getElementById('form-lang-es');
+        const formEN = document.getElementById('form-lang-en');
+
+        tabES.addEventListener('click', () => {
+            formES.classList.remove('hidden');
+            formEN.classList.add('hidden');
+            tabES.className = "py-2 px-4 font-bold text-sm border-b-2 border-teal-600 text-teal-600 cursor-pointer";
+            tabEN.className = "py-2 px-4 font-bold text-sm text-slate-400 border-b-2 border-transparent cursor-pointer";
+        });
+
+        tabEN.addEventListener('click', () => {
+            formEN.classList.remove('hidden');
+            formES.classList.add('hidden');
+            tabEN.className = "py-2 px-4 font-bold text-sm border-b-2 border-teal-600 text-teal-600 cursor-pointer";
+            tabES.className = "py-2 px-4 font-bold text-sm text-slate-400 border-b-2 border-transparent cursor-pointer";
+        });
+
+        document.getElementById('es-titulo').addEventListener('input', (e) => {
+            if (!document.getElementById('edit-mode-slug').value) {
+                document.getElementById('nuevo-slug').value = e.target.value.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9 -]/g, '').replace(/\s+/g, '-');
+            }
+        });
+
+        document.getElementById('input-imagen').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 1200;
+                    let width = img.width, height = img.height;
+                    if (width > MAX_WIDTH) { height = Math.round((height * MAX_WIDTH) / width); width = MAX_WIDTH; }
+                    canvas.width = width; canvas.height = height;
+                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    const dataUrl = canvas.toDataURL('image/webp', 0.8);
+                    document.getElementById('nuevo-imagen-base64').value = dataUrl;
+                    document.getElementById('preview-imagen').src = dataUrl;
+                    document.getElementById('preview-container').classList.remove('hidden');
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('create-post-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const slug = document.getElementById('nuevo-slug').value;
+            const tags = document.getElementById('nuevo-tags').value.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+            const imagen = document.getElementById('nuevo-imagen-base64').value;
+
+            try {
+                await setDoc(doc(db, "posts", slug), {
+                    slug,
+                    tags,
+                    imagen,
+                    fecha: new Date(),
+                    es: {
+                        titulo: document.getElementById('es-titulo').value,
+                        extracto: document.getElementById('es-extracto').value,
+                        metaDesc: document.getElementById('es-meta-desc').value,
+                        contenido: quillES.root.innerHTML
+                    },
+                    en: {
+                        titulo: document.getElementById('en-titulo').value || document.getElementById('es-titulo').value,
+                        extracto: document.getElementById('en-extracto').value || document.getElementById('es-extracto').value,
+                        metaDesc: document.getElementById('en-meta-desc').value || document.getElementById('es-meta-desc').value,
+                        contenido: quillEN.root.innerHTML || quillES.root.innerHTML
+                    }
+                }, { merge: true });
+
+                alert("✅ Artículo guardado con éxito.");
+                resetForm();
+                cargarArticulosAdmin();
+            } catch (err) { alert("❌ Error al guardar el artículo."); }
+        });
+
+        async function cargarArticulosAdmin() {
+            const cont = document.getElementById('lista-articulos-container');
+            const snapshot = await getDocs(query(collection(db, "posts"), orderBy("fecha", "desc")));
+            if (snapshot.empty) { cont.innerHTML = '<p class="text-xs text-slate-400">Sin artículos.</p>'; return; }
+
+            let html = '';
+            snapshot.forEach(docSnap => {
+                const d = docSnap.data();
+                const titulo = (d.es && d.es.titulo) ? d.es.titulo : (d.titulo || d.slug);
+                html += `
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center gap-2">
+                        <div class="overflow-hidden">
+                            <h4 class="text-xs font-bold text-slate-800 truncate">${titulo}</h4>
+                            <span class="text-[10px] text-teal-600 font-mono">/posts/${d.slug}</span>
+                        </div>
+                        <div class="flex gap-1">
+                            <button onclick="editarPost('${d.slug}')" class="text-xs font-bold px-2 py-1 rounded bg-teal-50 text-teal-600">Editar</button>
+                            <button onclick="eliminarPost('${d.slug}')" class="text-xs font-bold px-2 py-1 rounded bg-red-50 text-red-500">&times;</button>
+                        </div>
+                    </div>
+                `;
+            });
+            cont.innerHTML = html;
+        }
+
+        window.editarPost = async (slug) => {
+            const docSnap = await getDoc(doc(db, "posts", slug));
+            if (!docSnap.exists()) return;
+            const d = docSnap.data();
+
+            document.getElementById('nuevo-slug').value = d.slug;
+            document.getElementById('nuevo-slug').readOnly = true;
+            document.getElementById('nuevo-tags').value = Array.isArray(d.tags) ? d.tags.join(', ') : '';
+            
+            const es = d.es || {};
+            document.getElementById('es-titulo').value = es.titulo || d.titulo || '';
+            document.getElementById('es-extracto').value = es.extracto || d.extracto || '';
+            document.getElementById('es-meta-desc').value = es.metaDesc || d.metaDesc || '';
+            quillES.root.innerHTML = es.contenido || d.contenido || '';
+
+            const en = d.en || {};
+            document.getElementById('en-titulo').value = en.titulo || '';
+            document.getElementById('en-extracto').value = en.extracto || '';
+            document.getElementById('en-meta-desc').value = en.metaDesc || '';
+            quillEN.root.innerHTML = en.contenido || '';
+
+            if (d.imagen) {
+                document.getElementById('nuevo-imagen-base64').value = d.imagen;
+                document.getElementById('preview-imagen').src = d.imagen;
+                document.getElementById('preview-container').classList.remove('hidden');
+            }
+
+            document.getElementById('edit-mode-slug').value = slug;
+            document.getElementById('form-title').innerText = "Editar Artículo";
+            document.getElementById('btn-cancelar-edicion').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        function resetForm() {
+            document.getElementById('create-post-form').reset();
+            quillES.root.innerHTML = ''; quillEN.root.innerHTML = '';
+            document.getElementById('nuevo-imagen-base64').value = '';
+            document.getElementById('preview-container').classList.add('hidden');
+            document.getElementById('edit-mode-slug').value = '';
+            document.getElementById('nuevo-slug').readOnly = false;
+            document.getElementById('form-title').innerText = "Crear Nuevo Artículo";
+            document.getElementById('btn-cancelar-edicion').classList.add('hidden');
+        }
+
+        window.eliminarPost = async (slug) => {
+            if (confirm(`¿Eliminar "${slug}"?`)) {
+                await deleteDoc(doc(db, "posts", slug));
+                cargarArticulosAdmin();
+            }
+        };
+
+        document.getElementById('btn-cancelar-edicion').addEventListener('click', resetForm);
+        document.getElementById('btn-recargar').addEventListener('click', cargarArticulosAdmin);
+
+        // ==========================================
+        // LÓGICA DE GESTIÓN DE TRADUCCIONES TRADUCIBLES
+        // ==========================================
+        async function cargarTraduccionesAdmin() {
+            const container = document.getElementById('i18n-editor-container');
+            
+            try {
+                const docSnap = await getDoc(doc(db, "site_translations", "translations"));
+                let data = docSnap.exists() ? docSnap.data() : defaultTranslations;
+
+                const esObj = data.es || defaultTranslations.es;
+                const enObj = data.en || defaultTranslations.en;
+
+                const keys = Object.keys(defaultTranslations.es).sort((a, b) => a.localeCompare(b));
+                let html = '';
+                
+
+                keys.forEach(key => {
+                    html += `
+                        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                            <span class="font-mono text-xs font-bold text-teal-600 uppercase tracking-wider block">Clave: ${key}</span>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Español (ES)</label>
+                                    <textarea data-key="${key}" data-lang="es" rows="2" class="i18n-input w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-teal-500 bg-white">${esObj[key] || ''}</textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Inglés (EN)</label>
+                                    <textarea data-key="${key}" data-lang="en" rows="2" class="i18n-input w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:border-teal-500 bg-white">${enObj[key] || ''}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+
+            } catch (error) {
+                console.error("Error al cargar las traducciones:", error);
+                container.innerHTML = '<p class="text-xs text-red-500">Error al cargar traducciones desde Firestore.</p>';
+            }
+        }
+
+        document.getElementById('btn-guardar-i18n').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-guardar-i18n');
+            btn.disabled = true;
+            btn.innerText = "Guardando...";
+
+            const esNew = {};
+            const enNew = {};
+
+            document.querySelectorAll('.i18n-input').forEach(input => {
+                const key = input.getAttribute('data-key');
+                const lang = input.getAttribute('data-lang');
+                if (lang === 'es') esNew[key] = input.value;
+                if (lang === 'en') enNew[key] = input.value;
+            });
+
+            try {
+                await setDoc(doc(db, "site_translations", "translations"), {
+                    es: esNew,
+                    en: enNew,
+                    updatedAt: new Date()
+                });
+
+                alert("✅ Traducciones del sitio actualizadas en Firestore.");
+            } catch (error) {
+                console.error("Error al guardar traducciones:", error);
+                alert("❌ Ocurrió un error al guardar en Firestore.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Guardar Cambios en Firestore";
+            }
+        });
+    </script>
+</body>
+</html>

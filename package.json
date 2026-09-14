@@ -1,0 +1,9 @@
+{
+  "name": "emma-pediatra",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "firebase": "^12.18.0",
+    "firebase-admin": "^12.0.0"
+  }
+}
