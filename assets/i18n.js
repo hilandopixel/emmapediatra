@@ -1,76 +1,66 @@
-// Diccionario base / Fallback inicial por si no hay conexión
 export let translations = {
   es: {
-    nav_about: "Sobre Mí",
-    nav_nutrition: "Nutrición",
-    nav_diets: "Dietas",
-    nav_sponsors: "Sponsors",
-    nav_contact: "Contacto",
+    nav_sobre_mi: "Sobre mí",
+    nav_pide_cita: "Pide cita",
+    nav_dudas_frecuentes: "Dudas frecuentes",
+    nav_contacto: "Contacto",
     nav_blog: "Blog",
-    hero_title: "Dra. Emma López Rubio Pediatra gastroenteróloga> en Córdoba Especialista en digestivo y trastornos de la conducta alimentaria.",
-    hero_desc: "",
-    hero_btn_contact: "",
-    hero_btn_method: "SOBRE MÍ",
-    about_tag: "",
-    about_title: "",
-    about_desc: "Soy la Dra. Emma López Rubio, <strong>pediatra especializada en gastroenterología, hepatología y nutrición infantil en Córdoba</strong>, donde acompaño a niños y adolescentes con dolor abdominal, reflujo, estreñimiento, alergias, intolerancias, enfermedad celíaca y otros problemas digestivos. Mi forma de trabajar combina rigor científico, una comunicación clara con las familias y una visión integral del niño, teniendo en cuenta su crecimiento, alimentación y bienestar emocional",
-    about_spec: "Especialidades: gastroenterología, hepatología y nutrición infantil.",
-    contact_title: "¿Hablamos de tus objetivos?",
-    contact_desc: "",
-    contact_btn: "",
-    diets_title: "Dietas Personalizadas",
-    diets_desc: "Planes orientados a la pérdida de grasa corporal o rendimiento físico utilizando productos locales y menús flexibles que encajan con tu día a día.",
-    diets_item1: "Menús semanales adaptados a tu entorno",
-    diets_item2: "Listas de la compra inteligentes",
-    nutritiondeportiva_title: "Nutrición Deportiva",
-    nutritiondeportiva_desc: "Planificación adaptada a tus entrenamientos y objetivos. construimos un plan nutricional personal para el día de la competición para sacar el máximo rendimiento.",
-    nutritiondeportiva_item1: "Entrenamiento gástrico",
-    nutritiondeportiva_item2: "Estabilidad energética",
-    nutrition_title: "Nutrición Pre-Competición Personalizada",
-    nutrition_desc: "Te planifico y asesoro en la semana pre competición para que saques el máximo rendimiento.",
-    nutrition_item1: "Educación nutricional sin mitos",
-    nutrition_item2: "Abordaje de energía",
-    sponsors_title: "Colaboradores y proyectos aliados",
-    blog_tag: "Divulgación",
-    blog_title: "Últimas Entradas del Blog",
-    blog_desc: "Artículos de nutrición real, salud y bienestar respaldados por ciencia.",
-    read_more: "Leer artículo completo"
+    nav_recurso:"Recursos y enlaces de interés",
+
+    inicio_intro_description_text:"Dra. Emma López Rubio<br>Pediatra gastroenteróloga en Córdoba<br>Especialista en digestivo y trastornos de la conducta alimentaria.",
+    inicio_intro_button_text:"SOBRE MÍ",
+    inicio_sobre_mi_description_text:"Soy la Dra. Emma López Rubio, <strong>pediatra especializada en gastroenterología, hepatología y nutrición infantil en Córdoba</strong>, donde acompaño a niños y adolescentes con dolor abdominal, reflujo, estreñimiento, alergias, intolerancias, enfermedad celíaca y otros problemas digestivos. Mi forma de trabajar combina rigor científico, una comunicación clara con las familias y una visión integral del niño, teniendo en cuenta su crecimiento, alimentación y bienestar emocional",
+    inicio_sobre_mi_button_text:"Leer más sobre mí",
+    inicio_pide_cita_title_text:"¿Buscas pediatra especialista en digestivo infantil en Córdoba para tu hijo o hija?",
+    inicio_pide_cita_description_text:"Puedes pedir cita para una valoración de digestivo infantil en consulta presencial en Córdoba o mediante videoconsulta si vives en otra ciudad (dolor abdominal, reflujo gastroesofágico, estreñimiento, alergias alimentarias, enfermedad celíaca).​<\br>Existe un convenio con varias aseguradoras de salud y también es posible la atención privada, y durante la visita revisaremos vuestro caso con detalle y decidiremos el tipo de tratamiento más adecuado.",
+    inicio_pide_cita_button_text: "Pide cita",
+    inicio_dudas_frecuentes_title_text:"¿Te preocupa si los síntomas digestivos de tu hijo o hija son normales?",
+    inicio_dudas_frecuentes_description_text:"He preparado un resumen con las dudas que más se repiten en la consulta de digestivo infantil —reflujo, vómitos, gases, estreñimiento, cambios en el color de las heces, dolor abdominal, alergias alimentarias, celiaquía y alergia a la proteína de leche de vaca (APLV)— basándome en años de experiencia en hospitales de referencia en España atendiendo a niños y adolescentes con estas patologías.",
+    inicio_dudas_frecuentes_button_text:"Consultas las dudas más frecuentes sobre el aparato digestivo infantil",
+    inicio_contacto_title_text:"Contacto",
+
+    
+
   },
   en: {
-    nav_about: "About Me",
-    nav_nutrition: "Nutrition",
-    nav_diets: "Diets",
-    nav_sponsors: "Sponsors",
-    nav_contact: "Contact",
-    nav_blog: "Blog",
-    hero_title: "Revolutionize your health with Real Nutrition in Cordoba.",
-    hero_desc: "Tired of inefficient diets? I am your specialist in personalized diets and nutritional re-education in the heart of Subbética. Regain your energy sustainably.",
-    hero_btn_contact: "Contact Me",
-    hero_btn_method: "Our Methodology",
-    about_tag: "Your Trusted Nutritionist",
-    about_title: "Let's build real eating habits adapted to your daily life.",
-    about_desc: "As a reference nutritionist in Subbética Cordobesa, I offer close monitoring tailored to your tastes and schedules. We work together without restrictions.",
-    about_spec: "Specialties: Weight control, clinical nutrition (digestive/hormonal), and sports nutrition.",
-    contact_title: "Shall we talk about your goals?",
-    contact_desc: "Let's talk. Take the step towards your well-being.",
-    contact_btn: "Contact",
-    diets_title: "Personalized Diets",
-    diets_desc: "Plans focused on body fat loss or physical performance using local products and flexible menus that fit into your daily routine.",
-    diets_item1: "Weekly menus tailored to your lifestyle",
-    diets_item2: "Smart shopping lists",
-    nutritiondeportiva_title: "Sports Nutrition",
-    nutritiondeportiva_desc: "A training plan tailored to your workouts and goals. We create a personalized nutrition plan for race day to help you achieve peak performance.",
-    nutritiondeportiva_item1: "Gastric training",
-    nutritiondeportiva_item2: "Energy stability",
-    nutrition_title: "Personalized Pre-Competition Nutrition",
-    nutrition_desc: "I plan and advise you during the pre-competition week to help you achieve peak performance.",
-    nutrition_item1: "Myth-free nutritional education",
-    nutrition_item2: "Energy management approach",
-    sponsors_title: "Partners and allied projects",
-    blog_tag: "Outreach",
-    blog_title: "Latest Blog Posts",
-    blog_desc: "Articles on real nutrition, health, and wellness backed by science.",
-    read_more: "Read full article"
+    nav_sobre_mi: "[en] Sobre mí",
+    nav_pide_cita: "[en] Pide cita",
+    nav_dudas_frecuentes: "[en] Dudas frecuentes",
+    nav_contacto: "[en] Contacto",
+    nav_blog: "[en] Blog",
+    nav_recurso:"[en] Recursos y enlaces de interés",
+
+    inicio_intro_description_text:"[en] Dra. Emma López Rubio<br>Pediatra gastroenteróloga en Córdoba<br>Especialista en digestivo y trastornos de la conducta alimentaria.",
+    inicio_intro_button_text:"[en] SOBRE MÍ",
+    inicio_sobre_mi_description_text:"[en] Soy la Dra. Emma López Rubio, <strong>pediatra especializada en gastroenterología, hepatología y nutrición infantil en Córdoba</strong>, donde acompaño a niños y adolescentes con dolor abdominal, reflujo, estreñimiento, alergias, intolerancias, enfermedad celíaca y otros problemas digestivos. Mi forma de trabajar combina rigor científico, una comunicación clara con las familias y una visión integral del niño, teniendo en cuenta su crecimiento, alimentación y bienestar emocional",
+    inicio_sobre_mi_button_text:"[en] Leer más sobre mí",
+    inicio_pide_cita_title_text:"[en] ¿Buscas pediatra especialista en digestivo infantil en Córdoba para tu hijo o hija?",
+    inicio_pide_cita_description_text:"[en] Puedes pedir cita para una valoración de digestivo infantil en consulta presencial en Córdoba o mediante videoconsulta si vives en otra ciudad (dolor abdominal, reflujo gastroesofágico, estreñimiento, alergias alimentarias, enfermedad celíaca).​<\br>Existe un convenio con varias aseguradoras de salud y también es posible la atención privada, y durante la visita revisaremos vuestro caso con detalle y decidiremos el tipo de tratamiento más adecuado.",
+    inicio_pide_cita_button_text: "[en] Pide cita",
+    inicio_dudas_frecuentes_title_text:"[en] ¿Te preocupa si los síntomas digestivos de tu hijo o hija son normales?",
+    inicio_dudas_frecuentes_description_text:"[en] He preparado un resumen con las dudas que más se repiten en la consulta de digestivo infantil —reflujo, vómitos, gases, estreñimiento, cambios en el color de las heces, dolor abdominal, alergias alimentarias, celiaquía y alergia a la proteína de leche de vaca (APLV)— basándome en años de experiencia en hospitales de referencia en España atendiendo a niños y adolescentes con estas patologías.",
+    inicio_dudas_frecuentes_button_text:"[en] Consultas las dudas más frecuentes sobre el aparato digestivo infantil",
+    inicio_contacto_title_text:"[en] Contacto",
+  },
+  it: {
+    nav_sobre_mi: "[it] Sobre mí",
+    nav_pide_cita: "[it] Pide cita",
+    nav_dudas_frecuentes: "[it] Dudas frecuentes",
+    nav_contacto: "[it] Contacto",
+    nav_blog: "[it] Blog",
+    nav_recurso:"[it] Recursos y enlaces de interés",
+
+    inicio_intro_description_text:"[it] Dra. Emma López Rubio<br>Pediatra gastroenteróloga en Córdoba<br>Especialista en digestivo y trastornos de la conducta alimentaria.",
+    inicio_intro_button_text:"[it] SOBRE MÍ",
+    inicio_sobre_mi_description_text:"[it] Soy la Dra. Emma López Rubio, <strong>pediatra especializada en gastroenterología, hepatología y nutrición infantil en Córdoba</strong>, donde acompaño a niños y adolescentes con dolor abdominal, reflujo, estreñimiento, alergias, intolerancias, enfermedad celíaca y otros problemas digestivos. Mi forma de trabajar combina rigor científico, una comunicación clara con las familias y una visión integral del niño, teniendo en cuenta su crecimiento, alimentación y bienestar emocional",
+    inicio_sobre_mi_button_text:"[it] Leer más sobre mí",
+    inicio_pide_cita_title_text:"[it] ¿Buscas pediatra especialista en digestivo infantil en Córdoba para tu hijo o hija?",
+    inicio_pide_cita_description_text:"[it] Puedes pedir cita para una valoración de digestivo infantil en consulta presencial en Córdoba o mediante videoconsulta si vives en otra ciudad (dolor abdominal, reflujo gastroesofágico, estreñimiento, alergias alimentarias, enfermedad celíaca).​<\br>Existe un convenio con varias aseguradoras de salud y también es posible la atención privada, y durante la visita revisaremos vuestro caso con detalle y decidiremos el tipo de tratamiento más adecuado.",
+    inicio_pide_cita_button_text: "[it] Pide cita",
+    inicio_dudas_frecuentes_title_text:"[it] ¿Te preocupa si los síntomas digestivos de tu hijo o hija son normales?",
+    inicio_dudas_frecuentes_description_text:"[it] He preparado un resumen con las dudas que más se repiten en la consulta de digestivo infantil —reflujo, vómitos, gases, estreñimiento, cambios en el color de las heces, dolor abdominal, alergias alimentarias, celiaquía y alergia a la proteína de leche de vaca (APLV)— basándome en años de experiencia en hospitales de referencia en España atendiendo a niños y adolescentes con estas patologías.",
+    inicio_dudas_frecuentes_button_text:"[it] Consultas las dudas más frecuentes sobre el aparato digestivo infantil",
+    inicio_contacto_title_text:"[it] Contacto",
   }
 };
 
@@ -106,13 +96,14 @@ export function setLanguage(lang) {
 
   document.querySelectorAll('button[onclick*="changeLang"]').forEach(btn => {
     if (btn.getAttribute('onclick').includes(`'${currentLang}'`)) {
-      btn.classList.add('opacity-100', 'font-extrabold', 'text-teal-600');
+      btn.classList.add('opacity-100', 'font-extrabold', 'text-pink-600');
       btn.classList.remove('opacity-50');
     } else {
       btn.classList.add('opacity-50');
-      btn.classList.remove('opacity-100', 'font-extrabold', 'text-teal-600');
+      btn.classList.remove('opacity-100', 'font-extrabold', 'text-pink-600');
     }
   });
 
   window.dispatchEvent(new CustomEvent('languageChanged', { detail: currentLang }));
+
 }

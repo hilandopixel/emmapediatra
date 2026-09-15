@@ -24,6 +24,7 @@ body {
 .bg-primary-custom { background-color: var(--color-primary); }
 .bg-secondary-custom { background-color: var(--color-secondary); }
 .bg-fourth-custom { background-color: var(--color-fourth); }
+.bg-base-custom { background-color: var(--color-bg-base); }
 .text-primary-custom { color: var(--color-primary); }
 .text-secondary-custom { color: var(--color-secondary); }
 .border-primary-custom { border-color: var(--color-primary); }
@@ -41,4 +42,10 @@ body {
     color: var(--color-primary);
     padding: 10%;
     margin: 0%;
+}
+
+.navbar-scrolled {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
