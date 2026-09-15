@@ -1,5 +1,8 @@
 export let translations = {
   es: {
+
+    error_notfound_text:"Página no encontrada",
+
     nav_sobre_mi: "Sobre mí",
     nav_pide_cita: "Pide cita",
     nav_dudas_frecuentes: "Dudas frecuentes",
@@ -61,6 +64,10 @@ export let translations = {
     cambios_formula_aplv_description_text:"<p><strong>Nos han cambiado varias veces de leche de fórmula por gases, cólicos o reflujo, ¿es realmente necesario?</strong><br>En los primeros meses se tiende a atribuir muchos síntomas digestivos (cólicos, regurgitaciones, gases) al tipo de leche, y eso puede llevar a encadenar cambios de fórmula sin un beneficio claro. Antes de seguir probando leches diferentes, suele ser útil revisar la cantidad y el ritmo de las tomas, la técnica, las posturas y la evolución del peso, para decidir de forma más calmada si el problema se relaciona con la fórmula o con otros factores.</p></br><p><strong>¿Cuándo hay que sospechar alergia a la proteína de leche de vaca (APLV) en bebés con problemas digestivos?</strong><br>Además de los cólicos y las regurgitaciones, la APLV puede asociarse a otros signos como irritabilidad marcada, diarrea, sangre en heces, dermatitis intensa, dificultad para ganar peso o antecedentes familiares de alergias. Como estos síntomas también pueden aparecer en otras situaciones, el diagnóstico no se basa solo en cambiar de leche, sino en valorar el conjunto del cuadro y decidir, si procede, un ensayo bien dirigido con una fórmula específica.</p></br><p><strong>¿Qué tipo de fórmula se suele usar en la APLV y durante cuánto tiempo?</strong><br>En la APLV se suelen emplear fórmulas extensamente hidrolizadas o, en determinados casos, fórmulas de aminoácidos, siempre adaptadas a la edad y la situación clínica de cada bebé. La duración del uso y la reintroducción de proteínas lácteas se planifican de forma gradual, con controles periódicos, para comprobar la tolerancia y ajustar el calendario según la evolución.</p></br><p><strong>¿Es buena idea probar “por nuestra cuenta” una leche sin lactosa o una fórmula especial?</strong><br>Cambiar de leche sin una indicación clara puede dificultar la interpretación de los síntomas y hacer más complejo el diagnóstico posterior, sobre todo cuando se sospecha alergia o intolerancia. Por eso suele ser preferible decidir los cambios de fórmula dentro de un plan organizado, en el que se sepa qué se quiere observar, durante cuánto tiempo y qué pasos seguir en función de la respuesta.</p>",
   },
   en: {
+
+    error_notfound_text:"Página no encontrada",
+
+
     nav_sobre_mi: "Sobre mí",
     nav_pide_cita: "Pide cita",
     nav_dudas_frecuentes: "Dudas frecuentes",
@@ -122,6 +129,9 @@ export let translations = {
     cambios_formula_aplv_description_text:"<p><strong>Nos han cambiado varias veces de leche de fórmula por gases, cólicos o reflujo, ¿es realmente necesario?</strong><br>En los primeros meses se tiende a atribuir muchos síntomas digestivos (cólicos, regurgitaciones, gases) al tipo de leche, y eso puede llevar a encadenar cambios de fórmula sin un beneficio claro. Antes de seguir probando leches diferentes, suele ser útil revisar la cantidad y el ritmo de las tomas, la técnica, las posturas y la evolución del peso, para decidir de forma más calmada si el problema se relaciona con la fórmula o con otros factores.</p></br><p><strong>¿Cuándo hay que sospechar alergia a la proteína de leche de vaca (APLV) en bebés con problemas digestivos?</strong><br>Además de los cólicos y las regurgitaciones, la APLV puede asociarse a otros signos como irritabilidad marcada, diarrea, sangre en heces, dermatitis intensa, dificultad para ganar peso o antecedentes familiares de alergias. Como estos síntomas también pueden aparecer en otras situaciones, el diagnóstico no se basa solo en cambiar de leche, sino en valorar el conjunto del cuadro y decidir, si procede, un ensayo bien dirigido con una fórmula específica.</p></br><p><strong>¿Qué tipo de fórmula se suele usar en la APLV y durante cuánto tiempo?</strong><br>En la APLV se suelen emplear fórmulas extensamente hidrolizadas o, en determinados casos, fórmulas de aminoácidos, siempre adaptadas a la edad y la situación clínica de cada bebé. La duración del uso y la reintroducción de proteínas lácteas se planifican de forma gradual, con controles periódicos, para comprobar la tolerancia y ajustar el calendario según la evolución.</p></br><p><strong>¿Es buena idea probar “por nuestra cuenta” una leche sin lactosa o una fórmula especial?</strong><br>Cambiar de leche sin una indicación clara puede dificultar la interpretación de los síntomas y hacer más complejo el diagnóstico posterior, sobre todo cuando se sospecha alergia o intolerancia. Por eso suele ser preferible decidir los cambios de fórmula dentro de un plan organizado, en el que se sepa qué se quiere observar, durante cuánto tiempo y qué pasos seguir en función de la respuesta.</p>",
   },
   it: {
+
+    error_notfound_text:"Página no encontrada",
+
     nav_sobre_mi: "Sobre mí",
     nav_pide_cita: "Pide cita",
     nav_dudas_frecuentes: "Dudas frecuentes",
