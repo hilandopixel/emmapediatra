@@ -49,3 +49,10 @@ body {
 .font-medium { font-weight: 500; }
 .font-bold { font-weight: 700; }
 .font-extrabold { font-weight: 800; }
+
+.hilando-pixel-section {
+    background-color: var(--color-fourth);
+    color: var(--color-primary);
+    padding: 10%;
+    margin: 0%;
+}
