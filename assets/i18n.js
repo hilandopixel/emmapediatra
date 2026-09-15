@@ -7,17 +7,17 @@ export let translations = {
     nav_sponsors: "Sponsors",
     nav_contact: "Contacto",
     nav_blog: "Blog",
-    hero_title: "Revoluciona tu salud con Nutrición Real en Córdoba.",
-    hero_desc: "¿No puedes más con dietas poco eficientes? Soy tu especialista en dietas personalizadas y reeducación alimentaria en el corazón de la Subbética. Recupera tu energía de forma sostenible.",
-    hero_btn_contact: "Consúltame",
-    hero_btn_method: "Ver Metodología",
+    hero_title: "Dra. Emma López Rubio Pediatra gastroenteróloga> en Córdoba Especialista en digestivo y trastornos de la conducta alimentaria.",
+    hero_desc: "",
+    hero_btn_contact: "",
+    hero_btn_method: "SOBRE MÍ",
     about_tag: "",
     about_title: "",
-    about_desc: "Soy la Dra. Emma López Rubio, pediatra especializada en gastroenterología, hepatología y nutrición infantil en Córdoba, donde acompaño a niños y adolescentes con dolor abdominal, reflujo, estreñimiento, alergias, intolerancias, enfermedad celíaca y otros problemas digestivos. Mi forma de trabajar combina rigor científico, una comunicación clara con las familias y una visión integral del niño, teniendo en cuenta su crecimiento, alimentación y bienestar emocional",
+    about_desc: "Soy la Dra. Emma López Rubio, <strong>pediatra especializada en gastroenterología, hepatología y nutrición infantil en Córdoba</strong>, donde acompaño a niños y adolescentes con dolor abdominal, reflujo, estreñimiento, alergias, intolerancias, enfermedad celíaca y otros problemas digestivos. Mi forma de trabajar combina rigor científico, una comunicación clara con las familias y una visión integral del niño, teniendo en cuenta su crecimiento, alimentación y bienestar emocional",
     about_spec: "Especialidades: gastroenterología, hepatología y nutrición infantil.",
     contact_title: "¿Hablamos de tus objetivos?",
-    contact_desc: "Hablemos. Da el paso hacia tu bienestar.",
-    contact_btn: "Contactar",
+    contact_desc: "",
+    contact_btn: "",
     diets_title: "Dietas Personalizadas",
     diets_desc: "Planes orientados a la pérdida de grasa corporal o rendimiento físico utilizando productos locales y menús flexibles que encajan con tu día a día.",
     diets_item1: "Menús semanales adaptados a tu entorno",
@@ -95,12 +95,14 @@ export function setLanguage(lang) {
   localStorage.setItem('app_lang', lang);
   const currentLang = translations[lang] ? lang : 'es';
   
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    if (translations[currentLang] && translations[currentLang][key] !== undefined) {
-      el.textContent = translations[currentLang][key];
-    }
-  });
+  if(lang !== 'es'){
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (translations[currentLang] && translations[currentLang][key] !== undefined) {
+        el.innerHTML = translations[currentLang][key];
+      }
+    });
+  }
 
   document.querySelectorAll('button[onclick*="changeLang"]').forEach(btn => {
     if (btn.getAttribute('onclick').includes(`'${currentLang}'`)) {

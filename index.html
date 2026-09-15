@@ -7,141 +7,115 @@
     <meta name="description" content="Soy la Dra. Emma López Rubio, pediatra especializada en gastroenterología, hepatología y nutrición infantil en Córdoba.">
     <meta name="keywords" content="digestivo infantil, pediatria, conducta alimentaria, gastroenteróloga">
     <meta name='robots' content='max-image-preview:large' />
-    
-    <!-- Open Graph para redes sociales -->
     <meta property="og:title" content="Dra. EMMA LÓPEZ RUBIO Pediatra gastroenteróloga en Córdoba | Especialista en digestivo y trastornos de la conducta alimentaria">
     <meta property="og:description" content="Soy la Dra. Emma López Rubio, pediatra especializada en gastroenterología, hepatología y nutrición infantil en Córdoba.">
     <meta property="og:type" content="website">
 
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    
-    <!-- Google Fonts: Montserrat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/style.css">
 </script>
 
 </head>
-<body class="min-h-screen antialiased text-secondary-custom bg-slate-50">
+
+<body class="min-h-screen antialiased text-secondary-custom">
 
     <!-- HERO SECTION -->
-    <section class="relative min-h-[90vh] flex items-center justify-center bg-cover bg-center bg-fixed overflow-hidden" style="background-image: url('https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&q=80&w=1920');">
-        
-        <div class="absolute inset-0 bg-white/100"></div>
-        
+    <section class="relative min-h-[90vh] flex items-center justify-center bg-cover bg-center bg-fixed overflow-hidden" style="background-image: url('/images/dra-emma-lopez-portada.png');">
+        <div class="absolute inset-0 bg-[linear-gradient(135deg,_rgb(255,152,186)_26%,_rgb(192,192,192)_52%,_rgb(255,254,255)_100%)]/75 z-0"></div>
         <div class="relative z-10 max-w-5xl mx-auto px-6 text-center text-secondary-custom py-20 space-y-8">
-            <img src="/assets/logo2.png" alt="Nutrición Dani Luque Logo" class="mx-auto object-contain">
-            <div class="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-primary-custom text-white border border-white/20 text-xs font-semibold tracking-widest uppercase backdrop-blur-md">
-                <span class="w-2 h-2 rounded-full bg-[#317b77] animate-pulse"></span>
-                <span></span>
-            </div>
             
-            <h1 class="text-4xl sm:text-7xl font-extrabold tracking-tight leading-[1.1]" data-i18n="hero_title">
-                Tu alimentación puede cambiar cómo te sientes, cómo rindes y cómo vives
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-emerald-400"></span>
+            <h1 class="text-white text-lg sm:text-xl max-w-2xl mx-auto font-light leading-relaxed" data-i18n="hero_title">
+                <span class="text-white">
+                    Dra. Emma López Rubio Pediatra gastroenteróloga en Córdoba Especialista en digestivo y trastornos de la conducta alimentaria.
+                </span>
             </h1>
-            
-            <p class="text-lg sm:text-xl max-w-2xl mx-auto font-light leading-relaxed" data-i18n="hero_desc">
-                Olvídate de las dietas genéricas. Consigue un plan de nutrición clínica o deportiva totalmente personalizado, adaptado a tus objetivos, tu estilo de vida y tus necesidades.
-            </p>
-            
+
             <div class="pt-4 flex flex-col sm:flex-row justify-center items-center gap-4">
-                <a href="#contacto" class="w-full sm:w-auto px-8 py-4 bg-primary-custom hover:bg-[#266360] text-white font-bold rounded-xl shadow-lg shadow-teal-950/30 transition transform hover:-scale-102" data-i18n="hero_btn_contact">
-                    Consúltame
+                <a href="#sobre-mi" class="w-full sm:w-auto px-8 py-4 bg-white text-primary-custom hover:bg-white/10 text-white font-semibold rounded-xl backdrop-blur-md border border-white/15 transition" data-i18n="hero_btn_method">
+                    SOBRE MÍ
                 </a>
-                <a href="#sobre-mi" class="w-full sm:w-auto px-8 py-4 bg-secondary-custom hover:bg-white/10 text-white font-semibold rounded-xl backdrop-blur-md border border-white/15 transition" data-i18n="hero_btn_method">
-                    Ver Metodología
-                </a>
+                <img src="/assets/logo2.png" alt="Emma Pediatra" class="mx-auto object-contain">
             </div>
         </div>
     </section>
 
-    <!-- CONTENIDO PRINCIPAL -->
-    <main class="max-w-7xl mx-auto px-6 py-28 space-y-36 text-secondary-custom">
+    <main class="max-w-7xl mx-auto px-6 py-28 space-y-36 text-secondary-custom ">
 
-        <!-- SOBRE MÍ -->
-        <section id="sobre-mi" class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center text-secondary-custom">
+        <section id="sobre-mi" class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center bento-card">
             <div class="lg:col-span-5 relative">
-                <div class="absolute -inset-4 bg-gradient-to-br from-[#317b77]/20 to-[#054358]/20 rounded-3xl filter blur-xl"></div>
+                <div class="rounded-3xl filter blur-xl"></div>
                 <img src="/assets/dra-emma-lopez-rubio-pediatra-gastroenterologa.png" alt="Nutricionista titulado atendiendo a paciente en consulta" class="relative w-full h-[480px] object-cover rounded-3xl shadow-2xl border border-white/40">
             </div>
             
             <div class="lg:col-span-7 space-y-6">
-                <h2 class="text-slate-600 sm:text-lg leading-relaxed font-light" data-i18n="about_desc">
+                <h2 class="sm:text-lg leading-relaxed font-light" data-i18n="about_desc">
                 Soy la Dra. Emma López Rubio, <strong>pediatra especializada en gastroenterología, hepatología y nutrición infantil en Córdoba</strong>, donde acompaño a niños y adolescentes con dolor abdominal, reflujo, estreñimiento, alergias, intolerancias, enfermedad celíaca y otros problemas digestivos. Mi forma de trabajar combina rigor científico, una comunicación clara con las familias y una visión integral del niño, teniendo en cuenta su crecimiento, alimentación y bienestar emocional
                 </h2>
+                <a href="/sobre-mi" class="bg-primary-custom text-white hover:bg-white/10 text-white font-semibold rounded-xl backdrop-blur-md border border-white/15 transition" data-i18n="hero_btn_method">
+                Leer más sobre mí
+                </a>
             </div>
         </section>
         
-        <!-- CONTACTO -->
-        <section id="contacto" class="bg-secondary-custom text-white p-10 sm:p-20 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+        <!-- SOBRE MI -->
+        <section id="contacto" class="bg-secondary-custom text-primary-custom p-10 sm:p-20 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
             <div class="absolute -right-24 -top-24 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
             <div class="max-w-2xl mx-auto text-center space-y-8 relative z-10">
                 <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight" data-i18n="contact_title">¿Hablamos de tus objetivos?</h2>
-                <p class="text-slate-300 text-lg font-light leading-relaxed" data-i18n="contact_desc">
-                    Hablemos. Da el paso y saquemos tu mejor versión.
+                <p class="text-lg font-light leading-relaxed" data-i18n="contact_desc">
+                Soy la Dra. Emma López Rubio, <strong>pediatra especializada en gastroenterología, hepatología y nutrición infantil en Córdoba</strong>, donde acompaño a niños y adolescentes con dolor abdominal, reflujo, estreñimiento, alergias, intolerancias, enfermedad celíaca y otros problemas digestivos. Mi forma de trabajar combina rigor científico, una comunicación clara con las familias y una visión integral del niño, teniendo en cuenta su crecimiento, alimentación y bienestar emocional
                 </p>
                 <div class="pt-2">
-                    <a href="https://wa.me/34609083012" target="_blank" class="inline-block px-10 py-4 bg-primary-custom hover:bg-[#266360] text-white font-bold rounded-xl shadow-xl transition transform hover:-scale-102" data-i18n="contact_btn">
-                        Contactar
+                    <a href="/sobre-mi" target="_blank" class="inline-block px-10 py-4 bg-primary-custom hover:bg-[#266360] text-white font-bold rounded-xl shadow-xl transition transform hover:-scale-102" data-i18n="contact_btn">
+                        Leer más sobre mí
                     </a>
                 </div>
             </div>
         </section>
 
-        <!-- SERVICIOS: DIETAS Y NUTRICIÓN -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <section id="dietas" class="bento-card p-10 flex flex-col justify-between bg-white rounded-3xl border border-slate-100 shadow-sm">
-                <div>
-                    <div class="w-14 h-14 bg-sky-50 text-secondary-custom rounded-2xl flex items-center justify-center text-2xl font-bold mb-6">📋</div>
-                    <h3 class="text-2xl font-bold mb-4" data-i18n="diets_title">Dietas Personalizadas</h3>
-                    <p class="text-slate-600 leading-relaxed font-light mb-6" data-i18n="diets_desc">
-                        Los planes están completamente adaptados a tu estilo y ritmo de vida para poder ofrecerte el plan que tú necesitas. Se realizan planes nutricionales flexibles y realistas. Nada de dietas milagro.
-                    </p>
+        <!-- BUSCAS PEDIATRA INFANTIL EN CÓRDOBA -->
+        <section id="buscas-pediatra" class="bg-secondary-custom text-primary-custom p-10 sm:p-20 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+            <div class="absolute -right-24 -top-24 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="max-w-2xl mx-auto text-center space-y-8 relative z-10">
+                <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight" data-i18n="contact_title">¿Buscas pediatra especialista en digestivo infantil en Córdoba para tu hijo o hija?​</h2>
+                <p class="text-lg font-light leading-relaxed" data-i18n="contact_desc">
+                Puedes pedir cita para una valoración de digestivo infantil en consulta presencial en Córdoba o mediante videoconsulta si vives en otra ciudad (dolor abdominal, reflujo gastroesofágico, estreñimiento, alergias alimentarias, enfermedad celíaca).​
+                Existe un convenio con varias aseguradoras de salud y también es posible la atención privada, y durante la visita revisaremos vuestro caso con detalle y decidiremos el tipo de tratamiento más adecuado.
+                </p>
+                <div class="pt-2">
+                    <a href="/pide-cita" target="_blank" class="inline-block px-10 py-4 bg-primary-custom hover:bg-[#266360] text-white font-bold rounded-xl shadow-xl transition transform hover:-scale-102" data-i18n="contact_btn">
+                        Pide cita
+                    </a>
                 </div>
-                <ul class="space-y-3 text-sm font-medium text-slate-700 border-t border-slate-100 pt-6">
-                    <li class="flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-[#054358] mr-3"></span> <span data-i18n="diets_item1">Menús adaptados a tus gustos</span></li>
-                    <li class="flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-[#054358] mr-3"></span> <span data-i18n="diets_item2">Listas de compra inteligente</span></li>
-                </ul>
-            </section>
-            
-            <section id="nutriciondeportiva" class="bento-card p-10 flex flex-col justify-between bg-white rounded-3xl border border-slate-100 shadow-sm">
-                <div>
-                    <div class="w-14 h-14 bg-teal-50 text-primary-custom rounded-2xl flex items-center justify-center text-2xl font-bold mb-6">🥗</div>
-                    <h3 class="text-2xl font-bold mb-4" data-i18n="nutritiondeportiva_title">Nutrición Deportiva</h3>
-                    <p class="text-slate-600 leading-relaxed font-light mb-6" data-i18n="nutritiondeportiva_desc">
-                        Planificación adaptada a tus entrenamientos y objetivos. construimos un plan nutricional personal para el día de la competición para sacar el máximo rendimiento.
-                    </p>
-                </div>
-                <ul class="space-y-3 text-sm font-medium text-slate-700 border-t border-slate-100 pt-6">
-                    <li class="flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-primary-custom mr-3"></span> <span data-i18n="nutritiondeportiva_item1">Entrenamiento gástrico</span></li>
-                    <li class="flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-primary-custom mr-3"></span> <span data-i18n="nutritiondeportiva_item2">Estabilidad energética</span></li>
-                </ul>
-            </section>
-            
-            <section id="nutricion" class="bento-card p-10 flex flex-col justify-between bg-white rounded-3xl border border-slate-100 shadow-sm">
-                <div>
-                    <div class="w-14 h-14 bg-teal-50 text-primary-custom rounded-2xl flex items-center justify-center text-2xl font-bold mb-6">💪</div>
-                    <h3 class="text-2xl font-bold mb-4" data-i18n="nutrition_title">Nutrición Pre-Competición Personalizada</h3>
-                    <p class="text-slate-600 leading-relaxed font-light mb-6" data-i18n="nutrition_desc">
-                        Si no tienes asesoramiento nutricional y quieres llegar en las mejores condiciones para tu gran objetivo, te planifico la semana pre-competición y alimentación en carrera para llegar en el mejor estado de forma posible.
-                    </p>
-                </div>
-                <ul class="space-y-3 text-sm font-medium text-slate-700 border-t border-slate-100 pt-6">
-                    <li class="flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-primary-custom mr-3"></span> <span data-i18n="nutrition_item1">Adaptación a tu alimentación y suplementación</span></li>
-                    <li class="flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-primary-custom mr-3"></span> <span data-i18n="nutrition_item2">Todo bajo respaldo científico</span></li>
-                </ul>
-            </section>
-        </div>
+                <iframe loading="lazy" title="#AprendeConTuPediatra: Dra. Emma López Rubio - Reflujo en lactantes" width="100%" height="500px" src="https://www.youtube.com/embed/2vMZP4ZdH6U?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            </div>
+        </section>
 
-        <!-- SPONSORS -->
-        <section id="sponsors" class="py-6 border-y border-slate-200/60 text-center">
-            <h3 class="text-xs font-bold uppercase tracking-widest mb-8" data-i18n="sponsors_title">Colaboradores y proyectos aliados</h3>
-            <div class="flex flex-wrap justify-center items-center gap-12 transition duration-500">
-                <span class="text-lg font-bold">CROWN SPORT NUTRITION</span>
-                <a href="https://crownsportnutrition.com/" target="_blank" class="flex items-center"><img src="https://crownsportnutrition.com/cdn/shop/t/17/assets/crown-logo-gold.png?v=147244400794072444081786445163&width=270" alt="Crown Logo" class="h-8 w-auto object-contain"></a>
+        <!-- DUDAS FRECUENTES -->
+        <section id="dudas-frecuentes" class="bg-secondary-custom text-primary-custom p-10 sm:p-20 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+            <div class="absolute -right-24 -top-24 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="max-w-2xl mx-auto text-center space-y-8 relative z-10">
+                <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight" data-i18n="contact_title">¿Te preocupa si los síntomas digestivos de tu hijo o hija son normales?​</h2>
+                <p class="text-lg font-light leading-relaxed" data-i18n="contact_desc">
+                He preparado un resumen con las dudas que más se repiten en la consulta de digestivo infantil —reflujo, vómitos, gases, estreñimiento, cambios en el color de las heces, dolor abdominal, alergias alimentarias, celiaquía y alergia a la proteína de leche de vaca (APLV)— basándome en años de experiencia en hospitales de referencia en España atendiendo a niños y adolescentes con estas patologías.
+                </p>
+                <div class="pt-2">
+                    <a href="/dudas-frecuentes" target="_blank" class="inline-block px-10 py-4 bg-primary-custom hover:bg-[#266360] text-white font-bold rounded-xl shadow-xl transition transform hover:-scale-102" data-i18n="contact_btn">
+                        Consultas las dudas más frecuentes sobre el aparato digestivo infantil
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- DUDAS FRECUENTES -->
+        <section id="contacto" class="bg-secondary-custom text-primary-custom p-10 sm:p-20 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+            <div class="absolute -right-24 -top-24 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="max-w-2xl mx-auto text-center space-y-8 relative z-10">
+                <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight" data-i18n="contact_title">Contacto​</h2>
+<iframe loading="lazy" src="https://docs.google.com/forms/d/e/1FAIpQLSfxM_IzTLc6uwlwELg1G7ktqmn2Qny-Gmwg23WB1NBBUEiaGw/viewform?embedded=true" width="100%" height="1000" frameborder="0" marginheight="0" marginwidth="0">Cargando…</iframe>
             </div>
         </section>
 
@@ -162,9 +136,11 @@
         </section>
     </main>
 
-    <footer class="py-8 text-center text-xs text-slate-400 border-t border-slate-100 bg-white">
-        <p>&copy; 2026 Nutrición Dani Luque. Todos los derechos reservados.</p>
+    <footer class="py-8 text-center text-xs">
+        <p>&copy; 2026 Dra. EMMA LÓPEZ RUBIO Pediatra gastroenteróloga en Córdoba | Designed by <a href="mailto:hilandopixel@gmail.com">HilandoPixel</a></p>
     </footer>
+
+
 <script type="module">
     import { db, initHeader } from "./firebase-config.js";
     import { collection, getDocs, doc, getDoc, orderBy, query } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
