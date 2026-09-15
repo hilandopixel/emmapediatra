@@ -12,7 +12,6 @@
     --font-family-base: 'Mulish', sans-serif;
 }
 
-/* Aplicar Montserrat globalmente y estilos base */
 body {
     font-family: var(--font-family-base);
     background-color: var(--color-bg-base);
@@ -30,19 +29,6 @@ body {
 .border-primary-custom { border-color: var(--color-primary); }
 .border-secondary-custom { border-color: var(--color-secondary); }
 
-/* Estilo Bento / Tarjetas flotantes modernas */
-.bento-card {
-    background-color: var(--color-fourth);
-    color: var(--color-primary);
-    border: 1px solid var(--color-border-subtle);
-    border-radius: 1.5rem;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.bento-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 40px -15px rgba(5, 67, 88, 0.08);
-    border-color: rgba(49, 123, 119, 0.3);
-}
 
 /* Utilidades de tipografía */
 .font-light { font-weight: 300; }

@@ -39,7 +39,7 @@
 			</div>
         </nav>
 
-        <button id="menu-btn" class="md:hidden text-slate-700 focus:outline-none p-2 rounded-lg hover:bg-slate-100">
+        <button id="menu-btn" class="bg-primary-custom text-white md:hidden text-slate-700 focus:outline-none p-2 rounded-lg hover:bg-slate-100">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
             </svg>
@@ -47,18 +47,18 @@
     </div>
 
 <!-- Menú Móvil -->
-<div id="mobile-menu" class="hidden md:hidden bg-slate-900 border-t border-slate-800 px-4 pt-2 pb-4 space-y-2 shadow-inner text-white">
-    <a href="/#sobre-mi" data-i18n="nav_about" class="hover:text-teal-600 transition">Sobre mí</a>
-    <a href="/pide-cita" data-i18n="nav_nutrition" class="hover:text-teal-600 transition">Pide cita</a>
-    <a href="/dudas-frecuentes" data-i18n="nav_diets" class="hover:text-teal-600 transition">Dudas frecuentes</a>
-    <a href="/#contacto" data-i18n="nav_contact" class="hover:text-teal-600 transition">Contacto</a>
-    <a href="/#blog" data-i18n="nav_blog" class="hover:text-teal-600 transition">Blog</a>
-    <a href="/#recursos-y-enlaces-de-interes" data-i18n="nav_sponsors" class="hover:text-teal-600 transition">Recursos y enlaces de interés</a>
+<div id="mobile-menu" class="hidden md:hidden flex flex-col text-primary-custom bg-secondary-custom py-4 px-6 space-y-3">
+    <a href="/#sobre-mi" data-i18n="nav_about" class="block py-2 hover:text-teal-600 transition">Sobre mí</a>
+    <a href="/pide-cita" data-i18n="nav_nutrition" class="block py-2 hover:text-teal-600 transition">Pide cita</a>
+    <a href="/dudas-frecuentes" data-i18n="nav_diets" class="block py-2 hover:text-teal-600 transition">Dudas frecuentes</a>
+    <a href="/#contacto" data-i18n="nav_contact" class="block py-2 hover:text-teal-600 transition">Contacto</a>
+    <a href="/#blog" data-i18n="nav_blog" class="block py-2 hover:text-teal-600 transition">Blog</a>
+    <a href="/#recursos-y-enlaces-de-interes" data-i18n="nav_sponsors" class="block py-2 hover:text-teal-600 transition">Recursos y enlaces de interés</a>
     
     <!-- Selector de Idioma Móvil -->
-    <div class="flex items-center space-x-6 pt-3 px-3 border-t border-slate-800 text-xs font-bold">
+    <div class="flex items-center space-x-6 pt-4 border-t border-pink-800 text-xs font-bold">
         <!-- Botón Español -->
-        <button onclick="window.changeLang('es')" class="text-teal-400 flex items-center gap-2 cursor-pointer py-1">
+        <button onclick="window.changeLang('es')" class="flex items-center gap-2 cursor-pointer py-1">
             <svg class="w-5 h-4 rounded-xs shadow-xs object-cover" viewBox="0 0 640 480">
                 <path fill="#c12a21" d="M0 0h640v480H0z"/>
                 <path fill="#f3a812" d="M0 120h640v240H0z"/>
@@ -67,7 +67,7 @@
         </button>
 
         <!-- Botón Inglés -->
-        <button onclick="window.changeLang('en')" class="text-teal-400 flex items-center gap-2 cursor-pointer py-1">
+        <button onclick="window.changeLang('en')" class="flex items-center gap-2 cursor-pointer py-1">
             <svg class="w-5 h-4 rounded-xs shadow-xs object-cover" viewBox="0 0 640 480">
                 <path fill="#012169" d="M0 0h640v480H0z"/>
                 <path fill="#fff" d="m75 0 245 180L565 0h75v55L395 240l245 185v55h-75L320 300 75 480H0v-55l245-185L0 55V0z"/>

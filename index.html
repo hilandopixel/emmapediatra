@@ -10,7 +10,6 @@
     <meta property="og:title" content="Dra. EMMA LÓPEZ RUBIO Pediatra gastroenteróloga en Córdoba | Especialista en digestivo y trastornos de la conducta alimentaria">
     <meta property="og:description" content="Soy la Dra. Emma López Rubio, pediatra especializada en gastroenterología, hepatología y nutrición infantil en Córdoba.">
     <meta property="og:type" content="website">
-
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,38 +20,39 @@
 </head>
 
 <body class="min-h-screen antialiased text-secondary-custom">
-
-    <!-- HERO SECTION -->
-    <section class="relative min-h-[90vh] flex items-center justify-center bg-cover bg-center bg-fixed overflow-hidden" style="background-image: url('/images/dra-emma-lopez-portada.png');">
-        <div class="absolute inset-0 bg-[linear-gradient(135deg,_rgb(255,152,186)_26%,_rgb(192,192,192)_52%,_rgb(255,254,255)_100%)]/75 z-0"></div>
-        <div class="relative z-10 max-w-5xl mx-auto px-6 text-center text-secondary-custom py-20 space-y-8">
-            
-            <h1 class="text-white text-lg sm:text-xl max-w-2xl mx-auto font-light leading-relaxed" data-i18n="hero_title">
-                <span class="text-white">
-                    Dra. Emma López Rubio Pediatra gastroenteróloga en Córdoba Especialista en digestivo y trastornos de la conducta alimentaria.
-                </span>
+    
+    <!-- EMMA PEDIATRA -->
+    <section class="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
+            <div class="sticky top-0 h-screen w-full bg-cover bg-center bg-no-repeat" 
+                style="background-image: url('/images/dra-emma-lopez-portada.png');">
+            </div>
+        </div>
+        <div class="absolute inset-0 bg-[linear-gradient(135deg,_rgba(255,152,186,0.75)_26%,_rgba(192,192,192,0.75)_52%,_rgba(255,254,255,0.75)_100%)] z-0"></div> 
+        <div class="relative z-10 max-w-5xl mx-auto px-6 text-center text-white py-20 space-y-8">
+            <h1 class="text-white text-lg sm:text-xl max-w-2xl mx-auto font-light leading-relaxed text-left font-extrabold" data-i18n="hero_title">
+                Dra. Emma López Rubio<br>Pediatra gastroenteróloga en Córdoba<br>Especialista en digestivo y trastornos de la conducta alimentaria.
             </h1>
-
             <div class="pt-4 flex flex-col sm:flex-row justify-center items-center gap-4">
-                <a href="#sobre-mi" class="w-full sm:w-auto px-8 py-4 bg-white text-primary-custom hover:bg-white/10 text-white font-semibold rounded-xl backdrop-blur-md border border-white/15 transition" data-i18n="hero_btn_method">
+                <a href="#sobre-mi" class="w-full sm:w-auto px-8 py-4 bg-white text-primary-custom hover:bg-white/10 hover:text-white font-semibold rounded-xl backdrop-blur-md border border-white/15 transition" data-i18n="hero_btn_method">
                     SOBRE MÍ
                 </a>
-                <img src="/assets/logo2.png" alt="Emma Pediatra" class="mx-auto object-contain">
+                <img src="/assets/logo2.png" alt="Emma Pediatra" class="mx-auto object-contain" style="max-height: 60px;">
             </div>
         </div>
     </section>
 
+    <!-- CONTENIDO -->
     <main class="max-w-7xl mx-auto px-6 py-28 space-y-36 text-secondary-custom ">
-
         <!-- SOBRE MI -->
         <section id="sobre-mi" class="hilando-pixel-section">
             <div class="max-w-2xl mx-auto text-center space-y-8 relative z-10">
                 <img src="/assets/dra-emma-lopez-rubio-pediatra-gastroenterologa.png" alt="Emma Pediatra Córdoba" class="relative w-full h-[480px] object-contain">
-                <p class="text-lg font-light leading-relaxed" data-i18n="contact_desc">
+                <h2 class="text-lg font-light leading-relaxed" data-i18n="contact_desc">
                 Soy la Dra. Emma López Rubio, <strong>pediatra especializada en gastroenterología, hepatología y nutrición infantil en Córdoba</strong>, donde acompaño a niños y adolescentes con dolor abdominal, reflujo, estreñimiento, alergias, intolerancias, enfermedad celíaca y otros problemas digestivos. Mi forma de trabajar combina rigor científico, una comunicación clara con las familias y una visión integral del niño, teniendo en cuenta su crecimiento, alimentación y bienestar emocional
-                </p>
+                </h2>
                 <div class="pt-2">
-                    <a href="/sobre-mi" target="_blank" class="inline-block px-10 py-4 bg-primary-custom hover:bg-[#266360] text-white font-bold rounded-xl shadow-xl transition transform hover:-scale-102" data-i18n="contact_btn">
+                    <a href="/sobre-mi" target="_blank" class="inline-block px-10 py-4 bg-primary-custom hover:bg-[#266360] text-white font-bold rounded-xl transition transform hover:scale-115" data-i18n="contact_btn">
                         Leer más sobre mí
                     </a>
                 </div>
@@ -68,7 +68,7 @@
                 Existe un convenio con varias aseguradoras de salud y también es posible la atención privada, y durante la visita revisaremos vuestro caso con detalle y decidiremos el tipo de tratamiento más adecuado.
                 </p>
                 <div class="pt-2">
-                    <a href="/pide-cita" target="_blank" class="inline-block px-10 py-4 bg-primary-custom hover:bg-[#266360] text-white font-bold rounded-xl shadow-xl transition transform hover:-scale-102" data-i18n="contact_btn">
+                    <a href="/pide-cita" target="_blank" class="inline-block px-10 py-4 bg-primary-custom hover:bg-[#266360] text-white font-bold rounded-xl  transition transform hover:scale-115" data-i18n="contact_btn">
                         Pide cita
                     </a>
                 </div>
@@ -84,7 +84,7 @@
                 He preparado un resumen con las dudas que más se repiten en la consulta de digestivo infantil —reflujo, vómitos, gases, estreñimiento, cambios en el color de las heces, dolor abdominal, alergias alimentarias, celiaquía y alergia a la proteína de leche de vaca (APLV)— basándome en años de experiencia en hospitales de referencia en España atendiendo a niños y adolescentes con estas patologías.
                 </p>
                 <div class="pt-2">
-                    <a href="/dudas-frecuentes" target="_blank" class="inline-block px-10 py-4 bg-primary-custom hover:bg-[#266360] text-white font-bold rounded-xl shadow-xl transition transform hover:-scale-102" data-i18n="contact_btn">
+                    <a href="/dudas-frecuentes" target="_blank" class="inline-block px-10 py-4 bg-primary-custom hover:bg-[#266360] text-white font-bold rounded-xl  transition transform hover:scale-115" data-i18n="contact_btn">
                         Consultas las dudas más frecuentes sobre el aparato digestivo infantil
                     </a>
                 </div>
@@ -116,7 +116,6 @@
         setLanguage(lang);
     };
 
-    // Descargar traducciones del sitio desde Firestore
     async function cargarTraduccionesDinamicas() {
         try {
             const docSnap = await getDoc(doc(db, "site_translations", "translations"));
@@ -132,7 +131,6 @@
     document.addEventListener('DOMContentLoaded', async () => {
         setLanguage(getLanguage());
         await cargarTraduccionesDinamicas();
-        cargarArticulosPortada();
     });
 </script>
 </body>
