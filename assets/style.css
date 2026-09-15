@@ -40,7 +40,7 @@ body {
 .hilando-pixel-section {
     background-color: var(--color-fourth);
     color: var(--color-primary);
-    padding: 10%;
+    padding: 40px;
     margin: 0%;
 }
 
