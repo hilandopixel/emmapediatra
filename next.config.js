@@ -5,10 +5,10 @@ const nextConfig = {
       {
         source: '/',
         destination: '/es',
-        permanent: true, // o false si prefieres una redirección temporal
+        permanent: false, // Ponlo en true cuando estés 100% seguro de que funciona
       },
     ];
   },
 };
 
-export default nextConfig; // O usa module.exports = nextConfig si tu proyecto usa CommonJS
+module.exports = nextConfig;
