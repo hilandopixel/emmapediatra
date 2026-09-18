@@ -48,7 +48,7 @@ export default async function SobreMiPage({ params }) {
   // Extraer contenido de forma segura
   const content = pageData?.content?.[lang] || pageData?.content?.["es"];
   return (
-<main className="max-w-7xl mx-auto px-6 py-28 space-y-36 text-secondary-custom ">
+<main className="max-w-7xl mx-auto px-6 py-28 space-y-0 text-secondary-custom ">
         <section id="sobre-mi" className="hilando-pixel-section">
             <div className="max-w-2xl mx-auto text-center space-y-8 relative z-10">
                 <img src={pageData?.content?.image}

@@ -7,7 +7,7 @@ export default async function LangLayout({ children, params }) {
 
   return (
     <html lang={lang}>
-      <body className="bg-gray-50 antialiased">
+      <body className="min-h-screen antialiased text-secondary-custom">
         
         {/* Aquí usas el componente Navbar pasándole el idioma */}
         <Navbar lang={lang} />
