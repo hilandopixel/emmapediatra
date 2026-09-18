@@ -5,10 +5,10 @@ const nextConfig = {
       {
         source: '/',
         destination: '/es',
-        permanent: false, // Ponlo en true cuando estés 100% seguro de que funciona
+        permanent: false,
       },
     ];
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
