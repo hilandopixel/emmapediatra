@@ -61,7 +61,7 @@ const staticDocs = {
               }
             },
         en:{
-            herotext: "Dr. Emma López Rubio<br>Pediatric Gastroenterologist — Online Video Consultations<br>Specialist in Pediatric Digestive Health and Eating Disorders",
+              herotext: "Dr. Emma López Rubio<br>Pediatric Gastroenterologist — Online Video Consultations<br>Specialist in Pediatric Digestive Health and Eating Disorders",
               herobuttonLink: "/en/sobre-mi",
               herobuttonText: "Read more bout me",
               sections: {
