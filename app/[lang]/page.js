@@ -1,6 +1,10 @@
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebaseConfig";
 
+export async function generateStaticParams() {
+  return [{ lang: 'es' }, { lang: 'en' }, { lang: 'it' } ]; 
+}
+
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
   const lang = resolvedParams?.lang || "es";
