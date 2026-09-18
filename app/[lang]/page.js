@@ -62,10 +62,10 @@ const staticDocs = {
             },
         en:{
               herotext: "Dr. Emma López Rubio<br>Pediatric Gastroenterologist — Online Video Consultations<br>Specialist in Pediatric Digestive Health and Eating Disorders",
-              herobuttonLink: "/en/sobre-mi",
+              herobuttonLink: "#aboutMe",
               herobuttonText: "Read more bout me",
               sections: {
-              about_me: 
+              aboutMe: 
               { 
                 order: 0,
                 text: "I'm Dr. Emma López Rubio, <strong>a pediatrician specializing in gastroenterology, hepatology, and pediatric nutrition</strong>. Through secure online video consultations, I help children and teenagers around the world with abdominal pain, reflux, constipation, food allergies and intolerances, celiac disease, and other digestive concerns. My approach combines scientific rigor, clear communication with families, and a whole-child perspective — taking into account growth, diet, and emotional wellbeing.",
@@ -74,16 +74,16 @@ const staticDocs = {
                 image:"/assets/dra-emma-lopez-rubio-pediatra-gastroenterologa.png",
                 imageAlt:"Emma Pediatrics Córdoba",
               },
-              looking_pediatric: 
+              lookingPediatric: 
               { 
                 order: 1,
                 title: "Looking for a pediatric digestive health specialist for your child?",
                 text:"You can request a video consultation from wherever you live to have your child's digestive symptoms assessed — abdominal pain, gastroesophageal reflux, constipation, food allergies, celiac disease. In-person visits are also available for families based in Córdoba, Spain. During the consultation, we'll review your child's case in detail together and agree on the most suitable next steps.",
-                buttonLink: "/en/book-appointment",
+                buttonLink: "/en/pide-cita",
                 buttonText: "Book an appointment",
                 htmlEmbbeded: "<iframe loading='lazy' title='#AprendeConTuPediatra: Dra. Emma López Rubio - Reflujo en lactantes' width='100%' height='500px' src='https://www.youtube.com/embed/2vMZP4ZdH6U?feature=oembed' frameborder='0' allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; compute-pressure; web-share' referrerpolicy='strict-origin-when-cross-origin' allowfullscreen></iframe>"
               },
-              frequently_asked_questions: 
+              frequentlyAskedQuestions: 
               { 
                 order: 2,
                 title: "Wondering whether your child's digestive symptoms are normal?",
@@ -100,10 +100,10 @@ const staticDocs = {
           },
           it:{
             herotext: "Gastroenterologa Pediatrica — Videovisite in Tutto il Mondo<h2>Specialista in Gastroenterologia Pediatrica e Disturbi del Comportamento Alimentare</h2>",
-              herobuttonLink: "/it/sobre-mi",
+              herobuttonLink: "#piuSuDiMe",
               herobuttonText: "Leggi di più su di me",
               sections: {
-              about_me: 
+              piuSuDiMe: 
               { 
                 order: 0,
                 text: "Sono la Dott.ssa Emma López Rubio, pediatra specializzata in gastroenterologia, epatologia e nutrizione pediatrica. Attraverso videovisite sicure, aiuto bambini e adolescenti di tutto il mondo con dolore addominale, reflusso, stitichezza, allergie e intolleranze alimentari, malattia celiaca e altri disturbi digestivi. Il mio approccio unisce rigore scientifico, comunicazione chiara con le famiglie e una visione globale del bambino, tenendo conto della crescita, dell'alimentazione e del benessere emotivo.",
@@ -112,7 +112,7 @@ const staticDocs = {
                 image:"/assets/dra-emma-lopez-rubio-pediatra-gastroenterologa.png",
                 imageAlt:"Emma Pediatrics Córdoba",
               },
-              looking_pediatric: 
+              lookingPediatric: 
               { 
                 order: 1,
                 title: "Cerchi uno specialista in gastroenterologia pediatrica per tuo figlio o tua figlia?",
@@ -121,7 +121,7 @@ const staticDocs = {
                 buttonText: "Prenota un appuntamento",
                 htmlEmbbeded: "<iframe loading='lazy' title='#AprendeConTuPediatra: Dra. Emma López Rubio - Reflujo en lactantes' width='100%' height='500px' src='https://www.youtube.com/embed/2vMZP4ZdH6U?feature=oembed' frameborder='0' allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; compute-pressure; web-share' referrerpolicy='strict-origin-when-cross-origin' allowfullscreen></iframe>"
               },
-              frequently_asked_questions: 
+              frequentlyAskedQuestions: 
               { 
                 order: 2,
                 title: "Ti chiedi se i sintomi digestivi di tuo figlio siano normali?",
