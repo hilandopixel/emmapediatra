@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+:root {
+    --color-primary:#d01156;
+    --color-secondary: #fff0f0;
+	--color-third: #ea4c3b;
+    --color-fourth: #fff0f0;
+	--color-grey: #555555;
+	--color-light-yellow: #fff8b4;
+    --color-bg-base: #f0a5bc;
+    --color-text-main: #d01156;
+    --color-text-muted: #64748b;
+    --color-border-subtle: rgba(49, 123, 119, 0.1);
+    --font-family-base: 'Mulish', sans-serif;
+}
+
+body {
+    font-family: var(--font-family-base);
+    background-color: var(--color-bg-base);
+    color: var(--color-text-main);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Clases de utilidad con tus colores (para usar con Tailwind en el HTML) */
+.bg-primary-custom { background-color: var(--color-primary); }
+.bg-secondary-custom { background-color: var(--color-secondary); }
+.bg-fourth-custom { background-color: var(--color-fourth); }
+.bg-base-custom { background-color: var(--color-bg-base); }
+.text-primary-custom { color: var(--color-primary); }
+.text-secondary-custom { color: var(--color-secondary); }
+.border-primary-custom { border-color: var(--color-primary); }
+.border-secondary-custom { border-color: var(--color-secondary); }
+
+
+/* Utilidades de tipografía */
+.font-light { font-weight: 300; }
+.font-medium { font-weight: 500; }
+.font-bold { font-weight: 700; }
+.font-extrabold { font-weight: 800; }
+
+.hilando-pixel-section {
+    background-color: var(--color-fourth);
+    color: var(--color-primary);
+    padding: 40px;
+    margin: 0%;
+}
+
+.navbar-scrolled {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}

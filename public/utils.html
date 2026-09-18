@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compresor de Imagen a Base64</title>
+    <!-- Tailwind CSS para un diseño limpio y rápido -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-xl w-full bg-white rounded-2xl shadow-xl p-8 space-y-6">
+        <h1 class="text-2xl font-bold text-gray-800 text-center">Compresor de Imagen a Base64</h1>
+        
+        <!-- Formulario / Input de archivo -->
+        <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Selecciona una imagen</label>
+            <input 
+                type="file" 
+                id="imageInput" 
+                accept="image/*"
+                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer"
+            >
+        </div>
+
+        <!-- Opcional: Control de calidad -->
+        <div class="space-y-1">
+            <label class="block text-sm font-medium text-gray-700">Calidad de compresión: <span id="qualityValue">75</span>%</label>
+            <input 
+                type="range" 
+                id="qualityRange" 
+                min="10" 
+                max="100" 
+                value="75" 
+                class="w-full accent-teal-600"
+            >
+        </div>
+
+        <!-- Contenedor del Output -->
+        <div class="space-y-2">
+            <div class="flex justify-between items-center">
+                <label class="block text-sm font-medium text-gray-700">Resultado Base64</label>
+                <button 
+                    id="copyBtn" 
+                    disabled
+                    class="px-3 py-1 bg-gray-200 text-gray-700 text-xs font-bold rounded-lg transition hover:bg-teal-600 hover:text-white disabled:opacity-55 disabled:cursor-not-allowed"
+                >
+                    Copiar al portapapeles
+                </button>
+            </div>
+            <textarea 
+                id="outputBase64" 
+                readonly 
+                placeholder="El código Base64 aparecerá aquí..."
+                class="w-full h-32 p-3 text-xs font-mono bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
+            ></textarea>
+        </div>
+
+        <!-- Vista previa de la imagen -->
+        <div id="previewContainer" class="hidden space-y-2 text-center">
+            <span class="block text-sm font-medium text-gray-700">Vista previa comprimida</span>
+            <img id="imagePreview" src="" alt="Vista previa" class="max-h-48 mx-auto rounded-lg shadow-sm">
+        </div>
+    </div>
+
+    <!-- Script de Utilidades y Lógica -->
+    <script>
+        // 1. Función utilitaria que creamos antes
+        const imageToBase64WithQuality = (file, quality = 75) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        
+                        const normalizedQuality = Math.max(0, Math.min(100, quality)) / 100;
+                        const dataUrl = canvas.toDataURL('image/jpeg', normalizedQuality);
+                        resolve(dataUrl);
+                    };
+                    
+                    img.onerror = (error) => reject(error);
+                };
+                
+                reader.onerror = (error) => reject(error);
+            });
+        };
+
+        // 2. Conexión con los elementos del DOM
+        const imageInput = document.getElementById('imageInput');
+        const qualityRange = document.getElementById('qualityRange');
+        const qualityValue = document.getElementById('qualityValue');
+        const outputBase64 = document.getElementById('outputBase64');
+        const copyBtn = document.getElementById('copyBtn');
+        const previewContainer = document.getElementById('previewContainer');
+        const imagePreview = document.getElementById('imagePreview');
+
+        let selectedFile = null;
+
+        qualityRange.addEventListener('input', (e) => {
+            qualityValue.textContent = e.target.value;
+            if (selectedFile) processImage();
+        });
+
+        imageInput.addEventListener('change', (e) => {
+            selectedFile = e.target.files[0];
+            if (selectedFile) processImage();
+        });
+
+        async function processImage() {
+            if (!selectedFile) return;
+            const quality = parseInt(qualityRange.value);
+
+            try {
+                const base64String = await imageToBase64WithQuality(selectedFile, quality);
+                
+                // Mostrar resultado en pantalla
+                outputBase64.value = base64String;
+                copyBtn.disabled = false;
+
+                // Mostrar vista previa
+                imagePreview.src = base64String;
+                previewContainer.classList.remove('hidden');
+            } catch (error) {
+                console.error("Error al procesar la imagen:", error);
+                alert("Hubo un error al comprimir la imagen.");
+            }
+        }
+
+        // Botón de copiar
+        copyBtn.addEventListener('click', () => {
+            if (!outputBase64.value) return;
+            
+            navigator.clipboard.writeText(outputBase64.value).then(() => {
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = '¡Copiado!';
+                copyBtn.classList.add('bg-green-600', 'text-white');
+                
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.classList.remove('bg-green-600', 'text-white');
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>
