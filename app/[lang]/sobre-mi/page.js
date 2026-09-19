@@ -21,20 +21,48 @@ const staticDocs = {
         }
       },
       content: {
-        image:"/assets/dra-emma-lopez-portada.png",
         es: {  
             sections:{
               sobreMi: 
               { 
                 order: 1,
-                text: "Soy la Dra. Emma López Rubio, pediatra especializada en gastroenterología, hepatología y nutrición pediátrica en Córdoba. Acompaño a niños y adolescentes con problemas de digestivo infantil como dolor abdominal recurrente, reflujo gastroesofágico, estreñimiento, diarrea, alergias y intolerancias alimentarias, alergia a la proteína de leche de vaca (APLV), enfermedad celíaca, enfermedad inflamatoria intestinal y otros trastornos funcionales digestivos. Trabajo como pediatra de Atención Primaria en el Servicio Andaluz de Salud (SAS) y como pediatra especialista en aparato digestivo infantil en consulta de gastroenterología pediátrica en Córdoba, lo que me permite unir en una misma mirada la pediatría general y la subespecialización digestiva. Cómo entiendo la consulta de digestivo infantil Mi manera de trabajar se apoya en tres pilares que definen esta consulta de gastroenterología pediátrica en Córdoba: Rigor científico y actualización continua Soy licenciada en Medicina, especialista en Pediatría vía MIR y he completado dos másteres relacionados con mi especialidad. Llevo casi una década centrada en digestivo infantil, abordando tanto patología digestiva frecuente como casos complejos en hospitales de referencia de la península y en la atención a familias de distintos países y entornos culturales. Parto siempre de la medicina basada en la evidencia, siguiendo guías clínicas y protocolos actualizados para decidir qué pruebas son realmente necesarias y qué tratamientos aportan más beneficio en cada niño o niña. He participado en congresos de la AEP y la SEGHNP y soy autora de varias publicaciones científicas en gastroenterología pediátrica, entre ellas: “Gastroenteritis aguda” en Manual práctico de pediatría (3.ª ed.), 2021. “Controversias del tratamiento con biológicos en la enfermedad inflamatoria intestinal”, SPAOYEX, 2019. “Enterobiasis epiploica como causa infrecuente de abdomen agudo”, Acta Pediátrica, 2016. Comunicación clara, cercana y coordinada En cada visita dedico tiempo a explicar con un lenguaje comprensible qué está ocurriendo, por qué pueden aparecer los síntomas digestivos y cuáles son las opciones de estudio y tratamiento. Muchas familias llegan tras meses de pruebas, listas de espera o diagnósticos poco claros; el objetivo de la consulta es ordenar la información, resolver dudas y diseñar un plan de manejo que tenga sentido para todos. El hecho de trabajar simultáneamente en el SAS y en la consulta privada de digestivo pediátrico facilita la coordinación con el pediatra de cabecera, la interpretación de informes hospitalarios y la planificación conjunta del seguimiento. Visión integral del paciente pediátrico y trabajo en red Aunque el foco principal está en el aparato digestivo del niño o la niña, la valoración siempre tiene en cuenta su crecimiento, su alimentación, su contexto familiar y escolar y su bienestar emocional. Trabajo en red con pediatras de Atención Primaria, nutricionistas pediátricos, psicólogos infantiles, alergólogos y cirujanos pediátricos cuando es necesario, para ofrecer una atención realmente multidisciplinar en digestivo infantil. Colaboro con asociaciones de pacientes y centros educativos para mejorar el conocimiento sobre problemas digestivos infantiles, enfermedad celíaca, alergias alimentarias, dolor abdominal crónico y hábitos de alimentación saludable. Además de la actividad asistencial, la docencia es una parte importante de mi trabajo. Imparto cursos y charlas sobre pediatría, reanimación cardiopulmonar (RCP) y trastornos de la conducta alimentaria, entre otros temas dirigidos a profesionales y familias. Si quieres recibir más información sobre próximos cursos, disponibilidad y contenidos, puedes contactar conmigo a través del formulario de la Web",
-                buttonLink: "/es/contacto",
-                buttonText: "Contactar conmigo",
+                text: "Soy la Dra. Emma López Rubio, pediatra especializada en gastroenterología, hepatología y nutrición pediátrica en Córdoba. Acompaño a niños y adolescentes con problemas de digestivo infantil como dolor abdominal recurrente, reflujo gastroesofágico, estreñimiento, diarrea, alergias y intolerancias alimentarias, alergia a la proteína de leche de vaca (APLV), enfermedad celíaca, enfermedad inflamatoria intestinal y otros trastornos funcionales digestivos. Trabajo como pediatra de Atención Primaria en el Servicio Andaluz de Salud (SAS) y como pediatra especialista en aparato digestivo infantil en consulta de gastroenterología pediátrica en Córdoba, lo que me permite unir en una misma mirada la pediatría general y la subespecialización digestiva.",
                 image:"/assets/dra-emma-lopez-rubio-pediatra-gastroenterologa.png",
                 imageAlt:"Dra Emma Lopez Rubio Pediatra especializada en gastroenterología, hepatología y nutrición pediátrica en Córdoba"
-              }
-            }
+              },
+              maneraTrabajo: 
+              { 
+                order: 2,
+                title: "Cómo entiendo la consulta de digestivo infantil",
+                text: "Mi manera de trabajar se apoya en tres pilares que definen esta consulta de gastroenterología pediátrica en Córdoba:",
+              },
+              rigorCientifico: 
+              { 
+                order: 2,
+                subtitle: "Rigor científico y actualización continua",
+                text: "Soy licenciada en Medicina, especialista en Pediatría vía MIR y he completado dos másteres relacionados con mi especialidad. Llevo casi una década centrada en digestivo infantil, abordando tanto patología digestiva frecuente como casos complejos en hospitales de referencia de la península y en la atención a familias de distintos países y entornos culturales.<br><br>Parto siempre de la medicina basada en la evidencia, siguiendo guías clínicas y protocolos actualizados para decidir qué pruebas son realmente necesarias y qué tratamientos aportan más beneficio en cada niño o niña.<br><br>He participado en congresos de la AEP y la SEGHNP y soy autora de varias publicaciones científicas en gastroenterología pediátrica, entre ellas:<br><br>“Gastroenteritis aguda” en Manual práctico de pediatría (3.ª ed.), 2021.<br><br>“Controversias del tratamiento con biológicos en la enfermedad inflamatoria intestinal”, SPAOYEX, 2019.<br><br>“Enterobiasis epiploica como causa infrecuente de abdomen agudo”, Acta Pediátrica, 2016.",
+              },
+              comunicacionClara: 
+              { 
+                order: 3,
+                subtitle: "Comunicación clara, cercana y coordinada",
+                text: "En cada visita dedico tiempo a explicar con un lenguaje comprensible qué está ocurriendo, por qué pueden aparecer los síntomas digestivos y cuáles son las opciones de estudio y tratamiento. Muchas familias llegan tras meses de pruebas, listas de espera o diagnósticos poco claros; el objetivo de la consulta es ordenar la información, resolver dudas y diseñar un plan de manejo que tenga sentido para todos. El hecho de trabajar simultáneamente en el SAS y en la consulta privada de digestivo pediátrico facilita la coordinación con el pediatra de cabecera, la interpretación de informes hospitalarios y la planificación conjunta del seguimiento.",
+              },
+              visionIntegralPaciente: 
+              { 
+                order: 4,
+                subtitle: "Visión integral del paciente pediátrico y trabajo en red",
+                text: "Aunque el foco principal está en el aparato digestivo del niño o la niña, la valoración siempre tiene en cuenta su crecimiento, su alimentación, su contexto familiar y escolar y su bienestar emocional. Trabajo en red con pediatras de Atención Primaria, nutricionistas pediátricos, psicólogos infantiles, alergólogos y cirujanos pediátricos cuando es necesario, para ofrecer una atención realmente multidisciplinar en digestivo infantil. Colaboro con asociaciones de pacientes y centros educativos para mejorar el conocimiento sobre problemas digestivos infantiles, enfermedad celíaca, alergias alimentarias, dolor abdominal crónico y hábitos de alimentación saludable.",
+              },
+              cursos: 
+              { 
+                order: 4,
+                text: "Además de la actividad asistencial, la docencia es una parte importante de mi trabajo. Imparto cursos y charlas sobre pediatría, reanimación cardiopulmonar (RCP) y trastornos de la conducta alimentaria, entre otros temas dirigidos a profesionales y familias.<br><br>Si quieres recibir más información sobre próximos cursos, disponibilidad y contenidos, puedes contactar conmigo a través del formulario de la web",
+                buttonLink: "/es/contacto",
+                buttonText: "Contactar conmigo",
+              },
             },
+          },
         en:{
             sections:{
               aboutMe: 
@@ -58,7 +86,11 @@ const staticDocs = {
               wholeChildCoordinated:{
                 order: 4,
                 subtitle:"A whole-child approach and coordinated care",
-                text: "Although the main focus is the child's digestive system, every assessment takes into account growth, diet, family and school context, and emotional wellbeing. I work closely with primary care pediatricians, pediatric dietitians, child psychologists, allergists, and pediatric surgeons when needed, to provide truly multidisciplinary care for children's digestive health. I collaborate with patient associations and schools to raise awareness of pediatric digestive conditions, celiac disease, food allergies, chronic abdominal pain, and healthy eating habits.<br>Alongside clinical care, teaching is an important part of my work. I give courses and talks on pediatrics, cardiopulmonary resuscitation (CPR), and eating disorders, among other topics, for healthcare professionals and families.<br>If you'd like more information about upcoming courses, availability, or content, you can reach me through the contact form on this website.",
+                text: "Although the main focus is the child's digestive system, every assessment takes into account growth, diet, family and school context, and emotional wellbeing. I work closely with primary care pediatricians, pediatric dietitians, child psychologists, allergists, and pediatric surgeons when needed, to provide truly multidisciplinary care for children's digestive health. I collaborate with patient associations and schools to raise awareness of pediatric digestive conditions, celiac disease, food allergies, chronic abdominal pain, and healthy eating habits.",
+              },
+              courses:{
+                order: 5,
+                text: "Alongside clinical care, teaching is an important part of my work. I give courses and talks on pediatrics, cardiopulmonary resuscitation (CPR), and eating disorders, among other topics, for healthcare professionals and families.<br>If you'd like more information about upcoming courses, availability, or content, you can reach me through the contact form on this website.",
                 buttonLink: "/en/contacto",
                 buttonText: "Contact me"
               }
@@ -87,7 +119,11 @@ const staticDocs = {
               wholeChildCoordinated:{
                 order: 4,
                 subtitle:"Visione globale del paziente pediatrico e lavoro in rete",
-                text: "Anche se l'attenzione principale è rivolta all'apparato digestivo del bambino, la valutazione tiene sempre conto della crescita, dell'alimentazione, del contesto familiare e scolastico e del benessere emotivo. Collaboro con pediatri di base, nutrizionisti pediatrici, psicologi infantili, allergologi e chirurghi pediatrici quando necessario, per offrire un'assistenza davvero multidisciplinare nella salute digestiva infantile. Collaboro inoltre con associazioni di pazienti e scuole per sensibilizzare su patologie digestive infantili, celiachia, allergie alimentari, dolore addominale cronico e abitudini alimentari sane.<br>Oltre all'attività clinica, l'insegnamento è una parte importante del mio lavoro. Tengo corsi e conferenze su pediatria, rianimazione cardiopolmonare (RCP) e disturbi del comportamento alimentare, tra gli altri argomenti, rivolti sia a professionisti sanitari sia a famiglie.<br>Se desideri maggiori informazioni su prossimi corsi, disponibilità e contenuti, puoi contattarmi tramite il modulo di contatto del sito.<br>",
+                text: "Anche se l'attenzione principale è rivolta all'apparato digestivo del bambino, la valutazione tiene sempre conto della crescita, dell'alimentazione, del contesto familiare e scolastico e del benessere emotivo. Collaboro con pediatri di base, nutrizionisti pediatrici, psicologi infantili, allergologi e chirurghi pediatrici quando necessario, per offrire un'assistenza davvero multidisciplinare nella salute digestiva infantile. Collaboro inoltre con associazioni di pazienti e scuole per sensibilizzare su patologie digestive infantili, celiachia, allergie alimentari, dolore addominale cronico e abitudini alimentari sane.",
+              },
+              corsi:{
+                order: 4,
+                text: "Oltre all'attività clinica, l'insegnamento è una parte importante del mio lavoro. Tengo corsi e conferenze su pediatria, rianimazione cardiopolmonare (RCP) e disturbi del comportamento alimentare, tra gli altri argomenti, rivolti sia a professionisti sanitari sia a famiglie.<br>Se desideri maggiori informazioni su prossimi corsi, disponibilità e contenuti, puoi contattarmi tramite il modulo di contatto del sito.<br>",
                 buttonLink: "/it/contacto",
                 buttonText: "Contattami"
               }
@@ -184,7 +220,7 @@ export default async function DudasFrecuentesPage({ params }) {
                   <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight" dangerouslySetInnerHTML={{ __html: section.title }} />
                 )}
 
-                {/* Título: Solo se pinta si no es nulo, vacío o espacios en blanco */}
+                {/* SubTítulo: Solo se pinta si no es nulo, vacío o espacios en blanco */}
                 {section.subtitle && section.subtitle.trim() !== "" && (
                   <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight" dangerouslySetInnerHTML={{ __html: section.subtitle }} />
                 )}

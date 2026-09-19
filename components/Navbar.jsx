@@ -161,15 +161,15 @@ export default function Navbar({ lang: propLang }) {
           <Link href={`/${lang}/dudas-frecuentes`} onClick={() => setMobileMenuOpen(false)} className="block py-2 hover:text-pink-600 transition">{t.dudas}</Link>
           <Link href={`/${lang}/contacto`} onClick={() => setMobileMenuOpen(false)} className="block py-2 hover:text-pink-600 transition">{t.contacto}</Link>
           <Link href={`/${lang}/blog`} onClick={() => setMobileMenuOpen(false)} className="block py-2 hover:text-pink-600 transition">{t.blog}</Link>
-          <Link href={`/${lang}/recursos-y-enlaces-de-interes`} onClick={() => setMobileMenuOpen(false)} className="block py-2 hover:text-pink-600 transition">{t.recursos}</Link>
+          <Link href={`/${lang}/area-privada`} onClick={() => setMobileMenuOpen(false)} className="block py-2 hover:text-pink-600 transition">{t.recursos}</Link>
           
-          <div className="flex items-center space-x-6 pt-4 border-t border-pink-800 text-xs font-bold">
+          <div className="flex items-center space-x-6 pt-4 border-t border-pink-800 text-xs font-bold ">
             {availableLanguages.map((item) => (
               <Link 
                 key={item.code}
                 href={getSwitchLanguageUrl(item.code)}
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 cursor-pointer py-1 text-white hover:text-pink-300 transition"
+                className="flex items-center gap-2 cursor-pointer py-1 text-primary-custom bg-secondary-custom hover:text-pink-300 transition"
               >
                 {item.svgMobile}
                 <span>{item.label}</span>
