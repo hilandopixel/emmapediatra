@@ -5,22 +5,23 @@ const pageId = "sobreMi";
 const staticDocs = {
   seo:{
         es:{
-              title: "Dudas frecuentes | Dra. EMMA LÓPEZ RUBIO Pediatra gastroenteróloga en Córdoba | Especialista en digestivo y trastornos de la conducta alimentaria",
+              title: "Sobre mí | Dra. EMMA LÓPEZ RUBIO Pediatra gastroenteróloga en Córdoba | Especialista en digestivo y trastornos de la conducta alimentaria",
               description: "Soy la Dra. Emma López Rubio, pediatra especializada en gastroenterología, hepatología y nutrición infantil en Córdoba.",
               keywords: "digestivo infantil, pediatria, conducta alimentaria, gastroenteróloga"
             },
         en:{
-              title: "Children's Digestive Health FAQ | Reflux, Constipation, Allergies & Celiac Disease",
-              description: "Answers to the most common questions about children's digestive health: reflux, constipation, abdominal pain, food allergies, celiac disease, and cow's milk protein allergy (CMPA).",
-              keywords: "child reflux FAQ, childhood constipation questions, celiac disease children FAQ, CMPA baby symptoms"
+              title: "About Dr. Emma López Rubio | Pediatric Gastroenterologist",
+              description: "Meet Dr. Emma López Rubio, a Spain-based pediatric gastroenterologist with nearly a decade of experience treating children's digestive conditions, offering online video consultations worldwide.",
+              keywords: "pediatric gastroenterologist Spain, children's digestive health specialist, online pediatric GI doctor"
         },
         it: {
-              title: "Prenota una Videovisita | Gastroenterologia Pediatrica – Dott.ssa Emma López Rubio",
-              description: "Richiedi una videovisita per i sintomi digestivi di tuo figlio — reflusso, stitichezza, allergie, celiachia — da qualsiasi parte del mondo. Visite in presenza disponibili anche a Cordova, Spagna.",
-              keywords: "prenota videovisita pediatrica, televisita pediatrica gastroenterologia, appuntamento online gastroenterologo bambini"
+              title: "Gastroenterologo Pediatrico Online | Videovisite per Bambini – Dott.ssa Emma López Rubio",
+              description: "Gastroenterologa pediatrica specializzata offre videovisite sicure per bambini con reflusso, stitichezza, allergie alimentari, celiachia e altro. Prenota subito online.",
+              keywords: "gastroenterologo pediatrico online, videovisita pediatrica, pediatra online bambini, televisita pediatrica"
         }
       },
       content: {
+        image:"/assets/dra-emma-lopez-portada.png",
         es: {  
             sections:{
               sobreMi: 

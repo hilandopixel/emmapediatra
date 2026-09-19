@@ -87,8 +87,8 @@ export default function Navbar({ lang: propLang }) {
   // Textos traducidos para los enlaces del menú según el idioma actual
   const navText = {
     es: { sobreMi: "Sobre mí", pideCita: "Pide cita", dudas: "Dudas frecuentes", contacto: "Contacto", blog: "Blog", recursos: "Área privada" },
-    en: { sobreMi: "About me", pideCita: "Book appointment", dudas: "FAQs", contacto: "Contact", blog: "Blog", recursos: "Private area" },
-    it: { sobreMi: "Chi sono", pideCita: "Prenota appuntamento", dudas: "FAQ", contacto: "Contatto", blog: "Blog", recursos: "Area privata" }
+    en: { sobreMi: "About me", pideCita: "Book an appointment", dudas: "FAQs", contacto: "Contact", blog: "Blog", recursos: "Private area" },
+    it: { sobreMi: "Chi sono", pideCita: "Prenota appuntamento", dudas: "Domande Frequenti ", contacto: "Contatti", blog: "Blog", recursos: "Area privata" }
   };
 
   const t = navText[lang] || navText.es;
