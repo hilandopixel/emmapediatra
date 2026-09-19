@@ -1,0 +1,125 @@
+{
+    "seo": {
+        "es": {
+            "title": "Pide cita | Dra. EMMA LÓPEZ RUBIO Pediatra gastroenteróloga en Córdoba | Especialista en digestivo y trastornos de la conducta alimentaria",
+            "description": "Soy la Dra. Emma López Rubio, pediatra especializada en gastroenterología, hepatología y nutrición infantil en Córdoba.",
+            "keywords": "cita, digestivo infantil, pediatria, conducta alimentaria, gastroenteróloga"
+        },
+        "en": {
+            "title": "Pediatric Gastroenterologist Online | Video Consultations for Children – Dr. Emma López Rubio",
+            "description": "Board-certified pediatric gastroenterologist offering secure video consultations worldwide for children with reflux, constipation, food allergies, celiac disease and more. Book online today.",
+            "keywords": "pediatric gastroenterologist online, online consultation for child digestive problems, video consultation pediatrician"
+        },
+        "it": {
+            "title": "Prenota una Videovisita | Gastroenterologia Pediatrica – Dott.ssa Emma López Rubio",
+            "description": "Richiedi una videovisita per i sintomi digestivi di tuo figlio — reflusso, stitichezza, allergie, celiachia — da qualsiasi parte del mondo. Visite in presenza disponibili anche a Cordova, Spagna.",
+            "keywords": "prenota videovisita pediatrica, televisita pediatrica gastroenterologia, appuntamento online gastroenterologo bambini"
+        }
+    },
+    "content": {
+        "image": "/assets/dra-emma-lopez-cita.png",
+        "es": {
+            "sections": {
+                "citasCordoba": {
+                    "order": 1,
+                    "id:": "citas-en-cordoba",
+                    "content": [
+                        {
+                            "id": "cita-cordoba",
+                            "title": "Si resides en Córdoba",
+                            "text": "La consulta de gastroenterología y digestivo infantil en Córdoba se encuentra en el centro de especialidades pediátricas de IHP, en Avenida Cañito Bazán número 2. Puedes pedir cita presencial llamando al <a class='underline' href='tel://+34954610022'>954 61 00 22</a>, desde la app de IHP Pediatría o a través del botón «Agenda tu cita presencial» Si tienes seguro médico privado, puedes consultar fácilmente si existe convenio con tu aseguradora en el apartado <a class='underline' href='https://ihppediatria.com/nuestras-aseguradoras' target='_blank'>«Nuestras aseguradoras»</a>",
+                            "buttonLink": "https://ihppediatria.com/",
+                            "buttonText": "AGENDA TU CITA PRESENCIAL"
+                        }
+                    ]
+                },
+                "videoConsulta": {
+                    "order": 2,
+                    "id": "videocontulta-pediatrica",
+                    "content": [
+                        {
+                            "title": "Si no resides en Córdoba",
+                            "text": "Si no resides en Córdoba capital, también es posible valorar tu caso mediante videoconsulta rellenando el formulario del apartado «Solicita tu videoconsulta». En cada situación revisaremos primero el motivo de consulta (dolor abdominal, reflujo, estreñimiento, alergias, celiaquía, etc.) y confirmaremos si la valoración puede hacerse online o es imprescindible la exploración presencial.",
+                            "buttonLink": "/es/contacto",
+                            "buttonText": "SOLICITA TU VIDEOCONSULTA"
+                        }
+                    ]
+                }
+            }
+        },
+        "en": {
+            "sections": {
+                "intro": {
+                    "order": 1,
+                    "content": [
+                        {
+                            "text": "Wherever you live, you can request a video consultation to have your child's digestive symptoms assessed. In-person visits are also available for families based in Córdoba, Spain."
+                        }
+                    ]
+                },
+                "onlineVideoConsulation": {
+                    "order": 2,
+                    "id": "online-video-consulation-pediatrics",
+                    "content": [
+                        {
+                            "title": "Online Video Consultation",
+                            "text": "You can have your child's case assessed from anywhere in the world through a secure video consultation, by filling in the form in the “Request Your Video Consultation” section.<br>In every case, we'll first review the reason for the consultation (abdominal pain, reflux, constipation, allergies, celiac disease, etc.) and confirm together whether the assessment can be carried out online or whether an in-person examination is required.",
+                            "buttonLink": "/en/contacto",
+                            "buttonText": "REQUEST YOUR VIDEO CONSULTATION"
+                        }
+                    ]
+                },
+                "inPerson": {
+                    "order": 3,
+                    "id:": "in-person-pediatrics",
+                    "content": [
+                        {
+                            "id": "in-person-pediatrics-cordoba",
+                            "title": "In-Person Visits in Córdoba, Spain",
+                            "text": "For patients based in or near Córdoba, in-person pediatric gastroenterology visits are available at the IHP pediatric specialty center, Avenida Cañito Bazán 2, Córdoba.<br>In-person appointments can be booked by phone <a class='underline' href='tel://+34954610022'>(+34 954 61 00 22)</a>, through the IHP Pediatría app, or via the “Book Your In-Person Appointment” button.<br>If you have private health insurance, you can check whether your provider has an agreement with the clinic in the <a class='underline' href='https://ihppediatria.com/nuestras-aseguradoras' target='_blank'>“Our Insurance Providers”</a> section.",
+                            "buttonLink": "https://ihppediatria.com/",
+                            "buttonText": "BOOK YOUR IN-PERSON APPOINTMENT"
+                        }
+                    ]
+                }
+            }
+        },
+        "it": {
+            "sections": {
+                "intro": {
+                    "order": 1,
+                    "content": [
+                        {
+                            "text": "Ovunque tu viva, puoi prenotare una videovisita per far valutare i sintomi digestivi di tuo figlio. Le visite in presenza sono disponibili anche per le famiglie che si trovano a Cordova, in Spagna."
+                        }
+                    ]
+                },
+                "videovisitaOnline": {
+                    "order": 2,
+                    "id": "online-video-consulation-pediatrics",
+                    "content": [
+                        {
+                            "title": "Videovisita Online",
+                            "text": "Puoi far valutare il caso di tuo figlio da qualsiasi parte del mondo tramite una videovisita sicura, compilando il modulo nella sezione «Richiedi la tua videovisita».<br>In ogni caso, valuteremo prima il motivo della visita (dolore addominale, reflusso, stitichezza, allergie, celiachia, ecc.) e confermeremo insieme se la valutazione può essere effettuata online oppure se è necessaria una visita in presenza.",
+                            "buttonLink": "/it/contacto",
+                            "buttonText": "RICHIEDI LA TUA VIDEOVISITA"
+                        }
+                    ]
+                },
+                "visiteCordoba": {
+                    "order": 3,
+                    "id:": "in-person-pediatrics",
+                    "content": [
+                        {
+                            "id": "in-person-pediatrics-cordoba",
+                            "title": "Visite in Presenza a Cordova, Spagna",
+                            "text": "Per i pazienti che si trovano a Cordova o nei dintorni, sono disponibili visite di gastroenterologia pediatrica in presenza presso il centro specialistico pediatrico IHP, Avenida Cañito Bazán 2, Cordova.<br>Gli appuntamenti in presenza possono essere prenotati telefonicamente <a class='underline' href='tel://+34954610022'>(+34 954 61 00 22)</a>, tramite l'app IHP Pediatría, oppure tramite il pulsante «Prenota il tuo appuntamento in presenza».<br>Se disponi di un'assicurazione sanitaria privata, puoi verificare se il tuo assicuratore ha una convenzione con la clinica nella sezione <a class='underline' href='https://ihppediatria.com/nuestras-aseguradoras' target='_blank'>«Le nostre assicurazioni»</a>.",
+                            "buttonLink": "https://ihppediatria.com/",
+                            "buttonText": "PRENOTA IL TUO APPUNTAMENTO IN PRESENZA"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
