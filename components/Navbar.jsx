@@ -88,7 +88,7 @@ export default function Navbar({ lang: propLang }) {
   const navText = {
     es: { sobreMi: "Sobre mí", pideCita: "Pide cita", dudas: "Dudas frecuentes", contacto: "Contacto", blog: "Blog", recursos: "Área privada" },
     en: { sobreMi: "About me", pideCita: "Book appointment", dudas: "FAQs", contacto: "Contact", blog: "Blog", recursos: "Private area" },
-    it: { sobreMi: "Su di me", pideCita: "Prenota appuntamento", dudas: "FAQ", contacto: "Contatto", blog: "Blog", recursos: "Area privata" }
+    it: { sobreMi: "Chi sono", pideCita: "Prenota appuntamento", dudas: "FAQ", contacto: "Contatto", blog: "Blog", recursos: "Area privata" }
   };
 
   const t = navText[lang] || navText.es;
@@ -109,7 +109,7 @@ export default function Navbar({ lang: propLang }) {
           <Link href={`/${lang}/dudas-frecuentes`} className="hover:text-pink-600 transition">{t.dudas}</Link>
           <Link href={`/${lang}/contacto`} className="hover:text-pink-600 transition">{t.contacto}</Link>
           <Link href={`/${lang}/blog`} className="hover:text-pink-600 transition">{t.blog}</Link>
-          <Link href={`/${lang}/recursos-y-enlaces-de-interes`} className="hover:text-pink-600 transition">{t.recursos}</Link>
+          <Link href={`/${lang}/area-privada`} className="hover:text-pink-600 transition">{t.recursos}</Link>
           
           <div className="flex items-center space-x-3 text-xs font-bold pl-4 border-l border-slate-200">
             {availableLanguages.map((item, index) => (

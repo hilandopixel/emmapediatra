@@ -191,7 +191,6 @@ export async function generateMetadata({ params }) {
     const docSnap = await getDoc(docRef);    
     const data = docSnap?.data();
     const seo = data?.seo?.[lang] || staticDocs?.seo?.[lang] || data?.seo?.["es"] || { title: pageId };
-    console.log(seo);
     return {
       title: seo.title,
       description: seo.description,
@@ -202,6 +201,7 @@ export async function generateMetadata({ params }) {
     return { title: "Sobre mí" };
   }
 }
+
 export default async function DudasFrecuentesPage({ params }) {
   const resolvedParams = await params;
   const lang = resolvedParams?.lang || "es";

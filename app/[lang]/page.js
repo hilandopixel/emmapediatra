@@ -21,7 +21,7 @@ const staticDocs = {
         }
       },
       content: {
-        image:"/assets/dra-emma-lopez-preguntas.png",
+        image:"/assets/dra-emma-lopez-portada.png",
         es: {
               herotext: "Dra. Emma López Rubio<br>Pediatra gastroenteróloga en Córdoba<br>Especialista en digestivo y trastornos de la conducta alimentaria.",
               herobuttonLink: "/es/sobre-mi",
@@ -152,7 +152,6 @@ export async function generateMetadata({ params }) {
     const docSnap = await getDoc(docRef);    
     const data = docSnap?.data();
     const seo = data?.seo?.[lang] || staticDocs?.seo?.[lang] || data?.seo?.["es"] || { title: pageId };
-    console.log(seo);
     return {
       title: seo.title,
       description: seo.description,
