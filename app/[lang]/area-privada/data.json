@@ -1,0 +1,60 @@
+{
+    "seo": {
+        "es": {
+            "title": "Área Privada | Dra. EMMA LÓPEZ RUBIO Pediatra gastroenteróloga en Córdoba | Especialista en digestivo y trastornos de la conducta alimentaria",
+            "description": "",
+            "keywords": ""
+        },
+        "en": {
+            "title": "Your private area",
+            "description": "",
+            "keywords": ""
+        },
+        "it": {
+            "title": "[IT] Área Privada",
+            "description": "",
+            "keywords": ""
+        }
+    },
+    "content": {
+        "es": {
+            "sections": {
+                "areaPrivada": {
+                    "id": "area-privada",
+                    "content": [
+                        {
+                            "title": "Tu área Privada",
+                            "text": "En construcción."
+                        }
+                    ]
+                }
+            }
+        },
+        "en": {
+            "sections": {
+                "privateArea": {
+                    "id": "private-area",
+                    "content": [
+                        {
+                            "title": "Your private area",
+                            "text": "Under construction."
+                        }
+                    ]
+                }
+            }
+        },
+        "it": {
+            "sections": {
+                "areaPrivata": {
+                    "id": "area-privata",
+                    "content": [
+                        {
+                            "title": "La tua area privata",
+                            "text": "In costruzione."
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

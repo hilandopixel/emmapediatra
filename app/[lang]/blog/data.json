@@ -1,0 +1,60 @@
+{
+    "seo": {
+        "es": {
+            "title": "Blog | Dra. EMMA LÓPEZ RUBIO Pediatra gastroenteróloga en Córdoba | Especialista en digestivo y trastornos de la conducta alimentaria",
+            "description": "",
+            "keywords": ""
+        },
+        "en": {
+            "title": "Blog",
+            "description": "",
+            "keywords": ""
+        },
+        "it": {
+            "title": "Blog",
+            "description": "",
+            "keywords": ""
+        }
+    },
+    "content": {
+        "es": {
+            "sections": {
+                "blog": {
+                    "id": "blog",
+                    "content": [
+                        {
+                            "title": "Blog",
+                            "text": "En construcción."
+                        }
+                    ]
+                }
+            }
+        },
+        "en": {
+            "sections": {
+                "blog": {
+                    "id": "blog",
+                    "content": [
+                        {
+                            "title": "Blog",
+                            "text": "Under construction."
+                        }
+                    ]
+                }
+            }
+        },
+        "it": {
+            "sections": {
+                "blog": {
+                    "id": "blog",
+                    "content": [
+                        {
+                            "title": "Blog",
+                            "text": "In costruzione."
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

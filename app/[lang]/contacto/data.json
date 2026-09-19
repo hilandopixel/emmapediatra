@@ -1,0 +1,61 @@
+{
+    "seo": {
+        "es": {
+            "title": "Contacto | Dra. EMMA LÓPEZ RUBIO Pediatra gastroenteróloga en Córdoba | Especialista en digestivo y trastornos de la conducta alimentaria",
+            "description": "Soy la Dra. Emma López Rubio, pediatra especializada en gastroenterología, hepatología y nutrición infantil en Córdoba.",
+            "keywords": "digestivo infantil, pediatria, conducta alimentaria, gastroenteróloga"
+        },
+        "en": {
+            "title": "Contact | Dr. Emma López Rubio, Pediatric Gastroenterologist",
+            "description": "Get in touch to request a video consultation, ask about courses and seminars, or send a message to Dr. Emma López Rubio's pediatric digestive health practice.",
+            "keywords": "contact pediatric gastroenterologist, request video consultation online"
+        },
+        "it": {
+            "title": "Contatti | Dott.ssa Emma López Rubio, Gastroenterologa Pediatrica",
+            "description": "Contattaci per richiedere una videovisita, chiedere informazioni su corsi e seminari o inviare un messaggio allo studio di gastroenterologia pediatrica della Dott.ssa Emma López Rubio.",
+            "keywords": "contatta gastroenterologo pediatrico, prenota videovisita online"
+        }
+    },
+    "content": {
+        "image": "/assets/dra-emma-lopez-contacto.png",
+        "es": {
+            "sections": {
+                "contacto": {
+                    "id": "contacto",
+                    "content": [
+                        {
+                            "title": "Contacto",
+                            "htmlEmbbeded": "<iframe loading='lazy' src='https://docs.google.com/forms/d/e/1FAIpQLSfxM_IzTLc6uwlwELg1G7ktqmn2Qny-Gmwg23WB1NBBUEiaGw/viewform?embedded=true' width='100% ' height='1800' frameborder='0' marginheight='0' marginwidth='0'>Cargando…</iframe>"
+                        }
+                    ]
+                }
+            }
+        },
+        "en": {
+            "sections": {
+                "contact": {
+                    "id": "contact",
+                    "content": [
+                        {
+                            "title": "Contact",
+                            "htmlEmbbeded": "<iframe loading='lazy' src='https://docs.google.com/forms/d/e/1FAIpQLSfxM_IzTLc6uwlwELg1G7ktqmn2Qny-Gmwg23WB1NBBUEiaGw/viewform?embedded=true' width='100% ' height='1800' frameborder='0' marginheight='0' marginwidth='0'>Cargando…</iframe>"
+                        }
+                    ]
+                }
+            }
+        },
+        "it": {
+            "sections": {
+                "contatti": {
+                    "id": "contatti",
+                    "content": [
+                        {
+                            "title": "Contatti",
+                            "htmlEmbbeded": "<iframe loading='lazy' src='https://docs.google.com/forms/d/e/1FAIpQLSfxM_IzTLc6uwlwELg1G7ktqmn2Qny-Gmwg23WB1NBBUEiaGw/viewform?embedded=true' width='100% ' height='1800' frameborder='0' marginheight='0' marginwidth='0'>Cargando…</iframe>"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

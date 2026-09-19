@@ -1,6 +1,32 @@
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebaseConfig";
 
+export async function generatePageMetadata(pageId, staticDocs, params) {
+  const resolvedParams = await params;
+  const lang = resolvedParams?.lang || "es";
+
+  try {
+    const docRef = doc(db, "pages", pageId);
+    const docSnap = await getDoc(docRef);    
+    const data = docSnap?.data();
+    
+    const seo = data?.seo?.[lang] || staticDocs?.seo?.[lang] || data?.seo?.["es"] || { title: pageId };
+    return {
+      title: seo.title,
+      description: seo.description,
+      keywords: seo.keywords
+    };
+  } catch (error) {
+    console.error("Error al cargar SEO desde Firebase:", error);
+    const seoFallback = staticDocs?.seo?.[lang] || staticDocs?.seo?.["es"] || {};
+    return { 
+      title: seoFallback.title || pageId,
+      description: seoFallback.description || "",
+      keywords: seoFallback.keywords || ""
+    };
+  }
+}
+
 export default async function ContentPageTemplate({ pageId, staticDocs, params }) {
   const resolvedParams = await params;
   const lang = resolvedParams?.lang || "es";
