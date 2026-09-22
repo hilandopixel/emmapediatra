@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { serverTimestamp } from "firebase/firestore";
 
 const ROLES_DISPONIBLES = [
-  { id: "administrador_global", label: "Administrador Global", restricted: true }, // Solo para Global
+  { id: "administrador_global", label: "Administrador Global", restricted: true },
   { id: "administrador", label: "Administrador", restricted: false },
   { id: "paciente", label: "Paciente", restricted: false }
 ];
@@ -14,17 +13,18 @@ export default function UserFormModal({ userToEdit, isGlobalAdmin, onClose, onSu
 
   const [nombre, setNombre] = useState(userToEdit?.nombre || "");
   const [email, setEmail] = useState(userToEdit?.id || "");
+  const [telefono, setTelefono] = useState(userToEdit?.telefono || "");
+  const [origenEncuentro, setOrigenEncuentro] = useState(userToEdit?.origenEncuentro || "");
+  
   const [activo, setActivo] = useState(isEditing ? (userToEdit.activo !== false) : false);
+  const [aceptaPolitica, setAceptaPolitica] = useState(userToEdit?.aceptaPolitica || false); // Estado de política
+  
   const [rolesSeleccionados, setRolesSeleccionados] = useState(userToEdit?.roles || ["paciente"]);
-  
-  // Convertimos los permisos de array a string plano (ej: "gestionar_solicitudes, borrar_usuarios")
   const [permisos, setPermisos] = useState(userToEdit?.permisos ? userToEdit.permisos.join(", ") : "");
-  
   const [recursosPermitidos, setRecursosPermitidos] = useState(userToEdit?.recursosPermitidos ? userToEdit.recursosPermitidos.join(", ") : "");
   const [loading, setLoading] = useState(false);
 
   const handleRoleChange = (roleId) => {
-    // Si no es admin global e intenta tocar el rol de admin global, lo bloqueamos
     if (roleId === "administrador_global" && !isGlobalAdmin) return;
 
     if (rolesSeleccionados.includes(roleId)) {
@@ -40,8 +40,6 @@ export default function UserFormModal({ userToEdit, isGlobalAdmin, onClose, onSu
 
     let permisosArray = permisos ? permisos.split(",").map(p => p.trim()).filter(Boolean) : [];
 
-    // SEGURIDAD EXTRA EN EL CLIENTE: Si el usuario actual NO es global, nos aseguramos por fuerza 
-    // de que no se cuele el permiso "borrar_usuarios" aunque lo escriban o manipulen.
     if (!isGlobalAdmin) {
       permisosArray = permisosArray.filter(p => p !== "borrar_usuarios");
     }
@@ -49,7 +47,10 @@ export default function UserFormModal({ userToEdit, isGlobalAdmin, onClose, onSu
     const formData = {
       email: email.trim().toLowerCase(),
       nombre: nombre.trim(),
+      telefono: telefono.trim(),
+      origenEncuentro,
       activo,
+      aceptaPolitica, // Incluimos el campo
       roles: rolesSeleccionados,
       permisos: permisosArray,
       recursosPermitidos: recursosPermitidos ? recursosPermitidos.split(",").map(r => r.trim()).filter(Boolean) : [],
@@ -62,7 +63,7 @@ export default function UserFormModal({ userToEdit, isGlobalAdmin, onClose, onSu
   return (
     <div className="mb-8 bg-white p-8 rounded-2xl shadow-md border border-slate-200">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-primary-custom">
+        <h2 className="text-xl font-bold text-secondary-custom">
           {isEditing ? `Editando usuario: ${userToEdit.id}` : "Dar de alta nuevo usuario"}
         </h2>
         <button onClick={onClose} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
@@ -95,25 +96,62 @@ export default function UserFormModal({ userToEdit, isGlobalAdmin, onClose, onSu
           </div>
         </div>
 
-        <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-          <input 
-            type="checkbox" 
-            id="activoCheck"
-            checked={activo}
-            onChange={(e) => setActivo(e.target.checked)}
-            className="w-4 h-4 text-primary-custom rounded" 
-          />
-          <label htmlFor="activoCheck" className="text-sm font-medium text-slate-700">Usuario Activo (Permite acceso)</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1 text-slate-700">Teléfono</label>
+            <input 
+              type="tel" 
+              value={telefono} 
+              onChange={(e) => setTelefono(e.target.value)} 
+              placeholder="+34 600 000 000" 
+              className="w-full border rounded-lg p-3 text-slate-700 bg-white" 
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1 text-slate-700">¿Cómo ha encontrado esta sección?</label>
+            <select 
+              value={origenEncuentro} 
+              onChange={(e) => setOrigenEncuentro(e.target.value)} 
+              className="w-full border rounded-lg p-3 text-slate-700 bg-white"
+            >
+              <option value="">Selecciona una opción...</option>
+              <option value="Recomendación de la doctora">A) Recomendación de la doctora</option>
+              <option value="Recomendación de amigos">B) Recomendación de amigos</option>
+              <option value="Buscando en la web">C) Buscando en la web</option>
+            </select>
+          </div>
         </div>
 
-        {/* Roles Múltiples */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+            <input 
+              type="checkbox" 
+              id="activoCheck"
+              checked={activo}
+              onChange={(e) => setActivo(e.target.checked)}
+              className="w-4 h-4 text-primary-custom rounded" 
+            />
+            <label htmlFor="activoCheck" className="text-sm font-medium text-slate-700">Usuario Activo</label>
+          </div>
+
+          <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+            <input 
+              type="checkbox" 
+              id="politicaCheck"
+              checked={aceptaPolitica}
+              onChange={(e) => setAceptaPolitica(e.target.checked)}
+              className="w-4 h-4 text-primary-custom rounded" 
+            />
+            <label htmlFor="politicaCheck" className="text-sm font-medium text-slate-700">Acepta Privacidad</label>
+          </div>
+        </div>
+
         <div className="p-4 bg-slate-50 rounded-xl space-y-2">
           <label className="block text-sm font-bold text-slate-700 mb-2">Roles asignados:</label>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {ROLES_DISPONIBLES.map((rol) => {
-              // Si es administrador estándar y este rol es restringido (administrador_global), no lo mostramos o lo deshabilitamos
               const isDisabled = rol.restricted && !isGlobalAdmin;
-              if (isDisabled && !isGlobalAdmin) return null; // Ocultamos la opción por completo si no es global
+              if (isDisabled && !isGlobalAdmin) return null;
 
               return (
                 <div key={rol.id} className="flex items-center gap-2">

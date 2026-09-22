@@ -11,11 +11,14 @@ import { auth, db } from "@/lib/firebaseConfig";
 export default function AuthForm({ onSuccess }) {
   const [isRegistering, setIsRegistering] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [aceptaPolitica, setAceptaPolitica] = useState(false); // Estado del checkbox
   const [error, setError] = useState("");
   const [mensajeExito, setMensajeExito] = useState("");
 
   const handleAuth = async (e) => {
     e.preventDefault();
+    if (isRegistering && !aceptaPolitica) return; // Doble validación de seguridad
+
     setLoading(true);
     setError("");
     setMensajeExito("");
@@ -23,30 +26,35 @@ export default function AuthForm({ onSuccess }) {
     const formData = new FormData(e.target);
     const email = formData.get("email").trim().toLowerCase();
     const password = formData.get("password");
+    
     const nombre = formData.get("nombre") || "";
+    const telefono = formData.get("telefono") || "";
+    const origenEncuentro = formData.get("origenEncuentro") || "";
 
     try {
       if (isRegistering) {
-        // 1. Registrar en Firebase Auth
         await createUserWithEmailAndPassword(auth, email, password);
 
-        // 2. Registrar en Firestore (inactivo por defecto para validación manual)
         const userRef = doc(db, "usuarios_autorizados", email);
         await setDoc(userRef, {
           email,
           nombre,
+          telefono,
+          origenEncuentro,
+          aceptaPolitica: true, // Guardamos el consentimiento
           activo: false,
           roles: [],
           permisos: [],
           recursosPermitidos: [],
           createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
         });
 
         setMensajeExito("Solicitud de registro completada, revisaremos en la mayor brevedad posible, Muchas gracias.");
         setIsRegistering(false);
+        setAceptaPolitica(false);
         e.target.reset();
       } else {
-        // Iniciar sesión
         await signInWithEmailAndPassword(auth, email, password);
         if (onSuccess) onSuccess();
       }
@@ -66,7 +74,7 @@ export default function AuthForm({ onSuccess }) {
 
   return (
     <div className="max-w-md mx-auto bg-white p-8 rounded-2xl shadow-md border border-slate-100">
-      <h2 className="text-2xl font-bold  mb-2 text-center">
+      <h2 className="text-2xl font-bold text-secondary-custom mb-2 text-center">
         {isRegistering ? "Crear una cuenta" : "Acceso de Usuario"}
       </h2>
       <p className="text-xs text-slate-500 text-center mb-6">
@@ -89,16 +97,44 @@ export default function AuthForm({ onSuccess }) {
 
       <form onSubmit={handleAuth} className="space-y-4">
         {isRegistering && (
-          <div>
-            <label className="block text-sm font-medium mb-1 text-slate-700">Nombre y Apellidos</label>
-            <input 
-              type="text" 
-              name="nombre" 
-              required 
-              placeholder="Tu nombre completo"
-              className="w-full border rounded-lg p-3 text-slate-700 bg-white"
-            />
-          </div>
+          <>
+            <div>
+              <label className="block text-sm font-medium mb-1 text-slate-700">Nombre y Apellidos</label>
+              <input 
+                type="text" 
+                name="nombre" 
+                required 
+                placeholder="Tu nombre completo"
+                className="w-full border rounded-lg p-3 text-slate-700 bg-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1 text-slate-700">Número de teléfono</label>
+              <input 
+                type="tel" 
+                name="telefono" 
+                required 
+                placeholder="+34 600 000 000"
+                className="w-full border rounded-lg p-3 text-slate-700 bg-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1 text-slate-700">¿Cómo has encontrado esta sección?</label>
+              <select 
+                name="origenEncuentro" 
+                required
+                defaultValue=""
+                className="w-full border rounded-lg p-3 text-slate-700 bg-white"
+              >
+                <option value="" disabled>Selecciona una opción...</option>
+                <option value="Recomendación de la doctora">A) Recomendación de la doctora</option>
+                <option value="Recomendación de amigos">B) Recomendación de amigos</option>
+                <option value="Buscando en la web">C) Buscando en la web</option>
+              </select>
+            </div>
+          </>
         )}
 
         <div>
@@ -123,10 +159,24 @@ export default function AuthForm({ onSuccess }) {
           />
         </div>
 
+        {/* Checkbox de Privacidad */}
+        <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-xl">
+            <input 
+            type="checkbox" 
+            id="aceptaPolitica"
+            checked={aceptaPolitica}
+            onChange={(e) => setAceptaPolitica(e.target.checked)}
+            className="w-4 h-4 mt-0.5 text-primary-custom rounded"
+            />
+            <label htmlFor="aceptaPolitica" className="text-xs text-slate-700 leading-relaxed font-medium cursor-pointer">
+            Al enviar tu solicitud, acepta las condiciones de política de privacidad y de comunicación.
+            </label>
+        </div>
+
         <button 
           type="submit" 
-          disabled={loading}
-          className="w-full py-3 bg-primary-custom hover:bg-[#266360] text-white font-bold rounded-xl transition text-sm"
+          disabled={loading || (isRegistering && !aceptaPolitica)}
+          className="w-full py-3 bg-primary-custom hover:bg-[#266360] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition text-sm"
         >
           {loading ? "Procesando..." : (isRegistering ? "Enviar solicitud de registro" : "Iniciar sesión")}
         </button>
@@ -135,7 +185,7 @@ export default function AuthForm({ onSuccess }) {
       <div className="mt-6 text-center">
         <button 
           type="button"
-          onClick={() => { setIsRegistering(!isRegistering); setError(""); setMensajeExito(""); }}
+          onClick={() => { setIsRegistering(!isRegistering); setError(""); setMensajeExito(""); setAceptaPolitica(false); }}
           className="text-sm text-pink-600 hover:underline font-medium"
         >
           {isRegistering 

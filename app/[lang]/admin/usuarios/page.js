@@ -10,7 +10,7 @@ export default function GestionUsuariosAdmin() {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
   const [canDeleteUsers, setCanDeleteUsers] = useState(false);
-  const [isGlobalAdmin, setIsGlobalAdmin] = useState(false); // <-- ¡Añade esta línea aquí!
+  const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
   
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -38,15 +38,10 @@ export default function GestionUsuariosAdmin() {
 
             if (esAdminValido) {
               setHasAccess(true);
-              
-              // Verificamos si es administrador global
               const esGlobal = roles.includes("administrador_global");
-              setIsGlobalAdmin(esGlobal); // <-- Ahora ya está definido y funcionará correctamente
-
-              // Comprobamos si tiene el permiso "borrar_usuarios" o es administrador global
+              setIsGlobalAdmin(esGlobal);
               const tienePermisoBorrar = esGlobal || permisos.includes("borrar_usuarios");
               setCanDeleteUsers(tienePermisoBorrar);
-              
               fetchUsuarios();
             } else {
               setHasAccess(false);
@@ -85,45 +80,40 @@ export default function GestionUsuariosAdmin() {
   };
 
   const handleFormSubmit = async (formData, isEditing) => {
-    setMensaje("");
-    setError("");
+  setMensaje("");
+  setError("");
 
-    try {
-      const userRef = doc(db, "usuarios_autorizados", formData.email);
+  try {
+    const userRef = doc(db, "usuarios_autorizados", formData.email);
 
-      if (isEditing) {
-        await updateDoc(userRef, {
-          nombre: formData.nombre,
-          activo: formData.activo,
-          roles: formData.roles,
-          permisos: formData.permisos,
-          recursosPermitidos: formData.recursosPermitidos,
-          updatedAt: serverTimestamp(),
-        });
-        setMensaje(`¡Usuario ${formData.email} actualizado con éxito!`);
-      } else {
-        await setDoc(userRef, {
-          email: formData.email,
-          nombre: formData.nombre,
-          activo: formData.activo,
-          roles: formData.roles,
-          permisos: formData.permisos,
-          recursosPermitidos: formData.recursosPermitidos,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
-        setMensaje(`¡Usuario ${formData.email} creado con éxito!`);
-      }
+    const dataPayload = {
+      nombre: formData.nombre,
+      telefono: formData.telefono,
+      origenEncuentro: formData.origenEncuentro,
+      activo: formData.activo,
+      aceptaPolitica: formData.aceptaPolitica,
+      roles: formData.roles,
+      permisos: formData.permisos,
+      recursosPermitidos: formData.recursosPermitidos,
+      updatedAt: serverTimestamp(),
+    };
 
-      setActiveModal(null);
-      fetchUsuarios();
-    } catch (err) {
-      console.error("Error al guardar usuario:", err);
-      setError("Hubo un error al guardar los datos en Firebase.");
+    if (isEditing) {
+      await updateDoc(userRef, dataPayload);
+      setMensaje(`¡Usuario ${formData.email} actualizado con éxito!`);
+    } else {
+      dataPayload.createdAt = serverTimestamp();
+      await setDoc(userRef, dataPayload);
+      setMensaje(`¡Usuario ${formData.email} creado con éxito!`);
     }
-  };
 
-  // Función para confirmar y ejecutar el borrado por coincidencia de email
+    setActiveModal(null);
+    fetchUsuarios();
+  } catch (err) {
+    console.error("Error al guardar usuario:", err);
+    setError("Hubo un error al guardar los datos en Firebase.");
+  }
+};
   const handleDeleteUserConfirm = async (e) => {
     e.preventDefault();
     if (!userToDelete) return;
@@ -185,7 +175,6 @@ export default function GestionUsuariosAdmin() {
       {mensaje && <div className="mb-6 p-4 bg-green-50 text-green-800 rounded-xl text-sm">{mensaje}</div>}
       {error && <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-xl text-sm">{error}</div>}
 
-      {/* MODAL DE CREACIÓN / EDICIÓN */}
       {activeModal === "create" && (
         <UserFormModal 
           isGlobalAdmin={isGlobalAdmin} 
@@ -203,7 +192,6 @@ export default function GestionUsuariosAdmin() {
         />
       )}
 
-      {/* MODAL DE CONFIRMACIÓN DE BORRADO POR CORREO */}
       {userToDelete && (
         <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white max-w-md w-full p-6 rounded-2xl shadow-lg border border-slate-200 space-y-4">
@@ -241,7 +229,6 @@ export default function GestionUsuariosAdmin() {
         </div>
       )}
 
-      {/* TABLA DE USUARIOS */}
       {loading ? (
         <p className="text-center py-12 text-slate-700">Cargando usuarios...</p>
       ) : (
@@ -252,6 +239,8 @@ export default function GestionUsuariosAdmin() {
                 <tr className="bg-slate-100 text-slate-700 text-sm uppercase">
                   <th className="p-4">Email / ID</th>
                   <th className="p-4">Nombre</th>
+                  <th className="p-4">Teléfono</th>
+                  <th className="p-4">Origen</th>
                   <th className="p-4">Última modificación</th>
                   <th className="p-4 text-center">Estado</th>
                   <th className="p-4">Roles asignados</th>
@@ -261,13 +250,15 @@ export default function GestionUsuariosAdmin() {
               <tbody className="divide-y divide-slate-100 text-sm">
                 {usuarios.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="p-6 text-center text-slate-700">No hay usuarios autorizados registrados.</td>
+                    <td colSpan="8" className="p-6 text-center text-slate-700">No hay usuarios autorizados registrados.</td>
                   </tr>
                 ) : (
                   usuarios.map((user) => (
                     <tr key={user.id} className="hover:bg-slate-50 transition">
                       <td className="p-4 font-semibold text-slate-700">{user.id}</td>
                       <td className="p-4 text-slate-700">{user.nombre || "-"}</td>
+                      <td className="p-4 text-slate-700">{user.telefono || "-"}</td>
+                      <td className="p-4 text-slate-700 text-xs">{user.origenEncuentro || "-"}</td>
                       <td className="p-4 text-slate-700 text-xs">
                         {user.updatedAt?.toDate 
                           ? user.updatedAt.toDate().toLocaleString() 
@@ -299,7 +290,6 @@ export default function GestionUsuariosAdmin() {
                           Modificar
                         </button>
 
-                        {/* Botón de eliminar condicionado al permiso "borrar_usuarios" */}
                         {canDeleteUsers && (
                           <button
                             onClick={() => { setUserToDelete(user); setConfirmEmailInput(""); }}
