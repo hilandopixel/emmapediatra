@@ -8,17 +8,6 @@ export default async function LangLayout({ children, params }) {
   const lang = resolvedParams?.lang || "es";
   return (
     <html lang={lang}>
-      <head>
-        <Script src="https://www.googletagmanager.com/gtag/js?id=G-5PY5WPDGE2" strategy="afterInteractive" />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-5PY5WPDGE2');
-          `}
-        </Script>
-      </head>
       <body className="min-h-screen antialiased text-secondary-custom">
         <Navbar lang={lang} />
         {children}
