@@ -1,4 +1,9 @@
 @import "tailwindcss";
+@layer base {
+  input, select, textarea, label {
+    @apply text-slate-700;
+  }
+}
 
 :root {
     --color-primary:#d01156;
@@ -50,4 +55,9 @@ body {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.button-primary-custom {
+    background-color: var(--color-primary);
+    color: var(--color-secondary);
 }

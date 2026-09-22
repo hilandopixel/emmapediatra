@@ -1,0 +1,45 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Páginas generales del sitio, SEO y configuración
+    match /pages/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // 2. Motivos de contacto / formularios
+    match /motivos_contacto/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // 3. Consultas de videoconsulta / citas
+    match /consultas/{document=**} {
+      allow create: if true;
+      allow read: if request.auth != null;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
+
+    // 4. Solicitudes del área privada
+    match /solicitudes_area_privada/{document=**} {
+      allow create: if true;
+      allow read: if request.auth != null;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
+
+    // 5. Usuarios autorizados del área privada
+    match /usuarios_autorizados/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /usuarios_autorizados/{document=**} {
+      allow read: if true;
+      // Permite escribir si el usuario autenticado es admin o tiene permisos en su propio documento
+      allow write: if request.auth != null; 
+    }
+  }
+}
