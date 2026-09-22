@@ -8,7 +8,8 @@ import { auth } from "@/lib/firebaseConfig";
 export default function ActualizarPasswordPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const oobCode = searchParams.get("oobCode"); // Código que envía Firebase en la URL
+  const oobCode = searchParams.get("oobCode"); 
+
 
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,7 +31,7 @@ export default function ActualizarPasswordPage() {
       await confirmPasswordReset(auth, oobCode, password);
       setMensaje("¡Contraseña actualizada con éxito! Ya puedes iniciar sesión.");
       setTimeout(() => {
-        router.push("/es"); // Redirigir al inicio o login
+        router.push("/es/area-privada");
       }, 3000);
     } catch (err) {
       console.error("Error al actualizar contraseña:", err);
