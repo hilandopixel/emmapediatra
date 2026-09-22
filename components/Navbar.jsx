@@ -108,7 +108,7 @@ export default function Navbar({ lang: propLang }) {
           <Link href={`/${lang}/dudas-frecuentes`} className="hover:text-pink-600 transition">{t.dudas}</Link>
           <Link href={`/${lang}/contacto`} className="hover:text-pink-600 transition">{t.contacto}</Link>
           <Link href={`/${lang}/blog`} className="hover:text-pink-600 transition">{t.blog}</Link>
-          <Link href={`/${lang}/area-privada`} className="hover:text-pink-600 transition">{t.recursos}</Link>
+          {/*<Link href={`/${lang}/area-privada`} className="hover:text-pink-600 transition">{t.recursos}</Link> */}
           
           <div className="flex items-center space-x-3 text-xs font-bold pl-4 border-l border-slate-200">
             {availableLanguages.map((item, index) => (
@@ -160,7 +160,7 @@ export default function Navbar({ lang: propLang }) {
           <Link href={`/${lang}/dudas-frecuentes`} onClick={() => setMobileMenuOpen(false)} className="block py-2 hover:text-pink-600 transition">{t.dudas}</Link>
           <Link href={`/${lang}/contacto`} onClick={() => setMobileMenuOpen(false)} className="block py-2 hover:text-pink-600 transition">{t.contacto}</Link>
           <Link href={`/${lang}/blog`} onClick={() => setMobileMenuOpen(false)} className="block py-2 hover:text-pink-600 transition">{t.blog}</Link>
-          <Link href={`/${lang}/area-privada`} onClick={() => setMobileMenuOpen(false)} className="block py-2 hover:text-pink-600 transition">{t.recursos}</Link>
+          {/*<Link href={`/${lang}/area-privada`} onClick={() => setMobileMenuOpen(false)} className="block py-2 hover:text-pink-600 transition">{t.recursos}</Link>*/}
           
           <div className="flex items-center space-x-6 pt-4 border-t border-pink-800 text-xs font-bold ">
             {availableLanguages.map((item) => (
