@@ -13,7 +13,8 @@
     "firebase-admin": "^12.0.0",
     "next": "^15.0.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "resend": "^6.28.1"
   },
   "devDependencies": {
     "autoprefixer": "^10.6.1",

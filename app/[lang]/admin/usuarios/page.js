@@ -11,6 +11,7 @@ export default function GestionUsuariosAdmin() {
   const [hasAccess, setHasAccess] = useState(false);
   const [canDeleteUsers, setCanDeleteUsers] = useState(false);
   const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
+  const [currentUserEmail, setCurrentUserEmail] = useState("");
   
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -24,6 +25,7 @@ export default function GestionUsuariosAdmin() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser && currentUser.email) {
+        setCurrentUserEmail(currentUser.email);
         try {
           const userRef = doc(db, "usuarios_autorizados", currentUser.email.toLowerCase());
           const userSnap = await getDoc(userRef);
@@ -79,41 +81,92 @@ export default function GestionUsuariosAdmin() {
     }
   };
 
-  const handleFormSubmit = async (formData, isEditing) => {
-  setMensaje("");
-  setError("");
+  // Función para invocar la API Route de Vercel y crear el usuario en Auth si se activa
+  const llamarApiActivarUsuario = async (targetEmail) => {
+    try {
+      const response = await fetch("/api/admin/activar-usuario", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: targetEmail,
+          adminEmail: currentUserEmail,
+        }),
+      });
 
-  try {
-    const userRef = doc(db, "usuarios_autorizados", formData.email);
-
-    const dataPayload = {
-      nombre: formData.nombre,
-      telefono: formData.telefono,
-      origenEncuentro: formData.origenEncuentro,
-      activo: formData.activo,
-      aceptaPolitica: formData.aceptaPolitica,
-      roles: formData.roles,
-      permisos: formData.permisos,
-      recursosPermitidos: formData.recursosPermitidos,
-      updatedAt: serverTimestamp(),
-    };
-
-    if (isEditing) {
-      await updateDoc(userRef, dataPayload);
-      setMensaje(`¡Usuario ${formData.email} actualizado con éxito!`);
-    } else {
-      dataPayload.createdAt = serverTimestamp();
-      await setDoc(userRef, dataPayload);
-      setMensaje(`¡Usuario ${formData.email} creado con éxito!`);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Error al activar en el servidor");
+      console.log(data.message);
+    } catch (err) {
+      console.error("Error al llamar a la API de activación:", err);
+      throw err;
     }
+  };
 
-    setActiveModal(null);
-    fetchUsuarios();
-  } catch (err) {
-    console.error("Error al guardar usuario:", err);
-    setError("Hubo un error al guardar los datos en Firebase.");
-  }
-};
+  const handleFormSubmit = async (formData, isEditing) => {
+    setMensaje("");
+    setError("");
+
+    try {
+      const userRef = doc(db, "usuarios_autorizados", formData.email);
+      let estadoAnteriorActivo = false;
+
+      if (isEditing) {
+        // Consultamos el estado anterior del usuario en Firestore para ver si estaba inactivo
+        const oldSnap = await getDoc(userRef);
+        if (oldSnap.exists()) {
+          estadoAnteriorActivo = oldSnap.data().activo === true;
+        }
+
+        await updateDoc(userRef, {
+          nombre: formData.nombre,
+          telefono: formData.telefono,
+          origenEncuentro: formData.origenEncuentro,
+          activo: formData.activo,
+          aceptaPolitica: formData.aceptaPolitica,
+          roles: formData.roles,
+          permisos: formData.permisos,
+          recursosPermitidos: formData.recursosPermitidos,
+          updatedAt: serverTimestamp(),
+        });
+
+        // Si estaba inactivo y ahora se ha marcado como activo, llamamos a la API de servidor
+        if (!estadoAnteriorActivo && formData.activo) {
+          await llamarApiActivarUsuario(formData.email);
+        }
+
+        setMensaje(`¡Usuario ${formData.email} actualizado con éxito!`);
+      } else {
+        // Creación manual desde el panel
+        await setDoc(userRef, {
+          email: formData.email,
+          nombre: formData.nombre,
+          telefono: formData.telefono,
+          origenEncuentro: formData.origenEncuentro,
+          activo: formData.activo,
+          aceptaPolitica: formData.aceptaPolitica,
+          roles: formData.roles,
+          permisos: formData.permisos,
+          recursosPermitidos: formData.recursosPermitidos,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+
+        // Si se crea directamente como activo desde el panel, lo activamos también en Auth
+        if (formData.activo) {
+          await llamarApiActivarUsuario(formData.email);
+        }
+
+        setMensaje(`¡Usuario ${formData.email} creado con éxito!`);
+      }
+
+      setActiveModal(null);
+      fetchUsuarios();
+    } catch (err) {
+      console.error("Error al guardar usuario:", err);
+      setError("Hubo un error al guardar los datos o al sincronizar con Auth.");
+    }
+  };
+
   const handleDeleteUserConfirm = async (e) => {
     e.preventDefault();
     if (!userToDelete) return;
@@ -241,6 +294,7 @@ export default function GestionUsuariosAdmin() {
                   <th className="p-4">Nombre</th>
                   <th className="p-4">Teléfono</th>
                   <th className="p-4">Origen</th>
+                  <th className="p-4 text-center">Privacidad</th>
                   <th className="p-4">Última modificación</th>
                   <th className="p-4 text-center">Estado</th>
                   <th className="p-4">Roles asignados</th>
@@ -250,7 +304,7 @@ export default function GestionUsuariosAdmin() {
               <tbody className="divide-y divide-slate-100 text-sm">
                 {usuarios.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="p-6 text-center text-slate-700">No hay usuarios autorizados registrados.</td>
+                    <td colSpan="9" className="p-6 text-center text-slate-700">No hay usuarios autorizados registrados.</td>
                   </tr>
                 ) : (
                   usuarios.map((user) => (
@@ -259,6 +313,11 @@ export default function GestionUsuariosAdmin() {
                       <td className="p-4 text-slate-700">{user.nombre || "-"}</td>
                       <td className="p-4 text-slate-700">{user.telefono || "-"}</td>
                       <td className="p-4 text-slate-700 text-xs">{user.origenEncuentro || "-"}</td>
+                      <td className="p-4 text-center">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${user.aceptaPolitica ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-600"}`}>
+                          {user.aceptaPolitica ? "Aceptada" : "Pendiente"}
+                        </span>
+                      </td>
                       <td className="p-4 text-slate-700 text-xs">
                         {user.updatedAt?.toDate 
                           ? user.updatedAt.toDate().toLocaleString() 

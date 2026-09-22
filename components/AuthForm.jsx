@@ -1,23 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword 
-} from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "@/lib/firebaseConfig";
 
 export default function AuthForm({ onSuccess }) {
   const [isRegistering, setIsRegistering] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [aceptaPolitica, setAceptaPolitica] = useState(false); // Estado del checkbox
+  const [aceptaPolitica, setAceptaPolitica] = useState(false);
   const [error, setError] = useState("");
   const [mensajeExito, setMensajeExito] = useState("");
 
   const handleAuth = async (e) => {
     e.preventDefault();
-    if (isRegistering && !aceptaPolitica) return; // Doble validación de seguridad
+    if (isRegistering && !aceptaPolitica) return;
 
     setLoading(true);
     setError("");
@@ -33,16 +30,15 @@ export default function AuthForm({ onSuccess }) {
 
     try {
       if (isRegistering) {
-        await createUserWithEmailAndPassword(auth, email, password);
-
+        // Guardamos la solicitud directamente en Firestore SIN pasar por Firebase Auth
         const userRef = doc(db, "usuarios_autorizados", email);
         await setDoc(userRef, {
           email,
           nombre,
           telefono,
           origenEncuentro,
-          aceptaPolitica: true, // Guardamos el consentimiento
-          activo: false,
+          aceptaPolitica: true,
+          activo: false, // Pendiente de revisión
           roles: [],
           permisos: [],
           recursosPermitidos: [],
@@ -55,15 +51,14 @@ export default function AuthForm({ onSuccess }) {
         setAceptaPolitica(false);
         e.target.reset();
       } else {
+        // Inicio de sesión normal (solo para cuentas ya activadas y con Auth creado)
         await signInWithEmailAndPassword(auth, email, password);
         if (onSuccess) onSuccess();
       }
     } catch (err) {
       console.error("Error en autenticación:", err);
-      if (err.code === "auth/email-already-in-use") {
-        setError("Este correo ya está registrado. Prueba a iniciar sesión.");
-      } else if (err.code === "auth/wrong-password" || err.code === "auth/user-not-found" || err.code === "auth/invalid-credential") {
-        setError("Credenciales incorrectas. Comprueba tu correo y contraseña.");
+      if (err.code === "auth/user-not-found" || err.code === "auth/invalid-credential") {
+        setError("Credenciales incorrectas o cuenta pendiente de aprobación por el administrador.");
       } else {
         setError("Ocurrió un error al procesar tu solicitud.");
       }
@@ -134,6 +129,19 @@ export default function AuthForm({ onSuccess }) {
                 <option value="Buscando en la web">C) Buscando en la web</option>
               </select>
             </div>
+
+            <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-xl">
+              <input 
+                type="checkbox" 
+                id="aceptaPolitica"
+                checked={aceptaPolitica}
+                onChange={(e) => setAceptaPolitica(e.target.checked)}
+                className="w-4 h-4 mt-0.5 text-primary-custom rounded"
+              />
+              <label htmlFor="aceptaPolitica" className="text-xs text-slate-700 leading-relaxed font-medium cursor-pointer">
+                Al enviar tu solicitud, acepta las condiciones de política de privacidad y de comunicación.
+              </label>
+            </div>
           </>
         )}
 
@@ -157,20 +165,6 @@ export default function AuthForm({ onSuccess }) {
             placeholder="••••••••"
             className="w-full border rounded-lg p-3 text-slate-700 bg-white"
           />
-        </div>
-
-        {/* Checkbox de Privacidad */}
-        <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-xl">
-            <input 
-            type="checkbox" 
-            id="aceptaPolitica"
-            checked={aceptaPolitica}
-            onChange={(e) => setAceptaPolitica(e.target.checked)}
-            className="w-4 h-4 mt-0.5 text-primary-custom rounded"
-            />
-            <label htmlFor="aceptaPolitica" className="text-xs text-slate-700 leading-relaxed font-medium cursor-pointer">
-            Al enviar tu solicitud, acepta las condiciones de política de privacidad y de comunicación.
-            </label>
         </div>
 
         <button 
