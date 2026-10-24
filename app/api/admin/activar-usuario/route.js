@@ -46,6 +46,17 @@ export async function POST(request) {
 
     // 4. Actualizar Firestore a activo
     const userRef = adminDb.collection("usuarios_autorizados").doc(email.toLowerCase());
+
+    const userSnap = await userRef.get();
+
+    if (!userSnap.exists) {
+      throw new Error("El usuario no existe en la base de datos.");
+    }
+
+    // 2. Extraer los datos del documento
+    const userData = userSnap.data();
+    const userName = userData.nombre;
+
     await userRef.update({
       activo: true,
       updatedAt: new Date(),
@@ -57,16 +68,16 @@ export async function POST(request) {
       to: [email.toLowerCase()],
       subject: '¡Tu cuenta ha sido activada!',
       html: `
-        <div style="font-family: Arial, sans-serif; color: #334155; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
-          <h2 style="color: #0f766e; text-align: center;">¡Bienvenido/a al Área Privada!</h2>
-          <p>Hola,</p>
+        <div style="font-family: Arial, sans-serif; color: #d01156; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+          <h2 style="color: #d01156-align: center;">¡Bienvenido/a al Área Privada!</h2>
+          <p>Hola ${userName},</p>
           <p>Tu solicitud ha sido aprobada. Ya puedes configurar tu contraseña de acceso haciendo clic en el siguiente botón:</p>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${customPasswordLink}" style="background-color: #0f766e; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+            <a href="${customPasswordLink}" style="background-color: #d01156; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
               Establecer mi contraseña
             </a>
           </div>
-          <p style="font-size: 12px; color: #64748b; text-align: center;">Si no has solicitado este acceso, puedes ignorar este mensaje.</p>
+          <p style="font-size: 12px; color: #d01156; text-align: center;">Si no has solicitado este acceso, puedes ignorar este mensaje.</p>
         </div>
       `,
     });
