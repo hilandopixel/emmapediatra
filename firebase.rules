@@ -22,6 +22,22 @@ service cloud.firestore {
       allow delete: if request.auth != null;
     }
 
+    // 3. Consultas de videoconsulta / citas
+    match /categories/{document=**} {
+      allow create: if request.auth != null;
+      allow read: if true;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
+
+    // 3. Consultas de videoconsulta / citas
+    match /posts/{document=**} {
+      allow create: if request.auth != null;
+      allow read: if true;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
+
     // 4. Solicitudes del área privada
     match /solicitudes_area_privada/{document=**} {
       allow create: if true;
