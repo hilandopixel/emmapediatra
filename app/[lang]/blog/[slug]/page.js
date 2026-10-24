@@ -11,14 +11,14 @@ export default async function BlogPostPage({ params }) {
   const querySnapshot = await getDocs(q);
 
   if (querySnapshot.empty) {
-    return <div className="p-8 text-center text-slate-600">Artículo no encontrado</div>;
+    return <div className="p-8 text-center text-primary-custom">Artículo no encontrado</div>;
   }
 
   const post = querySnapshot.docs[0].data();
 
   return (
     <article className="max-w-3xl mx-auto py-8 px-4">
-      <h1 className="text-3xl font-extrabold text-slate-900 mb-4">{post.title}</h1>
+      <h1 className="text-3xl font-extrabold text-primary-custom mb-4">{post.title}</h1>
 
       {/* 2. Usar el componente de imagen protegida en lugar de <img> con event handlers */}
       {!post.pdfUrl && post.coverImageUrl && (

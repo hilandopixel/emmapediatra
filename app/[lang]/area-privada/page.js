@@ -1,7 +1,7 @@
 // app/area-privada/page.js
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, collection, getDocs } from "firebase/firestore";
 import { auth, db } from "@/lib/firebaseConfig";
@@ -18,7 +18,9 @@ export default function AreaPrivadaPage() {
   
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [selectedPostSlug, setSelectedPostSlug] = useState(null);
-  const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Referencia para el contenedor con scroll snap
+  const carouselRef = useRef(null);
 
   // Estado para controlar qué menú de compartir está abierto
   const [openShareMenuId, setOpenShareMenuId] = useState(null);
@@ -90,20 +92,21 @@ export default function AreaPrivadaPage() {
 
   const handleCategorySelect = (categoryId) => {
     setSelectedCategory(categoryId);
-    setCurrentSlide(0);
+    setOpenShareMenuId(null);
+    if (carouselRef.current) {
+      carouselRef.current.scrollTo({ left: 0, behavior: "smooth" });
+    }
   };
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % filteredPosts.length);
+  // Desplazamiento por botones usando Scroll Snap
+  const scrollCarousel = (direction) => {
+    if (!carouselRef.current) return;
+    const cardWidth = carouselRef.current.firstElementChild?.clientWidth || 300;
+    const scrollAmount = direction === "next" ? cardWidth + 24 : -(cardWidth + 24);
+    carouselRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
     setOpenShareMenuId(null);
   };
 
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + filteredPosts.length) % filteredPosts.length);
-    setOpenShareMenuId(null);
-  };
-
-  // Función para copiar el enlace del artículo
   const handleCopyLink = (slug, postId) => {
     const postUrl = `${window.location.origin}/blog/${slug}`;
     navigator.clipboard.writeText(postUrl);
@@ -112,7 +115,6 @@ export default function AreaPrivadaPage() {
     setOpenShareMenuId(null);
   };
 
-  // Función para compartir por WhatsApp
   const handleShareWhatsApp = (title, slug) => {
     const postUrl = `${window.location.origin}/blog/${slug}`;
     const text = encodeURIComponent(`Mira este artículo: *${title}*\n${postUrl}`);
@@ -167,151 +169,154 @@ export default function AreaPrivadaPage() {
         </button>
       </div>
 
-      {/* Sección Carrusel de Posts */}
-      <div className="bg-white p-8 rounded-2xl shadow-md border border-slate-100 space-y-6">
-        <h2 className="text-xl font-bold text-primary-custom">Artículos de Blog Exclusivos</h2>
+      {/* Sección Carrusel Peek Mejorado */}
+<div className="bg-white p-8 rounded-2xl shadow-md border border-slate-100 space-y-6">
+  <h2 className="text-xl font-bold text-primary-custom">Artículos</h2>
 
-        {/* Filtros de Categoría */}
-        {!loadingPosts && (
-          <div className="flex flex-wrap gap-2 pt-1 pb-2 border-b border-slate-100">
-            <button
-              onClick={() => handleCategorySelect("all")}
-              className={`px-3.5 py-1.5 text-xs font-bold rounded-full transition ${
-                selectedCategory === "all"
-                  ? "bg-black text-white shadow-sm"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              }`}
-            >
-              Todas ({posts.length})
-            </button>
-            {categories.map((cat) => {
-              const count = posts.filter(
-                (p) => p.categoryIds && p.categoryIds.includes(cat.id)
-              ).length;
+  {/* Filtros de Categoría */}
+  {!loadingPosts && (
+    <div className="flex flex-wrap gap-2 pt-1 pb-2 border-b border-slate-100">
+      <button
+        onClick={() => handleCategorySelect("all")}
+        className={`px-3.5 py-1.5 text-xs font-bold rounded-full transition ${
+          selectedCategory === "all"
+            ? "bg-primary-custom text-white shadow-sm"
+            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+        }`}
+      >
+        Todas ({posts.length})
+      </button>
+      {categories.map((cat) => {
+        const count = posts.filter(
+          (p) => p.categoryIds && p.categoryIds.includes(cat.id)
+        ).length;
 
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => handleCategorySelect(cat.id)}
-                  className={`px-3.5 py-1.5 text-xs font-bold rounded-full transition ${
-                    selectedCategory === cat.id
-                      ? "bg-black text-white shadow-sm"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  }`}
-                >
-                  {cat.name} ({count})
-                </button>
-              );
-            })}
-          </div>
-        )}
+        return (
+          <button
+            key={cat.id}
+            onClick={() => handleCategorySelect(cat.id)}
+            className={`px-3.5 py-1.5 text-xs font-bold rounded-full transition ${
+              selectedCategory === cat.id
+                ? "bg-primary-custom text-white shadow-sm"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            {cat.name} ({count})
+          </button>
+        );
+      })}
+    </div>
+  )}
 
-        {loadingPosts ? (
-          <p className="text-sm text-slate-500 py-6 text-center">Cargando publicaciones...</p>
-        ) : filteredPosts.length === 0 ? (
-          <p className="text-sm text-slate-500 py-6 text-center">
-            No se encontraron artículos en esta categoría.
-          </p>
-        ) : (
-          <div className="relative overflow-hidden p-2">
-            <div 
-              className="flex transition-transform duration-500 ease-in-out gap-6"
-              style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-            >
-              {filteredPosts.map((post) => (
+  {loadingPosts ? (
+    <p className="text-sm text-slate-500 py-6 text-center">Cargando publicaciones...</p>
+  ) : filteredPosts.length === 0 ? (
+    <p className="text-sm text-slate-500 py-6 text-center">
+      No se encontraron artículos en esta categoría.
+    </p>
+  ) : (
+    <div className="relative group">
+      {/* Contenedor del Carrusel Peek con mayor visibilidad lateral */}
+      <div 
+        ref={carouselRef}
+        className="flex gap-5 overflow-x-auto snap-x snap-mandatory scroll-smooth py-4 px-4 scrollbar-none"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {filteredPosts.map((post) => (
+          <div 
+            key={post.id} 
+            /* Ajustamos los anchos:
+               - Móvil: 72% del ancho para ver un 14% de cada lado
+               - Tablet: 48% del ancho para ver casi 2 completas + bordes
+               - Pantalla Grande: 38% del ancho para ver claramente las tarjetas adyacentes
+            */
+            className="snap-center shrink-0 w-[72%] md:w-[48%] lg:w-[38%] h-[380px] bg-slate-50 border border-slate-200 rounded-2xl p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition relative"
+          >
+            {/* Bloque Superior: Portada y Título */}
+            <div className="space-y-3">
+              {post.coverImageUrl ? (
+                <img 
+                  src={post.coverImageUrl} 
+                  alt={post.title} 
+                  className="w-full h-40 object-cover object-top rounded-xl border border-slate-100 cursor-pointer"
+                  onClick={() => setSelectedPostSlug(post.slug)}
+                />
+              ) : (
                 <div 
-                  key={post.id} 
-                  className="w-full md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] h-[380px] bg-slate-50 border border-slate-200 rounded-2xl p-5 flex flex-col justify-between shrink-0 shadow-sm hover:shadow-md transition relative"
+                  onClick={() => setSelectedPostSlug(post.slug)}
+                  className="w-full h-40 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 text-xs font-medium cursor-pointer"
                 >
-                  {/* Bloque Superior: Portada y Título */}
-                  <div className="space-y-3">
-                    {post.coverImageUrl ? (
-                      <img 
-                        src={post.coverImageUrl} 
-                        alt={post.title} 
-                        className="w-full h-44 object-cover object-top rounded-xl border border-slate-100 cursor-pointer"
-                        onClick={() => setSelectedPostSlug(post.slug)}
-                      />
-                    ) : (
-                      <div 
-                        onClick={() => setSelectedPostSlug(post.slug)}
-                        className="w-full h-44 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 text-xs font-medium cursor-pointer"
-                      >
-                        Ver artículo
-                      </div>
-                    )}
-
-                    <h3 className="font-bold text-slate-800 text-base leading-snug line-clamp-2">
-                      {post.title}
-                    </h3>
-                  </div>
-
-                  {/* Bloque Inferior: Botón Leer + Botón Compartir */}
-                  <div className="pt-3 space-y-2 mt-auto relative">
-                    <button
-                      onClick={() => setSelectedPostSlug(post.slug)}
-                      className="w-full bg-black hover:bg-slate-800 text-white text-xs font-bold py-2.5 px-4 rounded-xl transition text-center block"
-                    >
-                      Leer completo
-                    </button>
-
-                    {/* Botón de Compartir */}
-                    <div className="relative">
-                      <button
-                        onClick={() => setOpenShareMenuId(openShareMenuId === post.id ? null : post.id)}
-                        className="w-full bg-slate-200/80 hover:bg-slate-300/80 text-slate-700 text-xs font-bold py-2 px-4 rounded-xl transition flex items-center justify-center gap-1.5"
-                      >
-                        <span>🔗</span>
-                        <span>{copiedPostId === post.id ? "¡Enlace copiado!" : "Compartir"}</span>
-                      </button>
-
-                      {/* Menú Contextual Desplegable */}
-                      {openShareMenuId === post.id && (
-                        <div className="absolute bottom-full left-0 mb-2 w-full bg-white rounded-xl shadow-xl border border-slate-200 p-1.5 z-20 space-y-1 animate-in fade-in zoom-in-95">
-                          <button
-                            onClick={() => handleCopyLink(post.slug, post.id)}
-                            className="w-full text-left px-3 py-2 text-xs text-slate-700 font-semibold hover:bg-slate-100 rounded-lg flex items-center gap-2 transition"
-                          >
-                            <span>📋</span> Copiar enlace
-                          </button>
-                          <button
-                            onClick={() => handleShareWhatsApp(post.title, post.slug)}
-                            className="w-full text-left px-3 py-2 text-xs text-green-700 font-semibold hover:bg-green-50 rounded-lg flex items-center gap-2 transition"
-                          >
-                            <span>💬</span> Enviar por WhatsApp
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  Ver artículo
                 </div>
-              ))}
+              )}
+
+              <h3 className="font-bold text-slate-800 text-base leading-snug line-clamp-2">
+                {post.title}
+              </h3>
             </div>
 
-            {filteredPosts.length > 1 && (
-              <div className="flex justify-between items-center mt-6">
-                <button 
-                  onClick={prevSlide}
-                  className="p-2 bg-slate-100 hover:bg-slate-200 rounded-full transition text-slate-700 font-bold"
-                  aria-label="Anterior"
+            {/* Bloque Inferior: Botones */}
+            <div className="pt-3 space-y-2 mt-auto relative">
+              <button
+                onClick={() => setSelectedPostSlug(post.slug)}
+                className="w-full bg-primary-custom hover:bg-slate-800 text-white text-xs font-bold py-2.5 px-4 rounded-xl transition text-center block"
+              >
+                Leer completo
+              </button>
+
+              <div className="relative">
+                <button
+                  onClick={() => setOpenShareMenuId(openShareMenuId === post.id ? null : post.id)}
+                  className="w-full bg-slate-200/80 hover:bg-slate-300/80 text-primary-custom text-xs font-bold py-2 px-4 rounded-xl transition flex items-center justify-center gap-1.5"
                 >
-                  ←
+                  <span>🔗</span>
+                  <span>{copiedPostId === post.id ? "¡Enlace copiado!" : "Compartir"}</span>
                 </button>
-                <span className="text-xs text-slate-500 font-medium">
-                  {currentSlide + 1} / {filteredPosts.length}
-                </span>
-                <button 
-                  onClick={nextSlide}
-                  className="p-2 bg-slate-100 hover:bg-slate-200 rounded-full transition text-slate-700 font-bold"
-                  aria-label="Siguiente"
-                >
-                  →
-                </button>
+
+                {openShareMenuId === post.id && (
+                  <div className="absolute bottom-full left-0 mb-2 w-full bg-white rounded-xl shadow-xl border border-slate-200 p-1.5 z-20 space-y-1 animate-in fade-in zoom-in-95">
+                    <button
+                      onClick={() => handleCopyLink(post.slug, post.id)}
+                      className="w-full text-left px-3 py-2 text-xs text-primary-custom font-semibold hover:bg-slate-100 rounded-lg flex items-center gap-2 transition"
+                    >
+                      <span>📋</span> Copiar enlace
+                    </button>
+                    <button
+                      onClick={() => handleShareWhatsApp(post.title, post.slug)}
+                      className="w-full text-left px-3 py-2 text-xs bg-green-700 font-semibold hover:bg-green-50 rounded-lg flex items-center gap-2 transition"
+                    >
+                      <span>💬</span> Enviar por WhatsApp
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
-        )}
+        ))}
       </div>
+
+      {/* Flechas de Navegación Flotantes */}
+      {filteredPosts.length > 1 && (
+        <>
+          <button 
+            onClick={() => scrollCarousel("prev")}
+            className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-primary-custom hover:bg-white text-white font-bold rounded-full shadow-lg border border-slate-200 flex items-center justify-center transition backdrop-blur-sm"
+            aria-label="Anterior"
+          >
+            ←
+          </button>
+          <button 
+            onClick={() => scrollCarousel("next")}
+            className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-primary-custom hover:bg-white text-white font-bold rounded-full shadow-lg border border-slate-200 flex items-center justify-center transition backdrop-blur-sm"
+            aria-label="Siguiente"
+          >
+            →
+          </button>
+        </>
+      )}
+    </div>
+  )}
+</div>
 
       {/* Ventana Emergente / Modal Popup */}
       {selectedPostSlug && (

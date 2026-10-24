@@ -1,7 +1,7 @@
 // components/CanvasPdfViewer.jsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 
 import 'react-pdf/dist/Page/AnnotationLayer.css';
@@ -12,6 +12,24 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 export default function CanvasPdfViewer({ pdfUrl }) {
   const [numPages, setNumPages] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const containerRef = useRef(null);
+
+  // Escuchar y medir el ancho del contenedor para adaptar el PDF
+  useEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        // Restamos el padding interno (32px si hay p-4) para que no desborde
+        const width = containerRef.current.clientWidth - 32;
+        setContainerWidth(width > 0 ? width : 300);
+      }
+    };
+
+    updateWidth(); // Medida inicial
+    window.addEventListener('resize', updateWidth);
+
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
 
   function onDocumentLoadSuccess({ numPages }) {
     setNumPages(numPages);
@@ -20,7 +38,8 @@ export default function CanvasPdfViewer({ pdfUrl }) {
 
   return (
     <div 
-      className="flex flex-col items-center select-none overflow-auto max-h-[800px] border border-slate-200 rounded-2xl bg-slate-50 p-4 shadow-inner"
+      ref={containerRef}
+      className="w-full flex flex-col items-center select-none overflow-auto max-h-[800px] border border-slate-200 rounded-2xl bg-slate-50 p-4 shadow-inner"
       onContextMenu={(e) => e.preventDefault()}
     >
       {loading && <p className="text-slate-500 text-xs py-4">Cargando documento...</p>}
@@ -37,7 +56,7 @@ export default function CanvasPdfViewer({ pdfUrl }) {
               pageNumber={index + 1} 
               renderTextLayer={false}
               renderAnnotationLayer={false}
-              width={600}
+              width={containerWidth || 600} // Se adapta al ancho del contenedor
             />
           </div>
         ))}
