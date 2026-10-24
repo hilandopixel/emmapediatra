@@ -1,39 +1,38 @@
-import { collection, getDocs, updateDoc, doc, query, orderBy, where } from "firebase/firestore";
-import { db } from "@/lib/firebaseConfig";
+// app/blog/[slug]/page.jsx
+import { db } from '@/lib/firebaseConfig';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import PdfViewerWrapper from '@/components/PdfViewerWrapper';
+import ProtectedImage from '@/components/ProtectedImage'; // 1. Importar el componente cliente
 
 export default async function BlogPostPage({ params }) {
   const { slug } = await params;
 
-  // Consulta a Firestore
   const q = query(collection(db, 'posts'), where('slug', '==', slug));
   const querySnapshot = await getDocs(q);
 
   if (querySnapshot.empty) {
-    return <div className="p-8 text-center">Artículo no encontrado</div>;
+    return <div className="p-8 text-center text-slate-600">Artículo no encontrado</div>;
   }
 
   const post = querySnapshot.docs[0].data();
 
   return (
     <article className="max-w-3xl mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
+      <h1 className="text-3xl font-extrabold text-slate-900 mb-4">{post.title}</h1>
 
-      {post.coverImageUrl && (
-        <img 
-          src={post.coverImageUrl} 
-          alt={post.title} 
-          className="w-full h-auto rounded-lg mb-6 select-none"
-          draggable={false}
-          onContextMenu={(e) => e.preventDefault()}
-        />
+      {/* 2. Usar el componente de imagen protegida en lugar de <img> con event handlers */}
+      {!post.pdfUrl && post.coverImageUrl && (
+        <ProtectedImage src={post.coverImageUrl} alt={post.title} />
       )}
 
-      <div className="prose mb-8">{post.content}</div>
+      {post.content && (
+        <div className="prose text-slate-700 leading-relaxed mb-8 whitespace-pre-wrap">
+          {post.content}
+        </div>
+      )}
 
       {post.pdfUrl && (
-        <section className="mt-8">
-          {/* Se renderiza el wrapper cliente directamente */}
+        <section className="mt-8 border-t border-slate-100 pt-6">
           <PdfViewerWrapper pdfUrl={post.pdfUrl} />
         </section>
       )}

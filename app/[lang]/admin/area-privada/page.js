@@ -1,9 +1,9 @@
 // app/admin/blog/page.js
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react"; // 1. Importar useRef
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { collection, getDocs, doc, setDoc, updateDoc, deleteDoc, serverTimestamp, getDoc, addDoc } from "firebase/firestore";
+import { collection, getDocs, doc, deleteDoc, serverTimestamp, getDoc, addDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebaseConfig";
 import ArticleFormModal from "@/components/ArticleFormModal";
 
@@ -21,6 +21,16 @@ export default function GestionArticulosAdmin() {
   
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
+
+  // 2. Crear la referencia para el contenedor del formulario
+  const formRef = useRef(null);
+
+  // 3. Effect para hacer scroll automático cuando se abra el formulario
+  useEffect(() => {
+    if (activeModal && formRef.current) {
+      formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [activeModal]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -61,7 +71,6 @@ export default function GestionArticulosAdmin() {
   const fetchArticlesAndCategories = async () => {
     setLoading(true);
     try {
-      // 1. Cargar Mapa de Categorías
       const catSnap = await getDocs(collection(db, "categories"));
       const catMap = {};
       catSnap.docs.forEach((d) => {
@@ -69,7 +78,6 @@ export default function GestionArticulosAdmin() {
       });
       setCategoriesMap(catMap);
 
-      // 2. Cargar Artículos
       const querySnapshot = await getDocs(collection(db, "posts"));
       const data = querySnapshot.docs.map((docSnap) => ({
         id: docSnap.id,
@@ -142,7 +150,7 @@ export default function GestionArticulosAdmin() {
       fetchArticlesAndCategories();
     } catch (err) {
       console.error("Error al eliminar artículo:", err);
-      setError("Hubo un error al eliminar el artículo de Firestore.");
+      setError("Hubo un error al eliminar el artículo.");
       setArticleToDelete(null);
       setConfirmTitleInput("");
     }
@@ -184,30 +192,23 @@ export default function GestionArticulosAdmin() {
       {mensaje && <div className="mb-6 p-4 bg-green-50 text-green-800 rounded-xl text-sm">{mensaje}</div>}
       {error && <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-xl text-sm">{error}</div>}
 
-      {/* Modal Crear */}
-      {activeModal === "create" && (
-        <ArticleFormModal
-          onClose={() => setActiveModal(null)}
-          onSubmit={handleFormSubmit}
-        />
+      {/* 4. Envolver la renderización del Modal con un div asignando la ref */}
+      {activeModal && (
+        <div ref={formRef} className="scroll-mt-6">
+          <ArticleFormModal
+            articleToEdit={activeModal !== "create" ? activeModal : null}
+            onClose={() => setActiveModal(null)}
+            onSubmit={handleFormSubmit}
+          />
+        </div>
       )}
 
-      {/* Modal Editar */}
-      {activeModal && activeModal !== "create" && (
-        <ArticleFormModal
-          articleToEdit={activeModal}
-          onClose={() => setActiveModal(null)}
-          onSubmit={handleFormSubmit}
-        />
-      )}
-
-      {/* Modal Confirmación de Eliminación */}
       {articleToDelete && (
         <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white max-w-md w-full p-6 rounded-2xl shadow-lg border border-slate-200 space-y-4">
             <h3 className="text-xl font-bold text-red-600">¿Estás seguro de eliminar este artículo?</h3>
             <p className="text-sm text-slate-700 leading-relaxed">
-              Esta acción es irreversible. Para confirmar, escribe el título exacto de la entrada: <strong className="text-slate-900">{articleToDelete.title}</strong>
+              Esta acción es irreversible. Para confirmar, escribe el título exacto: <strong className="text-slate-900">{articleToDelete.title}</strong>
             </p>
 
             <form onSubmit={handleDeleteArticleConfirm} className="space-y-4">
@@ -265,7 +266,7 @@ export default function GestionArticulosAdmin() {
                     <tr key={art.id} className="hover:bg-slate-50 transition">
                       <td className="p-4">
                         {art.coverImageUrl ? (
-                          <img src={art.coverImageUrl} alt={art.title} className="w-12 h-12 object-cover rounded-lg" />
+                          <img src={art.coverImageUrl} alt={art.title} className="w-12 h-12 object-cover rounded-lg border" />
                         ) : (
                           <span className="text-xs text-slate-400">Sin foto</span>
                         )}

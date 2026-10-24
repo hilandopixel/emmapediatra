@@ -4,8 +4,11 @@
 import { useState, useEffect } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebaseConfig";
+import * as pdfjs from "pdfjs-dist";
 
-// Función helper para convertir un texto a formato Slug
+// Worker de CDN para pdfjs-dist
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+
 const generateSlug = (text) => {
   return text
     .toLowerCase()
@@ -14,13 +17,30 @@ const generateSlug = (text) => {
     .replace(/(^-|-$)+/g, "");
 };
 
+const generatePdfThumbnailBase64 = async (pdfFile, quality = 0.6) => {
+  const arrayBuffer = await pdfFile.arrayBuffer();
+  const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+  const page = await pdf.getPage(1);
+
+  const viewport = page.getViewport({ scale: 1.0 });
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  
+  canvas.height = viewport.height;
+  canvas.width = viewport.width;
+
+  await page.render({ canvasContext: context, viewport }).promise;
+
+  return canvas.toDataURL("image/webp", quality);
+};
+
 export default function ArticleFormModal({ articleToEdit, onClose, onSubmit }) {
   const isEditing = Boolean(articleToEdit);
 
   const [title, setTitle] = useState(articleToEdit?.title || "");
   const [slug, setSlug] = useState(articleToEdit?.slug || "");
-  const [isSlugCustomized, setIsSlugCustomized] = useState(isEditing); // Si edita, mantiene el slug existente
-  
+  const [isSlugCustomized, setIsSlugCustomized] = useState(isEditing);
+
   const [content, setContent] = useState(articleToEdit?.content || "");
   const [selectedCategories, setSelectedCategories] = useState(articleToEdit?.categoryIds || []);
   const [coverImageUrl, setCoverImageUrl] = useState(articleToEdit?.coverImageUrl || "");
@@ -33,7 +53,6 @@ export default function ArticleFormModal({ articleToEdit, onClose, onSubmit }) {
   const [loading, setLoading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
 
-  // Cargar categorías desde Firestore
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -50,23 +69,17 @@ export default function ArticleFormModal({ articleToEdit, onClose, onSubmit }) {
     fetchCategories();
   }, []);
 
-  // Manejar cambio en el título y auto-generar el slug si no ha sido personalizado
   const handleTitleChange = (e) => {
     const newTitle = e.target.value;
     setTitle(newTitle);
-
-    if (!isSlugCustomized) {
-      setSlug(generateSlug(newTitle));
-    }
+    if (!isSlugCustomized) setSlug(generateSlug(newTitle));
   };
 
-  // Manejar cambio directo en el campo Slug
   const handleSlugChange = (e) => {
     setIsSlugCustomized(true);
     setSlug(generateSlug(e.target.value));
   };
 
-  // Helper para subir archivos a Vercel Blob
   const uploadToVercelBlob = async (file) => {
     const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
       method: "POST",
@@ -97,21 +110,27 @@ export default function ArticleFormModal({ articleToEdit, onClose, onSubmit }) {
       let finalImageUrl = coverImageUrl;
       let finalPdfUrl = pdfUrl;
 
-      // 1. Subir nueva imagen si fue seleccionada
-      if (imageFile) {
-        setUploadStatus("Subiendo imagen...");
-        finalImageUrl = await uploadToVercelBlob(imageFile);
-      }
-
-      // 2. Subir nuevo PDF si fue seleccionado
       if (pdfFile) {
-        setUploadStatus("Subiendo PDF...");
+        setUploadStatus("Subiendo archivo PDF...");
         finalPdfUrl = await uploadToVercelBlob(pdfFile);
+
+        if (!imageFile && !coverImageUrl) {
+          setUploadStatus("Generando miniatura Base64...");
+          finalImageUrl = await generatePdfThumbnailBase64(pdfFile, 0.6);
+        }
       }
 
-      setUploadStatus("Guardando artículo...");
+      if (imageFile) {
+        setUploadStatus("Procesando imagen de portada...");
+        const reader = new FileReader();
+        finalImageUrl = await new Promise((resolve) => {
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(imageFile);
+        });
+      }
 
-      // 3. Garantizar que el slug esté limpio antes de guardar
+      setUploadStatus("Guardando documento...");
+
       const finalSlug = generateSlug(slug || title);
 
       const formData = {
@@ -126,8 +145,8 @@ export default function ArticleFormModal({ articleToEdit, onClose, onSubmit }) {
 
       await onSubmit(formData, isEditing);
     } catch (err) {
-      console.error("Error al procesar el formulario de artículo:", err);
-      alert("Hubo un error al subir los archivos o guardar el artículo.");
+      console.error("Error al procesar el formulario:", err);
+      alert("Hubo un error al generar la miniatura o guardar el artículo.");
     } finally {
       setLoading(false);
       setUploadStatus("");
@@ -144,7 +163,6 @@ export default function ArticleFormModal({ articleToEdit, onClose, onSubmit }) {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Título y Slug */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1 text-slate-700">Título del Artículo *</label>
@@ -190,7 +208,6 @@ export default function ArticleFormModal({ articleToEdit, onClose, onSubmit }) {
           </div>
         </div>
 
-        {/* Categorías */}
         <div className="p-4 bg-slate-50 rounded-xl space-y-2">
           <label className="block text-sm font-bold text-slate-700 mb-1">Categorías asociadas:</label>
           {categories.length === 0 ? (
@@ -212,10 +229,9 @@ export default function ArticleFormModal({ articleToEdit, onClose, onSubmit }) {
           )}
         </div>
 
-        {/* Archivos (Imagen y PDF) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1 text-slate-700">Imagen de Portada</label>
+            <label className="block text-sm font-medium mb-1 text-slate-700">Imagen de Portada (Opcional)</label>
             <input
               type="file"
               accept="image/*"
@@ -223,8 +239,11 @@ export default function ArticleFormModal({ articleToEdit, onClose, onSubmit }) {
               className="w-full text-xs text-slate-500 border rounded-lg p-2.5 bg-white"
             />
             {coverImageUrl && !imageFile && (
-              <p className="text-[11px] text-green-700 mt-1 truncate">Imagen actual: {coverImageUrl}</p>
+              <p className="text-[11px] text-green-700 mt-1 truncate">Imagen en Base64 cargada</p>
             )}
+            <p className="text-[11px] text-slate-400 mt-1">
+              * Si adjuntas un PDF, la primera página se guardará automáticamente como miniatura Base64.
+            </p>
           </div>
 
           <div>
@@ -241,26 +260,26 @@ export default function ArticleFormModal({ articleToEdit, onClose, onSubmit }) {
           </div>
         </div>
 
-        {/* Contenido */}
         <div>
-          <label className="block text-sm font-medium mb-1 text-slate-700">Contenido del Artículo</label>
+          <label className="block text-sm font-medium mb-1 text-slate-700">
+            Contenido del Artículo <span className="text-xs text-slate-400 font-normal">(opcional)</span>
+          </label>
           <textarea
             rows={8}
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Escribe aquí el texto del artículo..."
+            placeholder="Escribe aquí el texto del artículo (opcional)..."
             className="w-full border rounded-lg p-3 text-slate-700 bg-white"
           />
         </div>
 
-        {/* Botones */}
         <div className="flex gap-4 pt-4">
           <button
             type="submit"
             disabled={loading}
             className="px-6 py-3 bg-primary-custom hover:bg-[#266360] text-white font-bold rounded-xl text-sm transition disabled:opacity-50"
           >
-            {loading ? (uploadStatus || "Guardando...") : (isEditing ? "Actualizar artículo" : "Publicar artículo")}
+            {loading ? (uploadStatus || "Procesando...") : (isEditing ? "Actualizar artículo" : "Publicar artículo")}
           </button>
           <button
             type="button"

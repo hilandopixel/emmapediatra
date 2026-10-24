@@ -1,3 +1,4 @@
+// app/area-privada/page.js
 "use client";
 
 import { useState, useEffect } from "react";
@@ -5,22 +6,23 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc, collection, getDocs } from "firebase/firestore";
 import { auth, db } from "@/lib/firebaseConfig";
 import AuthForm from "@/components/AuthForm";
-import PdfViewerWrapper from "@/components/PdfViewerWrapper"; // Reutilizamos el visor de PDF
 
 export default function AreaPrivadaPage() {
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
 
-  // Estados para posts, categorías, filtros y modal
   const [posts, setPosts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [categoriesMap, setCategoriesMap] = useState({});
   const [selectedCategory, setSelectedCategory] = useState("all");
   
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [selectedPostSlug, setSelectedPostSlug] = useState(null);
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Estado para controlar qué menú de compartir está abierto
+  const [openShareMenuId, setOpenShareMenuId] = useState(null);
+  const [copiedPostId, setCopiedPostId] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -48,29 +50,23 @@ export default function AreaPrivadaPage() {
     return () => unsubscribe();
   }, []);
 
-  // Cargar Posts y Categorías cuando el usuario esté logueado y activo
   useEffect(() => {
     if (!user || userData?.activo === false) return;
 
     const fetchData = async () => {
       try {
         setLoadingPosts(true);
-        // 1. Cargar categorías
         const catSnap = await getDocs(collection(db, "categories"));
-        const catMap = {};
         const catList = [];
         
         catSnap.docs.forEach((docSnap) => {
           const data = docSnap.data();
           const catName = data.name || docSnap.id;
-          catMap[docSnap.id] = catName;
           catList.push({ id: docSnap.id, name: catName });
         });
 
-        setCategoriesMap(catMap);
         setCategories(catList);
 
-        // 2. Cargar artículos
         const postsSnap = await getDocs(collection(db, "posts"));
         const postsList = postsSnap.docs.map((docSnap) => ({
           id: docSnap.id,
@@ -87,7 +83,6 @@ export default function AreaPrivadaPage() {
     fetchData();
   }, [user, userData]);
 
-  // Filtrado de posts según categoría
   const filteredPosts = posts.filter((post) => {
     if (selectedCategory === "all") return true;
     return post.categoryIds && post.categoryIds.includes(selectedCategory);
@@ -100,10 +95,29 @@ export default function AreaPrivadaPage() {
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % filteredPosts.length);
+    setOpenShareMenuId(null);
   };
 
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + filteredPosts.length) % filteredPosts.length);
+    setOpenShareMenuId(null);
+  };
+
+  // Función para copiar el enlace del artículo
+  const handleCopyLink = (slug, postId) => {
+    const postUrl = `${window.location.origin}/blog/${slug}`;
+    navigator.clipboard.writeText(postUrl);
+    setCopiedPostId(postId);
+    setTimeout(() => setCopiedPostId(null), 2000);
+    setOpenShareMenuId(null);
+  };
+
+  // Función para compartir por WhatsApp
+  const handleShareWhatsApp = (title, slug) => {
+    const postUrl = `${window.location.origin}/blog/${slug}`;
+    const text = encodeURIComponent(`Mira este artículo: *${title}*\n${postUrl}`);
+    window.open(`https://api.whatsapp.com/send?text=${text}`, "_blank");
+    setOpenShareMenuId(null);
   };
 
   if (loadingAuth) {
@@ -207,76 +221,73 @@ export default function AreaPrivadaPage() {
               {filteredPosts.map((post) => (
                 <div 
                   key={post.id} 
-                  className="min-w-full md:min-w-[48%] lg:min-w-[31%] bg-slate-50 border border-slate-200 rounded-2xl p-5 flex flex-col justify-between shrink-0 shadow-sm hover:shadow-md transition"
+                  className="w-full md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] h-[380px] bg-slate-50 border border-slate-200 rounded-2xl p-5 flex flex-col justify-between shrink-0 shadow-sm hover:shadow-md transition relative"
                 >
+                  {/* Bloque Superior: Portada y Título */}
                   <div className="space-y-3">
-                    {/* Visualización multimedia: Imagen o Miniatura PDF */}
                     {post.coverImageUrl ? (
                       <img 
                         src={post.coverImageUrl} 
                         alt={post.title} 
-                        className="w-full h-44 object-cover rounded-xl border border-slate-100"
+                        className="w-full h-44 object-cover object-top rounded-xl border border-slate-100 cursor-pointer"
+                        onClick={() => setSelectedPostSlug(post.slug)}
                       />
-                    ) : post.pdfUrl ? (
+                    ) : (
                       <div 
                         onClick={() => setSelectedPostSlug(post.slug)}
-                        className="relative w-full h-44 bg-slate-100 rounded-xl overflow-hidden border border-slate-200 cursor-pointer group"
+                        className="w-full h-44 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 text-xs font-medium cursor-pointer"
                       >
-                        {/* Renderizado de la primera página del PDF */}
-                        <div className="pointer-events-none scale-75 origin-top-left w-[133%] h-[133%] overflow-hidden">
-                          <PdfViewerWrapper pdfUrl={post.pdfUrl} />
-                        </div>
-                        {/* Overlay al pasar el ratón */}
-                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                          <span className="bg-black/75 text-white text-xs font-bold px-3 py-1.5 rounded-lg backdrop-blur-sm">
-                            📄 Ver documento PDF
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="w-full h-44 bg-slate-200/60 rounded-xl flex items-center justify-center text-slate-400 text-xs font-medium">
-                        Sin vista previa
+                        Ver artículo
                       </div>
                     )}
 
-                    {/* Categorías / Badges */}
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {post.categoryIds && post.categoryIds.length > 0 ? (
-                        post.categoryIds.map((catId) => (
-                          <span 
-                            key={catId} 
-                            className="bg-primary-custom/10 text-primary-custom text-[11px] font-semibold px-2.5 py-1 rounded-full"
-                          >
-                            {categoriesMap[catId] || catId}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="bg-slate-200 text-slate-600 text-[11px] font-medium px-2.5 py-1 rounded-full">
-                          Sin categoría
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Título del Post */}
-                    <h3 className="font-bold text-slate-800 text-lg leading-snug line-clamp-2">
+                    <h3 className="font-bold text-slate-800 text-base leading-snug line-clamp-2">
                       {post.title}
                     </h3>
                   </div>
 
-                  {/* Botón Abrir Popup */}
-                  <div className="pt-5 mt-auto">
+                  {/* Bloque Inferior: Botón Leer + Botón Compartir */}
+                  <div className="pt-3 space-y-2 mt-auto relative">
                     <button
                       onClick={() => setSelectedPostSlug(post.slug)}
                       className="w-full bg-black hover:bg-slate-800 text-white text-xs font-bold py-2.5 px-4 rounded-xl transition text-center block"
                     >
                       Leer completo
                     </button>
+
+                    {/* Botón de Compartir */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setOpenShareMenuId(openShareMenuId === post.id ? null : post.id)}
+                        className="w-full bg-slate-200/80 hover:bg-slate-300/80 text-slate-700 text-xs font-bold py-2 px-4 rounded-xl transition flex items-center justify-center gap-1.5"
+                      >
+                        <span>🔗</span>
+                        <span>{copiedPostId === post.id ? "¡Enlace copiado!" : "Compartir"}</span>
+                      </button>
+
+                      {/* Menú Contextual Desplegable */}
+                      {openShareMenuId === post.id && (
+                        <div className="absolute bottom-full left-0 mb-2 w-full bg-white rounded-xl shadow-xl border border-slate-200 p-1.5 z-20 space-y-1 animate-in fade-in zoom-in-95">
+                          <button
+                            onClick={() => handleCopyLink(post.slug, post.id)}
+                            className="w-full text-left px-3 py-2 text-xs text-slate-700 font-semibold hover:bg-slate-100 rounded-lg flex items-center gap-2 transition"
+                          >
+                            <span>📋</span> Copiar enlace
+                          </button>
+                          <button
+                            onClick={() => handleShareWhatsApp(post.title, post.slug)}
+                            className="w-full text-left px-3 py-2 text-xs text-green-700 font-semibold hover:bg-green-50 rounded-lg flex items-center gap-2 transition"
+                          >
+                            <span>💬</span> Enviar por WhatsApp
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Flechas de navegación */}
             {filteredPosts.length > 1 && (
               <div className="flex justify-between items-center mt-6">
                 <button 
@@ -299,24 +310,6 @@ export default function AreaPrivadaPage() {
               </div>
             )}
           </div>
-        )}
-      </div>
-
-      {/* Recursos previos */}
-      <div className="bg-white p-8 rounded-2xl shadow-md border border-slate-100 space-y-6">
-        <h2 className="text-xl font-bold text-primary-custom">Tus recursos y materiales exclusivos</h2>
-        
-        {userData?.recursosPermitidos && userData.recursosPermitidos.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4">
-            {userData.recursosPermitidos.map((recursoId) => (
-              <div key={recursoId} className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex justify-between items-center">
-                <span className="font-semibold text-slate-700">Material / Evento: {recursoId}</span>
-                <span className="text-xs bg-primary-custom text-white px-3 py-1 rounded-full font-medium">Disponible</span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-slate-700">No tienes materiales asignados en este momento. Te notificaremos cuando se añada nuevo contenido.</p>
         )}
       </div>
 
