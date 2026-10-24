@@ -103,12 +103,12 @@ export default function UserFormModal({ userToEdit, isGlobalAdmin, onClose, onSu
               type="tel" 
               value={telefono} 
               onChange={(e) => setTelefono(e.target.value)} 
-              placeholder="+34 600 000 000" 
+              placeholder="600000000" 
               className="w-full border rounded-lg p-3 text-slate-700 bg-white" 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1 text-slate-700">¿Cómo conociste esta área privad?</label>
+            <label className="block text-sm font-medium mb-1 text-slate-700">¿Cómo conociste esta área privada?</label>
             <select 
               value={origenEncuentro} 
               onChange={(e) => setOrigenEncuentro(e.target.value)} 
@@ -143,7 +143,7 @@ export default function UserFormModal({ userToEdit, isGlobalAdmin, onClose, onSu
               onChange={(e) => setAceptaPolitica(e.target.checked)}
               className="w-4 h-4 text-primary-custom rounded" 
             />
-            <label htmlFor="politicaCheck" className="text-sm font-medium text-slate-700">Al enviar este formulario, usted acepta la <a href="/assets/politica-privacidad-es.pdf">política de privacidad</a> para poder utilizar estos contenidos y recibir información sobre alimentación infantil</label>
+            <label htmlFor="politicaCheck" className="text-sm font-medium text-slate-700">Al enviar este formulario, usted acepta la <a className="text-primary-custom" target="_blank"  href="/assets/politica-privacidad-es.pdf">política de privacidad</a> para poder utilizar estos contenidos y recibir información sobre alimentación infantil</label>
           </div>
         </div>
 

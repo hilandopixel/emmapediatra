@@ -46,7 +46,7 @@ export default function AuthForm({ onSuccess }) {
           updatedAt: serverTimestamp(),
         });
 
-        setMensajeExito("Solicitud de registro completada, revisaremos en la mayor brevedad posible, Muchas gracias.");
+        setMensajeExito("Hemos recibido su solicitud y pronto tendrá acceso al área privada.");
         setIsRegistering(false);
         setAceptaPolitica(false);
         e.target.reset();
@@ -99,7 +99,7 @@ export default function AuthForm({ onSuccess }) {
                 type="text" 
                 name="nombre" 
                 required 
-                placeholder="Tu nombre completo"
+                placeholder="Tu nombre y apellidos completos"
                 className="w-full border rounded-lg p-3 text-slate-700 bg-white"
               />
             </div>
@@ -110,23 +110,24 @@ export default function AuthForm({ onSuccess }) {
                 type="tel" 
                 name="telefono" 
                 required 
-                placeholder="+34 600 000 000"
+                placeholder="666666666"
                 className="w-full border rounded-lg p-3 text-slate-700 bg-white"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1 text-slate-700">¿Cómo has encontrado esta sección?</label>
+              <label className="block text-sm font-medium mb-1 text-slate-700">¿Cómo conociste esta área privada?</label>
               <select 
                 name="origenEncuentro" 
                 required
                 defaultValue=""
                 className="w-full border rounded-lg p-3 text-slate-700 bg-white"
               >
-                <option value="" disabled>Selecciona una opción...</option>
-                <option value="Recomendación de la doctora">A) Recomendación de la doctora</option>
-                <option value="Recomendación de amigos">B) Recomendación de amigos</option>
-                <option value="Buscando en la web">C) Buscando en la web</option>
+                <option value="">Selecciona una opción...</option>
+                <option value="Referencia de amigos/familiares">Referencia de amigos/familiares</option>
+                <option value="Buscando en la web">Buscando en la web</option>
+                <option value="Me informaron durante la consulta">Me informaron durante la consulta</option>
+                <option value="Otro">Otro</option>
               </select>
             </div>
 
@@ -138,10 +139,8 @@ export default function AuthForm({ onSuccess }) {
                 onChange={(e) => setAceptaPolitica(e.target.checked)}
                 className="w-4 h-4 mt-0.5 text-primary-custom rounded"
               />
-              <label htmlFor="aceptaPolitica" className="text-xs text-slate-700 leading-relaxed font-medium cursor-pointer">
-                Al enviar tu solicitud, acepta las condiciones de política de privacidad y de comunicación.
-              </label>
-            </div>
+              <label htmlFor="politicaCheck" className="text-sm font-medium text-slate-700">Al enviar este formulario, usted acepta la <a className="text-primary-custom" target="_blank"  href="/assets/politica-privacidad-es.pdf">política de privacidad</a> para poder utilizar estos contenidos y recibir información sobre alimentación infantil</label>
+          </div>
           </>
         )}
 
