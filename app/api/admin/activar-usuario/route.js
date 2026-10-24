@@ -53,7 +53,7 @@ export async function POST(request) {
 
     // 5. Enviar el correo con Resend usando TU enlace directo
     const { error: emailError } = await resend.emails.send({
-      from: 'Asistencia <onboarding@resend.dev>',
+      from: 'Emma López Pediatra <noreply@emmapediatra.com>',
       to: [email.toLowerCase()],
       subject: '¡Tu cuenta ha sido activada!',
       html: `
