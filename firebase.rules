@@ -33,7 +33,7 @@ service cloud.firestore {
     // 3. Consultas de videoconsulta / citas
     match /posts/{document=**} {
       allow create: if request.auth != null;
-      allow read: if true;
+      allow read: if request.auth != null;
       allow update: if request.auth != null;
       allow delete: if request.auth != null;
     }
