@@ -108,16 +108,17 @@ export default function UserFormModal({ userToEdit, isGlobalAdmin, onClose, onSu
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1 text-slate-700">¿Cómo ha encontrado esta sección?</label>
+            <label className="block text-sm font-medium mb-1 text-slate-700">¿Cómo conociste esta área privad?</label>
             <select 
               value={origenEncuentro} 
               onChange={(e) => setOrigenEncuentro(e.target.value)} 
               className="w-full border rounded-lg p-3 text-slate-700 bg-white"
             >
               <option value="">Selecciona una opción...</option>
-              <option value="Recomendación de la doctora">A) Recomendación de la doctora</option>
-              <option value="Recomendación de amigos">B) Recomendación de amigos</option>
-              <option value="Buscando en la web">C) Buscando en la web</option>
+              <option value="Referencia de amigos/familiares">Referencia de amigos/familiares</option>
+              <option value="Buscando en la web">Buscando en la web</option>
+              <option value="Me informaron durante la consulta">Me informaron durante la consulta</option>
+              <option value="Otro">Otro</option>
             </select>
           </div>
         </div>
@@ -142,7 +143,7 @@ export default function UserFormModal({ userToEdit, isGlobalAdmin, onClose, onSu
               onChange={(e) => setAceptaPolitica(e.target.checked)}
               className="w-4 h-4 text-primary-custom rounded" 
             />
-            <label htmlFor="politicaCheck" className="text-sm font-medium text-slate-700">Acepta Privacidad</label>
+            <label htmlFor="politicaCheck" className="text-sm font-medium text-slate-700">Al enviar este formulario, usted acepta la <a href="/assets/politica-privacidad-es.pdf">política de privacidad</a> para poder utilizar estos contenidos y recibir información sobre alimentación infantil</label>
           </div>
         </div>
 

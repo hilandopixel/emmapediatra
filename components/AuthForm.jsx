@@ -184,7 +184,7 @@ export default function AuthForm({ onSuccess }) {
         >
           {isRegistering 
             ? "¿Ya tienes una cuenta? Inicia sesión aquí" 
-            : "Si es la primera vez que accedes, pincha aquí para registrarte"}
+            : "Si es la primera vez que accede, debes registrarte aquí"}
         </button>
       </div>
     </div>
