@@ -154,7 +154,7 @@ export default function AuthForm({ onSuccess }) {
             className="w-full border rounded-lg p-3 text-slate-700 bg-white"
           />
         </div>
-
+{!isRegistering ?
         <div>
           <label className="block text-sm font-medium mb-1 text-slate-700">Contraseña</label>
           <input 
@@ -165,6 +165,7 @@ export default function AuthForm({ onSuccess }) {
             className="w-full border rounded-lg p-3 text-slate-700 bg-white"
           />
         </div>
+        : ""}
 
         <button 
           type="submit" 
