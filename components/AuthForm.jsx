@@ -30,7 +30,7 @@ export default function AuthForm({ onSuccess }) {
 
     try {
       if (isRegistering) {
-        // Guardamos la solicitud directamente en Firestore SIN pasar por Firebase Auth
+        // 1. Guardar la solicitud en Firestore
         const userRef = doc(db, "usuarios_autorizados", email);
         await setDoc(userRef, {
           email,
@@ -38,7 +38,7 @@ export default function AuthForm({ onSuccess }) {
           telefono,
           origenEncuentro,
           aceptaPolitica: true,
-          activo: false, // Pendiente de revisión
+          activo: false, // Pendiente de revisión por el admin
           roles: [],
           permisos: [],
           recursosPermitidos: [],
@@ -46,12 +46,28 @@ export default function AuthForm({ onSuccess }) {
           updatedAt: serverTimestamp(),
         });
 
+        // 2. Enviar notificación por correo a tu Gmail usando Nodemailer
+        try {
+          await fetch('/api/admin/notificar-nuevo-usuario', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email,
+              nombre,
+              telefono,
+              origenEncuentro,
+            }),
+          });
+        } catch (mailErr) {
+          console.error("Error al enviar notificación por email:", mailErr);
+        }
+
         setMensajeExito("Hemos recibido su solicitud y pronto tendrá acceso al área privada.");
         setIsRegistering(false);
         setAceptaPolitica(false);
         e.target.reset();
       } else {
-        // Inicio de sesión normal (solo para cuentas ya activadas y con Auth creado)
+        // Inicio de sesión normal
         await signInWithEmailAndPassword(auth, email, password);
         if (onSuccess) onSuccess();
       }
@@ -154,7 +170,8 @@ export default function AuthForm({ onSuccess }) {
             className="w-full border rounded-lg p-3 text-slate-700 bg-white"
           />
         </div>
-{!isRegistering ?
+
+        {!isRegistering ?
         <div>
           <label className="block text-sm font-medium mb-1 text-slate-700">Contraseña</label>
           <input 

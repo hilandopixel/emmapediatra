@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { adminAuth, adminDb } from "@/lib/firebaseAdmin";
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import nodemailer from 'nodemailer';
 
 export async function POST(request) {
   try {
@@ -62,14 +60,15 @@ export async function POST(request) {
       updatedAt: new Date(),
     });
 
-    // 5. Enviar el correo con Resend usando TU enlace directo
-    const { error: emailError } = await resend.emails.send({
-      from: 'Emma López Pediatra <noreply@emmapediatra.com>',
-      to: [email.toLowerCase()],
-      subject: '¡Tu cuenta ha sido activada!',
-      html: `
-        <div style="font-family: Arial, sans-serif; color: #d01156; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
-          <h2 style="color: #d01156-align: center;">¡Bienvenido/a al Área Privada!</h2>
+
+      // Plantilla del correo electrónico
+      const mailOptions = {
+        from: `"${process.env.GMAIL_FROM_NAME}" <${process.env.GMAIL_USER}>`,
+        to: [email.toLowerCase()],
+        subject: `${userName} Tu cuenta en EmmaPediatra ha sido activada`,
+        html: `
+        <div style="font-family: Arial, sans-serif; background-color: #ffffff; color: #d01156; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+          <h2 style="background-color: #ffffff; color: #d01156-align: center;">¡Bienvenido/a al Área Privada!</h2>
           <p>Hola ${userName},</p>
           <p>Tu solicitud ha sido aprobada. Ya puedes configurar tu contraseña de acceso haciendo clic en el siguiente botón:</p>
           <div style="text-align: center; margin: 30px 0;">
@@ -77,13 +76,27 @@ export async function POST(request) {
               Establecer mi contraseña
             </a>
           </div>
-          <p style="font-size: 12px; color: #d01156; text-align: center;">Si no has solicitado este acceso, puedes ignorar este mensaje.</p>
+          <p style="font-size: 12px; background-color: #ffffff; color: #d01156; text-align: center;">Si no has solicitado este acceso, puedes ignorar este mensaje.</p>
         </div>
-      `,
-    });
+        `,
+      };
+
+         
+      // Configurar el transportador SMTP de Gmail
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.GMAIL_USER,
+          pass: process.env.GMAIL_APP_PASSWORD,
+        },
+      });
+
+      // Enviar el correo electrónico
+      const { error: emailError } = await transporter.sendMail(mailOptions);
+
 
     if (emailError) {
-      console.error("Error al enviar el correo con Resend:", emailError);
+      console.error("Error al enviar el correo:", emailError);
       return NextResponse.json({ error: "Usuario activado, pero falló el envío del correo." }, { status: 500 });
     }
 

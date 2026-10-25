@@ -16,7 +16,8 @@
     "react-dom": "^19.0.0",
     "resend": "^6.28.1",
     "react-pdf": "^11.0.0",
-    "@vercel/blob": "^2.8.2"
+    "@vercel/blob": "^2.8.2",
+    "nodemailer": "^10.2.1"
   },
   "devDependencies": {
     "autoprefixer": "^10.6.1",
