@@ -1,9 +1,11 @@
+// components/AuthForm.jsx
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "@/lib/firebaseConfig";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 export default function AuthForm({ onSuccess }) {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -12,9 +14,19 @@ export default function AuthForm({ onSuccess }) {
   const [error, setError] = useState("");
   const [mensajeExito, setMensajeExito] = useState("");
 
+  // Estado y referencia para el Captcha
+  const [captchaToken, setCaptchaToken] = useState(null);
+  const turnstileRef = useRef(null);
+
   const handleAuth = async (e) => {
     e.preventDefault();
     if (isRegistering && !aceptaPolitica) return;
+
+    // 1. Validar que el captcha se haya resuelto
+    if (!captchaToken) {
+      setError("Por favor, completa la verificación de seguridad (Captcha).");
+      return;
+    }
 
     setLoading(true);
     setError("");
@@ -29,8 +41,21 @@ export default function AuthForm({ onSuccess }) {
     const origenEncuentro = formData.get("origenEncuentro") || "";
 
     try {
+      // 2. Verificar el token del Captcha en la API Route de la app
+      const captchaRes = await fetch("/api/verify-captcha", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: captchaToken }),
+      });
+
+      const captchaData = await captchaRes.json();
+
+      if (!captchaData.success) {
+        throw new Error("CAPTCHA_FAILED");
+      }
+
+      // 3. Procesar autenticación o registro en Firebase
       if (isRegistering) {
-        // 1. Guardar la solicitud en Firestore
         const userRef = doc(db, "usuarios_autorizados", email);
         await setDoc(userRef, {
           email,
@@ -38,7 +63,7 @@ export default function AuthForm({ onSuccess }) {
           telefono,
           origenEncuentro,
           aceptaPolitica: true,
-          activo: false, // Pendiente de revisión por el admin
+          activo: false,
           roles: [],
           permisos: [],
           recursosPermitidos: [],
@@ -46,17 +71,12 @@ export default function AuthForm({ onSuccess }) {
           updatedAt: serverTimestamp(),
         });
 
-        // 2. Enviar notificación por correo a tu Gmail usando Nodemailer
+        // Notificación por email
         try {
-          await fetch('/api/admin/notificar-nuevo-usuario', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              email,
-              nombre,
-              telefono,
-              origenEncuentro,
-            }),
+          await fetch("/api/notificar-registro", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, nombre, telefono, origenEncuentro }),
           });
         } catch (mailErr) {
           console.error("Error al enviar notificación por email:", mailErr);
@@ -67,19 +87,25 @@ export default function AuthForm({ onSuccess }) {
         setAceptaPolitica(false);
         e.target.reset();
       } else {
-        // Inicio de sesión normal
         await signInWithEmailAndPassword(auth, email, password);
         if (onSuccess) onSuccess();
       }
     } catch (err) {
       console.error("Error en autenticación:", err);
-      if (err.code === "auth/user-not-found" || err.code === "auth/invalid-credential") {
+      if (err.message === "CAPTCHA_FAILED") {
+        setError("Fallo en la verificación anti-bot. Por favor, reintenta.");
+      } else if (err.code === "auth/user-not-found" || err.code === "auth/invalid-credential") {
         setError("Credenciales incorrectas o cuenta pendiente de aprobación por el administrador.");
       } else {
         setError("Ocurrió un error al procesar tu solicitud.");
       }
     } finally {
       setLoading(false);
+      // Reiniciar el widget del captcha después de intentar enviar
+      setCaptchaToken(null);
+      if (turnstileRef.current) {
+        turnstileRef.current.reset();
+      }
     }
   };
 
@@ -150,13 +176,15 @@ export default function AuthForm({ onSuccess }) {
             <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-xl">
               <input 
                 type="checkbox" 
-                id="aceptaPolitica"
+                id="aceptaPoliticaCheck"
                 checked={aceptaPolitica}
                 onChange={(e) => setAceptaPolitica(e.target.checked)}
                 className="w-4 h-4 mt-0.5 text-primary-custom rounded"
               />
-              <label htmlFor="politicaCheck" className="text-sm font-medium text-slate-700">Al enviar este formulario, usted acepta la <a className="text-primary-custom" target="_blank"  href="/assets/politica-privacidad-es.pdf">política de privacidad</a> para poder utilizar estos contenidos y recibir información sobre alimentación infantil</label>
-          </div>
+              <label htmlFor="aceptaPoliticaCheck" className="text-sm font-medium text-slate-700">
+                Al enviar este formulario, usted acepta la <a className="text-primary-custom" target="_blank" href="/assets/politica-privacidad-es.pdf">política de privacidad</a> para poder utilizar estos contenidos.
+              </label>
+            </div>
           </>
         )}
 
@@ -171,7 +199,7 @@ export default function AuthForm({ onSuccess }) {
           />
         </div>
 
-        {!isRegistering ?
+        { !isRegistering ? 
         <div>
           <label className="block text-sm font-medium mb-1 text-slate-700">Contraseña</label>
           <input 
@@ -181,12 +209,22 @@ export default function AuthForm({ onSuccess }) {
             placeholder="••••••••"
             className="w-full border rounded-lg p-3 text-slate-700 bg-white"
           />
+        </div> : ""}
+
+        {/* Widget del Captcha */}
+        <div className="flex justify-center py-2">
+          <Turnstile
+            ref={turnstileRef}
+            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+            onSuccess={(token) => setCaptchaToken(token)}
+            onExpire={() => setCaptchaToken(null)}
+            onError={() => setCaptchaToken(null)}
+          />
         </div>
-        : ""}
 
         <button 
           type="submit" 
-          disabled={loading || (isRegistering && !aceptaPolitica)}
+          disabled={loading || !captchaToken || (isRegistering && !aceptaPolitica)}
           className="w-full py-3 bg-primary-custom hover:bg-[#266360] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition text-sm"
         >
           {loading ? "Procesando..." : (isRegistering ? "Enviar solicitud de registro" : "Iniciar sesión")}
@@ -196,7 +234,12 @@ export default function AuthForm({ onSuccess }) {
       <div className="mt-6 text-center">
         <button 
           type="button"
-          onClick={() => { setIsRegistering(!isRegistering); setError(""); setMensajeExito(""); setAceptaPolitica(false); }}
+          onClick={() => { 
+            setIsRegistering(!isRegistering); 
+            setError(""); 
+            setMensajeExito(""); 
+            setAceptaPolitica(false); 
+          }}
           className="text-sm text-pink-600 hover:underline font-medium"
         >
           {isRegistering 

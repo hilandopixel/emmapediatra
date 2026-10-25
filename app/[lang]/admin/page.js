@@ -23,6 +23,7 @@ import {
 import { auth, db } from "@/lib/firebaseConfig";
 import UserFormModal from "@/components/UserFormModal";
 import ArticleFormModal from "@/components/ArticleFormModal";
+import { Turnstile } from "@marsidev/react-turnstile"; // 1. Importar Turnstile
 
 export default function AdminDashboardPage() {
   const [user, setUser] = useState(null);
@@ -37,6 +38,10 @@ export default function AdminDashboardPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
+
+  // Captcha para el login de admin
+  const [adminCaptchaToken, setAdminCaptchaToken] = useState(null);
+  const turnstileRef = useRef(null);
 
   // Mensajes globales de feedback
   const [mensaje, setMensaje] = useState("");
@@ -100,7 +105,6 @@ export default function AdminDashboardPage() {
               setIsGlobalAdmin(esGlobal);
               setCanDeleteUsers(esGlobal || permisos.includes("borrar_usuarios"));
 
-              // Cargar todos los módulos
               fetchConsultas();
               fetchUsuarios();
               fetchArticlesAndCategories();
@@ -123,15 +127,44 @@ export default function AdminDashboardPage() {
     return () => unsubscribe();
   }, []);
 
-  // Login
+  // Login protegido con Captcha
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoginError("");
+
+    if (!adminCaptchaToken) {
+      setLoginError("Por favor, completa la verificación de seguridad (Captcha).");
+      return;
+    }
+
     try {
+      // Validar el token del captcha en el servidor
+      const captchaRes = await fetch("/api/verify-captcha", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: adminCaptchaToken }),
+      });
+
+      const captchaData = await captchaRes.json();
+
+      if (!captchaData.success) {
+        throw new Error("CAPTCHA_FAILED");
+      }
+
       await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
-      console.error("Error en login:", err);
-      setLoginError("Credenciales incorrectas o usuario no autorizado.");
+      console.error("Error en login de admin:", err);
+      if (err.message === "CAPTCHA_FAILED") {
+        setLoginError("Fallo en la verificación anti-bot. Por favor, reintenta.");
+      } else {
+        setLoginError("Credenciales incorrectas o usuario no autorizado.");
+      }
+    } finally {
+      // Resetear el captcha tras el intento
+      setAdminCaptchaToken(null);
+      if (turnstileRef.current) {
+        turnstileRef.current.reset();
+      }
     }
   };
 
@@ -372,6 +405,7 @@ export default function AdminDashboardPage() {
     return <div className="text-center py-24 text-slate-500">Verificando sesión y permisos...</div>;
   }
 
+  // Pantalla de Login si no hay permisos o sesión
   if (!user || !hasPermission) {
     return (
       <div className="max-w-md mx-auto my-24 bg-white p-8 rounded-2xl shadow-md border border-slate-100">
@@ -394,7 +428,7 @@ export default function AdminDashboardPage() {
               value={email} 
               onChange={(e) => setEmail(e.target.value)} 
               required 
-              className="w-full border rounded-lg p-3"
+              className="w-full border rounded-lg p-3 bg-white"
             />
           </div>
           <div>
@@ -404,12 +438,25 @@ export default function AdminDashboardPage() {
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
               required 
-              className="w-full border rounded-lg p-3"
+              className="w-full border rounded-lg p-3 bg-white"
             />
           </div>
+
+          {/* Widget del Captcha en el Login de Admin */}
+          <div className="flex justify-center py-2">
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+              onSuccess={(token) => setAdminCaptchaToken(token)}
+              onExpire={() => setAdminCaptchaToken(null)}
+              onError={() => setAdminCaptchaToken(null)}
+            />
+          </div>
+
           <button 
             type="submit" 
-            className="w-full py-3 bg-primary-custom hover:bg-[#266360] text-white font-bold rounded-xl transition"
+            disabled={!adminCaptchaToken}
+            className="w-full py-3 bg-primary-custom hover:bg-[#266360] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition"
           >
             Iniciar sesión
           </button>
