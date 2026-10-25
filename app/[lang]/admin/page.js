@@ -677,7 +677,7 @@ export default function AdminDashboardPage() {
       {activeTab === "usuarios" && (
         <section className="space-y-6">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-slate-800">Gestión de Usuarios Autorizados</h2>
+            <h2 className="text-xl font-bold text-slate-800">Gestión de Usuarios</h2>
             <button
               onClick={() => setActiveUserModal("create")}
               className="px-4 py-2 bg-primary-custom hover:bg-[#266360] text-white text-xs font-bold rounded-xl transition"
@@ -815,14 +815,14 @@ export default function AdminDashboardPage() {
                       >
                         ✏️ Modificar
                       </button>
-                      {canDeleteUsers && (
+                      
                         <button
                           onClick={() => { setUserToDelete(u); setConfirmUserEmailInput(""); }}
                           className="bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold py-2.5 px-4 rounded-xl transition text-center"
                         >
                           🗑️ Eliminar
                         </button>
-                      )}
+                      
                     </div>
                   </div>
                 ))}
@@ -887,14 +887,14 @@ export default function AdminDashboardPage() {
                             >
                               Modificar
                             </button>
-                            {canDeleteUsers && (
+                            
                               <button
                                 onClick={() => { setUserToDelete(u); setConfirmUserEmailInput(""); }}
                                 className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold rounded-lg transition"
                               >
                                 Eliminar
                               </button>
-                            )}
+                            
                           </td>
                         </tr>
                       ))}
