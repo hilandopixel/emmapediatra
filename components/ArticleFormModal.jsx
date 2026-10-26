@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "@/lib/firebaseConfig";
+import { auth, db } from "@/lib/firebaseConfig"; // 1. Importar auth de Firebase
 import * as pdfjs from "pdfjs-dist";
 
 // Worker de CDN para pdfjs-dist
@@ -80,14 +80,26 @@ export default function ArticleFormModal({ articleToEdit, onClose, onSubmit }) {
     setSlug(generateSlug(e.target.value));
   };
 
+  // 2. Función actualizada para enviar el ID Token de Firebase en la cabecera Authorization
   const uploadToVercelBlob = async (file) => {
-    const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error("No hay una sesión activa para realizar la subida de archivos.");
+    }
+
+    const token = await user.getIdToken();
+
+    const response = await fetch(`/api/admin/upload-blob?filename=${encodeURIComponent(file.name)}`, {
       method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`, // 👈 Cabecera de autenticación con el Bearer token
+      },
       body: file,
     });
 
     if (!response.ok) {
-      throw new Error("Error al subir el archivo a Vercel Blob");
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "Error al subir el archivo a Vercel Blob");
     }
 
     const blobData = await response.json();
@@ -146,7 +158,7 @@ export default function ArticleFormModal({ articleToEdit, onClose, onSubmit }) {
       await onSubmit(formData, isEditing);
     } catch (err) {
       console.error("Error al procesar el formulario:", err);
-      alert("Hubo un error al generar la miniatura o guardar el artículo.");
+      alert(err.message || "Hubo un error al generar la miniatura o guardar el artículo.");
     } finally {
       setLoading(false);
       setUploadStatus("");

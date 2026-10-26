@@ -8,7 +8,7 @@ function getLocale(request) {
   const acceptLanguage = request.headers.get('accept-language');
   if (!acceptLanguage) return defaultLocale;
 
-  // Analiza las preferencias del navegador (ej: "it-IT,it;q=0.9,en-US;q=0.8")
+  // Analiza las preferencias del navegador
   const preferredLang = acceptLanguage
     .split(',')[0]
     .split('-')[0]
@@ -20,7 +20,13 @@ function getLocale(request) {
 export function middleware(request) {
   const { pathname } = request.nextUrl;
 
-  // Comprueba si la ruta ya incluye un idioma válido (ej: /es/sobre-mi, /en/contacto)
+  // IMPORTANTE: Evita intervenir si es un archivo o script (rutas con extensión .js, .png, etc.)
+  // que no estén cazadas en el matcher.
+  if (pathname.includes('.') || pathname.startsWith('/_next')) {
+    return;
+  }
+
+  // Comprueba si la ruta ya incluye un idioma válido
   const pathnameHasLocale = locales.some(
     (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
   );
@@ -36,7 +42,7 @@ export function middleware(request) {
 
 export const config = {
   matcher: [
-    // Excluye archivos internos, imágenes, assets y llamadas a API para que no sufran redirecciones
+    // Excluye archivos internos, imágenes, assets, favicon y API
     '/((?!api|_next/static|_next/image|assets|favicon.ico).*)',
   ],
 };

@@ -73,7 +73,7 @@ export default function AuthForm({ onSuccess }) {
 
         // Notificación por email
         try {
-          await fetch("/api/notificar-registro", {
+          await fetch("/api/admin/notificar-nuevo-usuario", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, nombre, telefono, origenEncuentro }),
@@ -111,7 +111,7 @@ export default function AuthForm({ onSuccess }) {
 
   return (
     <div className="max-w-md mx-auto bg-white p-8 rounded-2xl shadow-md border border-slate-100">
-      <h2 className="text-2xl font-bold text-secondary-custom mb-2 text-center">
+      <h2 className="text-2xl font-bold text-primary-custom mb-2 text-center">
         {isRegistering ? "Crear una cuenta" : "Acceso de Usuario"}
       </h2>
       <p className="text-xs text-slate-500 text-center mb-6">

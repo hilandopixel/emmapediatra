@@ -31,7 +31,12 @@ export default function AreaPrivadaPage() {
       setUser(currentUser);
       if (currentUser && currentUser.email) {
         try {
-          const userRef = doc(db, "usuarios_autorizados", currentUser.email.toLowerCase());
+          // 1. Refrescar explícitamente el token de Firebase Auth para evitar estados en caché
+          await currentUser.getIdToken(true);
+
+          // 2. Consultar en Firestore pasando el email siempre en minúsculas
+          const cleanEmail = currentUser.email.toLowerCase();
+          const userRef = doc(db, "usuarios_autorizados", cleanEmail);
           const userSnap = await getDoc(userRef);
 
           if (userSnap.exists()) {
@@ -170,155 +175,150 @@ export default function AreaPrivadaPage() {
       </div>
 
       {/* Sección Carrusel Peek Mejorado */}
-<div className="bg-white p-8 rounded-2xl shadow-md border border-slate-100 space-y-6">
-  <h2 className="text-xl font-bold text-primary-custom">Artículos</h2>
+      <div className="bg-white p-8 rounded-2xl shadow-md border border-slate-100 space-y-6">
+        <h2 className="text-xl font-bold text-primary-custom">Artículos</h2>
 
-  {/* Filtros de Categoría */}
-  {!loadingPosts && (
-    <div className="flex flex-wrap gap-2 pt-1 pb-2 border-b border-slate-100">
-      <button
-        onClick={() => handleCategorySelect("all")}
-        className={`px-3.5 py-1.5 text-xs font-bold rounded-full transition ${
-          selectedCategory === "all"
-            ? "bg-primary-custom text-white shadow-sm"
-            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-        }`}
-      >
-        Todas ({posts.length})
-      </button>
-      {categories.map((cat) => {
-        const count = posts.filter(
-          (p) => p.categoryIds && p.categoryIds.includes(cat.id)
-        ).length;
+        {/* Filtros de Categoría */}
+        {!loadingPosts && (
+          <div className="flex flex-wrap gap-2 pt-1 pb-2 border-b border-slate-100">
+            <button
+              onClick={() => handleCategorySelect("all")}
+              className={`px-3.5 py-1.5 text-xs font-bold rounded-full transition ${
+                selectedCategory === "all"
+                  ? "bg-primary-custom text-white shadow-sm"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              Todas ({posts.length})
+            </button>
+            {categories.map((cat) => {
+              const count = posts.filter(
+                (p) => p.categoryIds && p.categoryIds.includes(cat.id)
+              ).length;
 
-        return (
-          <button
-            key={cat.id}
-            onClick={() => handleCategorySelect(cat.id)}
-            className={`px-3.5 py-1.5 text-xs font-bold rounded-full transition ${
-              selectedCategory === cat.id
-                ? "bg-primary-custom text-white shadow-sm"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-            }`}
-          >
-            {cat.name} ({count})
-          </button>
-        );
-      })}
-    </div>
-  )}
-
-  {loadingPosts ? (
-    <p className="text-sm text-slate-500 py-6 text-center">Cargando publicaciones...</p>
-  ) : filteredPosts.length === 0 ? (
-    <p className="text-sm text-slate-500 py-6 text-center">
-      No se encontraron artículos en esta categoría.
-    </p>
-  ) : (
-    <div className="relative group">
-      {/* Contenedor del Carrusel Peek con mayor visibilidad lateral */}
-      <div 
-        ref={carouselRef}
-        className="flex gap-5 overflow-x-auto snap-x snap-mandatory scroll-smooth py-4 px-4 scrollbar-none"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-      >
-        {filteredPosts.map((post) => (
-          <div 
-            key={post.id} 
-            /* Ajustamos los anchos:
-               - Móvil: 72% del ancho para ver un 14% de cada lado
-               - Tablet: 48% del ancho para ver casi 2 completas + bordes
-               - Pantalla Grande: 38% del ancho para ver claramente las tarjetas adyacentes
-            */
-            className="snap-center shrink-0 w-[72%] md:w-[48%] lg:w-[38%] h-[380px] bg-slate-50 border border-slate-200 rounded-2xl p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition relative"
-          >
-            {/* Bloque Superior: Portada y Título */}
-            <div className="space-y-3">
-              {post.coverImageUrl ? (
-                <img 
-                  src={post.coverImageUrl} 
-                  alt={post.title} 
-                  className="w-full h-40 object-cover object-top rounded-xl border border-slate-100 cursor-pointer"
-                  onClick={() => setSelectedPostSlug(post.slug)}
-                />
-              ) : (
-                <div 
-                  onClick={() => setSelectedPostSlug(post.slug)}
-                  className="w-full h-40 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 text-xs font-medium cursor-pointer"
-                >
-                  Ver artículo
-                </div>
-              )}
-
-              <h3 className="font-bold text-slate-800 text-base leading-snug line-clamp-2">
-                {post.title}
-              </h3>
-            </div>
-
-            {/* Bloque Inferior: Botones */}
-            <div className="pt-3 space-y-2 mt-auto relative">
-              <button
-                onClick={() => setSelectedPostSlug(post.slug)}
-                className="w-full bg-primary-custom hover:bg-slate-800 text-white text-xs font-bold py-2.5 px-4 rounded-xl transition text-center block"
-              >
-                Leer completo
-              </button>
-
-              <div className="relative">
+              return (
                 <button
-                  onClick={() => setOpenShareMenuId(openShareMenuId === post.id ? null : post.id)}
-                  className="w-full bg-slate-200/80 hover:bg-slate-300/80 text-primary-custom text-xs font-bold py-2 px-4 rounded-xl transition flex items-center justify-center gap-1.5"
+                  key={cat.id}
+                  onClick={() => handleCategorySelect(cat.id)}
+                  className={`px-3.5 py-1.5 text-xs font-bold rounded-full transition ${
+                    selectedCategory === cat.id
+                      ? "bg-primary-custom text-white shadow-sm"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
                 >
-                  <span>🔗</span>
-                  <span>{copiedPostId === post.id ? "¡Enlace copiado!" : "Compartir"}</span>
+                  {cat.name} ({count})
                 </button>
-
-                {openShareMenuId === post.id && (
-                  <div className="absolute bottom-full left-0 mb-2 w-full bg-white rounded-xl shadow-xl border border-slate-200 p-1.5 z-20 space-y-1 animate-in fade-in zoom-in-95">
-                    <button
-                      onClick={() => handleCopyLink(post.slug, post.id)}
-                      className="w-full text-left px-3 py-2 text-xs text-primary-custom font-semibold hover:bg-slate-100 rounded-lg flex items-center gap-2 transition"
-                    >
-                      <span>📋</span> Copiar enlace
-                    </button>
-                    <button
-                      onClick={() => handleShareWhatsApp(post.title, post.slug)}
-                      className="w-full text-left px-3 py-2 text-xs bg-green-700 font-semibold hover:bg-green-50 rounded-lg flex items-center gap-2 transition"
-                    >
-                      <span>💬</span> Enviar por WhatsApp
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
+              );
+            })}
           </div>
-        ))}
+        )}
+
+        {loadingPosts ? (
+          <p className="text-sm text-slate-500 py-6 text-center">Cargando publicaciones...</p>
+        ) : filteredPosts.length === 0 ? (
+          <p className="text-sm text-slate-500 py-6 text-center">
+            No se encontraron artículos en esta categoría.
+          </p>
+        ) : (
+          <div className="relative group">
+            {/* Contenedor del Carrusel Peek */}
+            <div 
+              ref={carouselRef}
+              className="flex gap-5 overflow-x-auto snap-x snap-mandatory scroll-smooth py-4 px-4 scrollbar-none"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {filteredPosts.map((post) => (
+                <div 
+                  key={post.id} 
+                  className="snap-center shrink-0 w-[72%] md:w-[48%] lg:w-[38%] h-[380px] bg-slate-50 border border-slate-200 rounded-2xl p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition relative"
+                >
+                  {/* Bloque Superior: Portada y Título */}
+                  <div className="space-y-3">
+                    {post.coverImageUrl ? (
+                      <img 
+                        src={post.coverImageUrl} 
+                        alt={post.title} 
+                        className="w-full h-40 object-cover object-top rounded-xl border border-slate-100 cursor-pointer"
+                        onClick={() => setSelectedPostSlug(post.slug)}
+                      />
+                    ) : (
+                      <div 
+                        onClick={() => setSelectedPostSlug(post.slug)}
+                        className="w-full h-40 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 text-xs font-medium cursor-pointer"
+                      >
+                        Ver artículo
+                      </div>
+                    )}
+
+                    <h3 className="font-bold text-slate-800 text-base leading-snug line-clamp-2">
+                      {post.title}
+                    </h3>
+                  </div>
+
+                  {/* Bloque Inferior: Botones */}
+                  <div className="pt-3 space-y-2 mt-auto relative">
+                    <button
+                      onClick={() => setSelectedPostSlug(post.slug)}
+                      className="w-full bg-primary-custom hover:bg-slate-800 text-white text-xs font-bold py-2.5 px-4 rounded-xl transition text-center block"
+                    >
+                      Leer completo
+                    </button>
+
+                    <div className="relative">
+                      <button
+                        onClick={() => setOpenShareMenuId(openShareMenuId === post.id ? null : post.id)}
+                        className="w-full bg-slate-200/80 hover:bg-slate-300/80 text-primary-custom text-xs font-bold py-2 px-4 rounded-xl transition flex items-center justify-center gap-1.5"
+                      >
+                        <span>🔗</span>
+                        <span>{copiedPostId === post.id ? "¡Enlace copiado!" : "Compartir"}</span>
+                      </button>
+
+                      {openShareMenuId === post.id && (
+                        <div className="absolute bottom-full left-0 mb-2 w-full bg-white rounded-xl shadow-xl border border-slate-200 p-1.5 z-20 space-y-1 animate-in fade-in zoom-in-95">
+                          <button
+                            onClick={() => handleCopyLink(post.slug, post.id)}
+                            className="w-full text-left px-3 py-2 text-xs text-primary-custom font-semibold hover:bg-slate-100 rounded-lg flex items-center gap-2 transition"
+                          >
+                            <span>📋</span> Copiar enlace
+                          </button>
+                          <button
+                            onClick={() => handleShareWhatsApp(post.title, post.slug)}
+                            className="w-full text-left px-3 py-2 text-xs bg-green-700 font-semibold hover:bg-green-50 rounded-lg flex items-center gap-2 transition"
+                          >
+                            <span>💬</span> Enviar por WhatsApp
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Flechas de Navegación Flotantes */}
+            {filteredPosts.length > 1 && (
+              <>
+                <button 
+                  onClick={() => scrollCarousel("prev")}
+                  className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-primary-custom hover:bg-white text-white font-bold rounded-full shadow-lg border border-slate-200 flex items-center justify-center transition backdrop-blur-sm"
+                  aria-label="Anterior"
+                >
+                  ←
+                </button>
+                <button 
+                  onClick={() => scrollCarousel("next")}
+                  className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-primary-custom hover:bg-white text-white font-bold rounded-full shadow-lg border border-slate-200 flex items-center justify-center transition backdrop-blur-sm"
+                  aria-label="Siguiente"
+                >
+                  →
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Flechas de Navegación Flotantes */}
-      {filteredPosts.length > 1 && (
-        <>
-          <button 
-            onClick={() => scrollCarousel("prev")}
-            className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-primary-custom hover:bg-white text-white font-bold rounded-full shadow-lg border border-slate-200 flex items-center justify-center transition backdrop-blur-sm"
-            aria-label="Anterior"
-          >
-            ←
-          </button>
-          <button 
-            onClick={() => scrollCarousel("next")}
-            className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-primary-custom hover:bg-white text-white font-bold rounded-full shadow-lg border border-slate-200 flex items-center justify-center transition backdrop-blur-sm"
-            aria-label="Siguiente"
-          >
-            →
-          </button>
-        </>
-      )}
-    </div>
-  )}
-</div>
-
-      {/* Ventana Emergente / Modal Popup */}
+      {/* Popup / Modal Popup */}
       {selectedPostSlug && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95">

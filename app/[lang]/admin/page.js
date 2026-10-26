@@ -217,14 +217,27 @@ export default function AdminDashboardPage() {
 
   const llamarApiActivarUsuario = async (targetEmail) => {
     try {
-      const response = await fetch("/api/admin/activar-usuario", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: targetEmail,
-          adminEmail: currentUserEmail,
-        }),
-      });
+    // 1. Obtener el usuario activo en Firebase Auth
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      throw new Error("No hay un usuario autenticado activo.");
+    }
+
+    // 2. Extraer el ID Token firmado de Firebase
+    const token = await currentUser.getIdToken();
+
+    // 3. Enviar la petición fetch con la cabecera Authorization: Bearer <token>
+    const response = await fetch("/api/admin/activar-usuario", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`, // 👈 Inyección del token Bearer
+      },
+      body: JSON.stringify({
+        email: targetEmail,
+      }),
+    });
+    
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Error al activar en el servidor");
     } catch (err) {
