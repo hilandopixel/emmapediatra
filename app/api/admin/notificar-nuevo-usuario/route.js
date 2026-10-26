@@ -37,7 +37,7 @@ export async function POST(request) {
           </ul>
           <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;" />
           <p style="font-size: 13px; background-color: #ffffff; color: #d01156;">
-            Accede al panel de administración para activarlo <a href="https://emmapediatra.com/admin/usuarios" target="_blank">pulsando aquí</a>
+            Accede al panel de administración para activarlo <a href="https://emmapediatra.com/admin" target="_blank">pulsando aquí</a>
           </p>
         </div>
       `,
