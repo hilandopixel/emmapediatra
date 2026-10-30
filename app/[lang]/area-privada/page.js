@@ -135,7 +135,7 @@ export default function AreaPrivadaPage() {
 
   const handleShareWhatsApp = (title, slug) => {
     const postUrl = `${window.location.origin}/blog/${slug}`;
-    const text = encodeURIComponent(`Mira este artículo: *${title}*\n${postUrl}`);
+    const text = encodeURIComponent(`Mira este recurso: *${title}*\n${postUrl}`);
     window.open(`https://api.whatsapp.com/send?text=${text}`, "_blank");
     setOpenShareMenuId(null);
   };
@@ -172,7 +172,7 @@ export default function AreaPrivadaPage() {
       </div>
 
       <div className="bg-white p-8 rounded-2xl shadow-md border border-slate-100 space-y-6">
-        <h2 className="text-xl font-bold text-primary-custom">Artículos</h2>
+        <h2 className="text-xl font-bold text-primary-custom">Recursos</h2>
 
         {!loadingPosts && (
           <div className="flex flex-wrap gap-2 pt-1 pb-2 border-b border-slate-100">
@@ -212,7 +212,7 @@ export default function AreaPrivadaPage() {
           <p className="text-sm text-slate-500 py-6 text-center">Cargando publicaciones...</p>
         ) : filteredPosts.length === 0 ? (
           <p className="text-sm text-slate-500 py-6 text-center">
-            No se encontraron artículos en esta categoría.
+            No se encontraron recursos en esta categoría.
           </p>
         ) : (
           <div className="relative group">
@@ -239,7 +239,7 @@ export default function AreaPrivadaPage() {
                         onClick={() => setSelectedPostSlug(post.slug)}
                         className="w-full h-40 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 text-xs font-medium cursor-pointer"
                       >
-                        Ver artículo
+                        Ver recurso
                       </div>
                     )}
 
@@ -316,7 +316,7 @@ export default function AreaPrivadaPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95">
             <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
-              <span className="text-xs font-semibold text-slate-500">Vista previa del artículo</span>
+              <span className="text-xs font-semibold text-slate-500">Vista previa del recurso</span>
               <button
                 onClick={() => setSelectedPostSlug(null)}
                 className="w-8 h-8 flex items-center justify-center bg-slate-200 hover:bg-slate-300 rounded-full text-slate-700 font-bold text-sm transition"
@@ -329,7 +329,7 @@ export default function AreaPrivadaPage() {
               <iframe
                 src={`/blog/${selectedPostSlug}`}
                 className="w-full h-full border-0"
-                title="Detalle del artículo"
+                title="Detalle del recurso"
               />
             </div>
           </div>

@@ -41,7 +41,7 @@ export default function BlogPostPage({ params }) {
     }
   }, []);
 
-  // 2. Cargar únicamente el artículo solicitado por `slug` si el usuario está autenticado
+  // 2. Cargar únicamente el recurso solicitado por `slug` si el usuario está autenticado
   useEffect(() => {
     if (!isAuthenticated) return;
 
@@ -148,7 +148,7 @@ export default function BlogPostPage({ params }) {
   }
 
   // --------------------------------------------------------------------------
-  // PASO E: AUTENTICADO -> Muestra el artículo del blog específico
+  // PASO E: AUTENTICADO -> Muestra el recurso del blog específico
   // --------------------------------------------------------------------------
   return (
     <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
@@ -168,7 +168,7 @@ export default function BlogPostPage({ params }) {
           </button>
         </div>
 
-        {/* Cuerpo del artículo */}
+        {/* Cuerpo del recurso */}
         <article className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-primary-custom leading-snug">
             {post.title}
