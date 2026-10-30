@@ -63,7 +63,7 @@ export default function UserFormModal({ userToEdit, isGlobalAdmin, onClose, onSu
   return (
     <div className="mb-8 bg-white p-8 rounded-2xl shadow-md border border-slate-200">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-secondary-custom">
+        <h2 className="text-xl font-bold text-primary-custom">
           {isEditing ? `Editando usuario: ${userToEdit.id}` : "Dar de alta nuevo usuario"}
         </h2>
         <button onClick={onClose} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
@@ -134,17 +134,6 @@ export default function UserFormModal({ userToEdit, isGlobalAdmin, onClose, onSu
             />
             <label htmlFor="activoCheck" className="text-sm font-medium text-slate-700">Usuario Activo</label>
           </div>
-
-          <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-            <input 
-              type="checkbox" 
-              id="politicaCheck"
-              checked={aceptaPolitica}
-              onChange={(e) => setAceptaPolitica(e.target.checked)}
-              className="w-4 h-4 text-primary-custom rounded" 
-            />
-            <label htmlFor="politicaCheck" className="text-sm font-medium text-slate-700">Al enviar este formulario, usted acepta la <a className="text-primary-custom" target="_blank"  href="/assets/politica-privacidad-es.pdf">política de privacidad</a> para poder utilizar estos contenidos y recibir información sobre alimentación infantil</label>
-          </div>
         </div>
 
         <div className="p-4 bg-slate-50 rounded-xl space-y-2">
@@ -171,28 +160,6 @@ export default function UserFormModal({ userToEdit, isGlobalAdmin, onClose, onSu
               );
             })}
           </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1 text-slate-700">Permisos específicos (separados por comas)</label>
-          <input 
-            type="text" 
-            value={permisos} 
-            onChange={(e) => setPermisos(e.target.value)} 
-            placeholder="ej: gestionar_solicitudes" 
-            className="w-full border rounded-lg p-3 text-slate-700 bg-white text-sm" 
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1 text-slate-700">Recursos / Materiales permitidos (IDs separados por comas)</label>
-          <input 
-            type="text" 
-            value={recursosPermitidos} 
-            onChange={(e) => setRecursosPermitidos(e.target.value)} 
-            placeholder="ej: taller-tca, guia-nutricion" 
-            className="w-full border rounded-lg p-3 text-slate-700 bg-white text-sm" 
-          />
         </div>
 
         <div className="flex gap-4 pt-4">

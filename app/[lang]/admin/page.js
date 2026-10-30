@@ -493,7 +493,7 @@ export default function AdminDashboardPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-extrabold text-primary-custom">Panel de Administración</h1>
-          <p className="text-xs text-slate-500 mt-1">Sesión activa: {currentUserEmail}</p>
+          <p className="text-xs text-primary-custom mt-1">Sesión activa: {currentUserEmail}</p>
         </div>
         <button 
           onClick={() => signOut(auth)} 
@@ -510,7 +510,7 @@ export default function AdminDashboardPage() {
           className={`px-5 py-2.5 rounded-xl font-bold text-sm transition ${
             activeTab === "consultas"
               ? "bg-primary-custom text-white shadow-sm"
-              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              : "bg-slate-100 text-primary-custom hover:bg-slate-200"
           }`}
         >
           📩 Solicitudes ({consultas.length})
@@ -521,7 +521,7 @@ export default function AdminDashboardPage() {
           className={`px-5 py-2.5 rounded-xl font-bold text-sm transition ${
             activeTab === "usuarios"
               ? "bg-primary-custom text-white shadow-sm"
-              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              : "bg-slate-100 text-primary-custom hover:bg-slate-200"
           }`}
         >
           👥 Gestión de Usuarios ({usuarios.length})
@@ -532,7 +532,7 @@ export default function AdminDashboardPage() {
           className={`px-5 py-2.5 rounded-xl font-bold text-sm transition ${
             activeTab === "articulos"
               ? "bg-primary-custom text-white shadow-sm"
-              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              : "bg-slate-100 text-primary-custom hover:bg-slate-200"
           }`}
         >
           📝 Artículos de Blog ({articles.length})
@@ -790,14 +790,6 @@ export default function AdminDashboardPage() {
                         <span className="truncate block">{u.origenEncuentro || "-"}</span>
                       </div>
                       <div>
-                        <span className="block font-bold text-slate-400 uppercase text-[10px] mb-0.5">Privacidad</span>
-                        <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                          u.aceptaPolitica ? "bg-blue-50 text-blue-700" : "bg-gray-100 text-gray-600"
-                        }`}>
-                          {u.aceptaPolitica ? "Aceptada" : "Pendiente"}
-                        </span>
-                      </div>
-                      <div>
                         <span className="block font-bold text-slate-400 uppercase text-[10px] mb-0.5">Última mod.</span>
                         <span>
                           {u.updatedAt?.toDate 
@@ -852,7 +844,6 @@ export default function AdminDashboardPage() {
                         <th className="p-4">Nombre</th>
                         <th className="p-4">Teléfono</th>
                         <th className="p-4">Origen</th>
-                        <th className="p-4 text-center">Privacidad</th>
                         <th className="p-4">Modificación</th>
                         <th className="p-4 text-center">Estado</th>
                         <th className="p-4">Roles</th>
@@ -866,11 +857,6 @@ export default function AdminDashboardPage() {
                           <td className="p-4">{u.nombre || "-"}</td>
                           <td className="p-4">{u.telefono || "-"}</td>
                           <td className="p-4 text-xs">{u.origenEncuentro || "-"}</td>
-                          <td className="p-4 text-center">
-                            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${u.aceptaPolitica ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-600"}`}>
-                              {u.aceptaPolitica ? "Aceptada" : "Pendiente"}
-                            </span>
-                          </td>
                           <td className="p-4 text-xs">
                             {u.updatedAt?.toDate 
                               ? u.updatedAt.toDate().toLocaleString() 
