@@ -49,7 +49,8 @@ export default function AdminDashboardPage() {
 
   // --- ESTADOS: BÚSQUEDA Y ORDENACIÓN ---
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  // Por defecto en 'consultas' ordenamos por createdAt desc
+  const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
 
   // --- ESTADOS: FILTROS ESPECÍFICOS ---
   const [filterEstadoConsulta, setFilterEstadoConsulta] = useState("all");
@@ -57,11 +58,20 @@ export default function AdminDashboardPage() {
   const [filterRolUsuario, setFilterRolUsuario] = useState("all");
   const [filterCategoriaRecurso, setFilterCategoriaRecurso] = useState("all");
 
-  // Resetear filtros al cambiar de pestaña
+  // Configuración de ordenación predeterminada por pestaña
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setSearchTerm("");
-    setSortConfig({ key: null, direction: 'asc' });
+    
+    // Asignar orden por defecto según pestaña activa
+    if (tab === "usuarios") {
+      setSortConfig({ key: 'updatedAt', direction: 'desc' }); // Orden por defecto para Usuarios
+    } else if (tab === "consultas") {
+      setSortConfig({ key: 'createdAt', direction: 'desc' });
+    } else {
+      setSortConfig({ key: 'updatedAt', direction: 'desc' });
+    }
+
     setFilterEstadoConsulta("all");
     setFilterEstadoUsuario("all");
     setFilterRolUsuario("all");
@@ -431,7 +441,7 @@ export default function AdminDashboardPage() {
           origenEncuentro: formData.origenEncuentro,
           observaciones: formData.observaciones || "",
           activo: formData.activo,
-          aceptaPolitica: formData.aceptaPolitica, // Se actualiza el booleano
+          aceptaPolitica: formData.aceptaPolitica,
           roles: formData.roles,
           permisos: formData.permisos,
           recursosPermitidos: formData.recursosPermitidos,
@@ -450,7 +460,7 @@ export default function AdminDashboardPage() {
           origenEncuentro: formData.origenEncuentro,
           observaciones: formData.observaciones || "",
           activo: formData.activo,
-          aceptaPolitica: formData.aceptaPolitica, // Se guarda la elección
+          aceptaPolitica: formData.aceptaPolitica,
           roles: formData.roles,
           permisos: formData.permisos,
           recursosPermitidos: formData.recursosPermitidos,

@@ -83,6 +83,19 @@ export default function AreaPrivadaPage() {
         id: docSnap.id,
         ...docSnap.data(),
       }));
+
+      // Ordenar por fecha de modificación (o creación) descendente
+      postsList.sort((a, b) => {
+        const timeA = a.updatedAt?.toDate 
+          ? a.updatedAt.toDate().getTime() 
+          : (a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0);
+        const timeB = b.updatedAt?.toDate 
+          ? b.updatedAt.toDate().getTime() 
+          : (b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0);
+
+        return timeB - timeA;
+      });
+
       setPosts(postsList);
     } catch (err) {
       console.error("Error al cargar publicaciones:", err);
