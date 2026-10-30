@@ -371,15 +371,15 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const aprobarSolicitud = async (id) => {
+  const completarSolicitud = async (id) => {
     try {
       const consultaRef = doc(db, "consultas", id);
-      await updateDoc(consultaRef, { estado: "aprobada" });
-      setConsultas(consultas.map(c => c.id === id ? { ...c, estado: "aprobada" } : c));
-      setMensaje("¡Solicitud aprobada con éxito!");
+      await updateDoc(consultaRef, { estado: "completada" });
+      setConsultas(consultas.map(c => c.id === id ? { ...c, estado: "completada" } : c));
+      setMensaje("¡Solicitud completada con éxito!");
     } catch (err) {
-      console.error("Error al aprobar:", err);
-      setError("Hubo un error al aprobar la solicitud.");
+      console.error("Error al completar:", err);
+      setError("Hubo un error al completar la solicitud.");
     }
   };
 
@@ -741,7 +741,7 @@ export default function AdminDashboardPage() {
             >
               <option value="all">Todos los estados</option>
               <option value="pendiente">Pendientes</option>
-              <option value="aprobada">Aprobadas</option>
+              <option value="completada">Completadas</option>
             </select>
           )}
 
@@ -873,7 +873,7 @@ export default function AdminDashboardPage() {
                         </p>
                       </div>
                       <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold shrink-0 ${
-                        item.estado === "aprobada" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
+                        item.estado === "completada" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
                       }`}>
                         {item.estado || "pendiente"}
                       </span>
@@ -904,15 +904,15 @@ export default function AdminDashboardPage() {
                     )}
 
                     <div className="pt-2 border-t border-slate-100">
-                      {item.estado !== "aprobada" ? (
+                      {item.estado !== "completada" ? (
                         <button
-                          onClick={() => aprobarSolicitud(item.id)}
+                          onClick={() => completarSolicitud(item.id)}
                           className="w-full py-2.5 bg-green-700 hover:bg-[#266360] text-white text-xs font-bold rounded-xl transition"
                         >
-                          Aprobar solicitud
+                          Completar solicitud
                         </button>
                       ) : (
-                        <span className="block text-center text-xs text-slate-400 font-medium py-1">Solicitud Aprobada</span>
+                        <span className="block text-center text-xs text-slate-400 font-medium py-1">Solicitud Completada</span>
                       )}
                     </div>
                   </div>
@@ -967,21 +967,21 @@ export default function AdminDashboardPage() {
                           </td>
                           <td className="p-4">
                             <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                              item.estado === "aprobada" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
+                              item.estado === "completada" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
                             }`}>
                               {item.estado || "pendiente"}
                             </span>
                           </td>
                           <td className="p-4 text-center whitespace-nowrap">
-                            {item.estado !== "aprobada" ? (
+                            {item.estado !== "completada" ? (
                               <button
-                                onClick={() => aprobarSolicitud(item.id)}
+                                onClick={() => completarSolicitud(item.id)}
                                 className="px-4 py-2 bg-green-700 hover:bg-[#266360] text-white text-xs font-bold rounded-lg transition"
                               >
-                                Aprobar solicitud
+                                Completar solicitud
                               </button>
                             ) : (
-                              <span className="text-xs text-slate-400 font-medium">Aprobada</span>
+                              <span className="text-xs text-slate-400 font-medium">Completada</span>
                             )}
                           </td>
                         </tr>
