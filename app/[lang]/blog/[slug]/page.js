@@ -5,7 +5,7 @@ import { useState, useEffect, use } from 'react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebaseConfig';
-import AuthForm from '@/components/AuthForm';
+import AuthSimpleForm from '@/components/AuthSimpleForm';
 import PdfViewerWrapper from '@/components/PdfViewerWrapper';
 import ProtectedImage from '@/components/ProtectedImage';
 
@@ -90,7 +90,7 @@ export default function BlogPostPage({ params }) {
         <p className="text-center text-primary-custom mb-6 text-sm">
           Debes iniciar sesión con tu cuenta para ver este artículo del área privada.
         </p>
-        <AuthForm />
+        <AuthSimpleForm />
       </div>
     );
   }
