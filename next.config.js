@@ -9,7 +9,7 @@ const cspHeader = `
   object-src 'none';
   base-uri 'self';
   form-action 'self';
-  frame-ancestors 'none';
+  frame-ancestors 'self';
   frame-src 'self' https://challenges.cloudflare.com https://www.youtube.com https://www.youtube-nocookie.com https://docs.google.com https://drive.google.com https://apis.google.com https://*.firebaseapp.com;
   child-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://docs.google.com https://drive.google.com https://apis.google.com https://*.firebaseapp.com;
   connect-src 'self' data: blob: https://*.challenges.cloudflare.com https://challenges.cloudflare.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://*.firebase-vh.googleusercontent.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.firestore.googleapis.com https://firestore.googleapis.com wss://*.firebaseio.com;

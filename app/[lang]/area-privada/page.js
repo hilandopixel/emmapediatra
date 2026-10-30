@@ -2,93 +2,94 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc, collection, getDocs } from "firebase/firestore";
-import { auth, db } from "@/lib/firebaseConfig";
-import AuthForm from "@/components/AuthForm";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebaseConfig";
+import AuthSimpleForm from "@/components/AuthSimpleForm";
 
 export default function AreaPrivadaPage() {
-  const [user, setUser] = useState(null);
   const [userData, setUserData] = useState(null);
-  const [loadingAuth, setLoadingAuth] = useState(true);
+  const [loadingCheck, setLoadingCheck] = useState(true);
 
   const [posts, setPosts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
   
-  const [loadingPosts, setLoadingPosts] = useState(true);
+  const [loadingPosts, setLoadingPosts] = useState(false);
   const [selectedPostSlug, setSelectedPostSlug] = useState(null);
 
-  // Referencia para el contenedor con scroll snap
   const carouselRef = useRef(null);
-
-  // Estado para controlar qué menú de compartir está abierto
   const [openShareMenuId, setOpenShareMenuId] = useState(null);
   const [copiedPostId, setCopiedPostId] = useState(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
-      if (currentUser && currentUser.email) {
-        try {
-          // 1. Refrescar explícitamente el token de Firebase Auth para evitar estados en caché
-          await currentUser.getIdToken(true);
-
-          // 2. Consultar en Firestore pasando el email siempre en minúsculas
-          const cleanEmail = currentUser.email.toLowerCase();
-          const userRef = doc(db, "usuarios_autorizados", cleanEmail);
-          const userSnap = await getDoc(userRef);
-
-          if (userSnap.exists()) {
-            setUserData(userSnap.data());
-          } else {
-            setUserData({ activo: false, roles: [] });
-          }
-        } catch (err) {
-          console.error("Error al obtener datos del usuario:", err);
-          setUserData({ activo: false, roles: [] });
-        }
-      } else {
-        setUserData(null);
-      }
-      setLoadingAuth(false);
-    });
-
-    return () => unsubscribe();
+    const savedEmail = localStorage.getItem("area_privada_email");
+    if (savedEmail) {
+      verificarAccesoDirecto(savedEmail);
+    } else {
+      setLoadingCheck(false);
+    }
   }, []);
 
-  useEffect(() => {
-    if (!user || userData?.activo === false) return;
+  const verificarAccesoDirecto = async (emailToVerify) => {
+    setLoadingCheck(true);
 
-    const fetchData = async () => {
-      try {
-        setLoadingPosts(true);
-        const catSnap = await getDocs(collection(db, "categories"));
-        const catList = [];
-        
-        catSnap.docs.forEach((docSnap) => {
-          const data = docSnap.data();
-          const catName = data.name || docSnap.id;
-          catList.push({ id: docSnap.id, name: catName });
-        });
+    try {
+      const res = await fetch("/api/simple-verify-access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: emailToVerify }),
+      });
 
-        setCategories(catList);
+      const data = await res.json();
 
-        const postsSnap = await getDocs(collection(db, "posts"));
-        const postsList = postsSnap.docs.map((docSnap) => ({
-          id: docSnap.id,
-          ...docSnap.data(),
-        }));
-        setPosts(postsList);
-      } catch (err) {
-        console.error("Error al cargar publicaciones:", err);
-      } finally {
-        setLoadingPosts(false);
+      if (res.ok && data.permitido) {
+        handleAuthSuccess(data.userData);
+      } else {
+        localStorage.removeItem("area_privada_email");
+        setUserData(null);
       }
-    };
+    } catch (err) {
+      console.error("Error al consultar el acceso:", err);
+      setUserData(null);
+    } finally {
+      setLoadingCheck(false);
+    }
+  };
 
-    fetchData();
-  }, [user, userData]);
+  const handleAuthSuccess = (verifiedUserData) => {
+    setUserData(verifiedUserData);
+    localStorage.setItem("area_privada_email", verifiedUserData.email);
+    cargarArticulosYCategorias();
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("area_privada_email");
+    setUserData(null);
+  };
+
+  const cargarArticulosYCategorias = async () => {
+    try {
+      setLoadingPosts(true);
+      
+      const catSnap = await getDocs(collection(db, "categories"));
+      const catList = catSnap.docs.map((docSnap) => ({
+        id: docSnap.id,
+        name: docSnap.data().name || docSnap.id,
+      }));
+      setCategories(catList);
+
+      const postsSnap = await getDocs(collection(db, "posts"));
+      const postsList = postsSnap.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
+      }));
+      setPosts(postsList);
+    } catch (err) {
+      console.error("Error al cargar publicaciones:", err);
+    } finally {
+      setLoadingPosts(false);
+    }
+  };
 
   const filteredPosts = posts.filter((post) => {
     if (selectedCategory === "all") return true;
@@ -103,7 +104,6 @@ export default function AreaPrivadaPage() {
     }
   };
 
-  // Desplazamiento por botones usando Scroll Snap
   const scrollCarousel = (direction) => {
     if (!carouselRef.current) return;
     const cardWidth = carouselRef.current.firstElementChild?.clientWidth || 300;
@@ -127,58 +127,40 @@ export default function AreaPrivadaPage() {
     setOpenShareMenuId(null);
   };
 
-  if (loadingAuth) {
-    return <div className="text-center py-24 text-slate-700">Cargando área privada...</div>;
+  if (loadingCheck) {
+    return <div className="text-center py-24 text-slate-700 text-sm">Cargando área privada...</div>;
   }
 
-  if (!user) {
+  // SI NO ESTÁ VALIDADO: Mostrar el componente AuthSimpleForm interactivo
+  if (!userData) {
     return (
-      <div className="py-16">
-        <AuthForm />
-      </div>
+      <main className="max-w-md mx-auto my-16 px-4">
+        <AuthSimpleForm onVerifySuccess={handleAuthSuccess} />
+      </main>
     );
   }
 
-  if (userData && userData.activo === false) {
-    return (
-      <div className="max-w-lg mx-auto my-24 bg-white p-8 rounded-2xl shadow-md border border-slate-100 text-center space-y-6">
-        <h2 className="text-2xl font-bold text-primary-custom">Cuenta pendiente de validación</h2>
-        <p className="text-slate-700 leading-relaxed text-sm">
-          Hola <strong className="text-primary-custom">{userData.nombre || user.email}</strong>, tu cuenta ha sido registrada correctamente pero <strong className="text-primary-custom">aún no ha sido activada</strong>.
-        </p>
-        <button 
-          onClick={() => signOut(auth)} 
-          className="px-6 py-2.5 button-primary-custom text-xs font-bold rounded-xl transition"
-        >
-          Cerrar sesión
-        </button>
-      </div>
-    );
-  }
-
+  // SI TIENE ACCESO ACTIVO: Área privada completa
   return (
     <main className="max-w-5xl mx-auto px-6 py-16 space-y-8">
-      {/* Header */}
       <div className="flex justify-between items-center bg-white p-8 rounded-2xl shadow-md border border-slate-100">
         <div>
           <h1 className="text-3xl font-extrabold text-primary-custom">Área Privada</h1>
           <p className="text-slate-700 mt-1">
-            Bienvenido/a, <strong className="text-primary-custom">{userData?.nombre || user.email}</strong>
+            Bienvenido/a, <strong className="text-primary-custom">{userData.nombre || userData.email}</strong>
           </p>
         </div>
         <button 
-          onClick={() => signOut(auth)} 
-          className="px-4 py-2 bg-slate-100 hover:bg-slate-200 button-primary-custom text-xs font-bold rounded-lg transition"
+          onClick={handleLogout} 
+          className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-primary-custom text-xs font-bold rounded-lg transition"
         >
-          Cerrar sesión
+          Salir
         </button>
       </div>
 
-      {/* Sección Carrusel Peek Mejorado */}
       <div className="bg-white p-8 rounded-2xl shadow-md border border-slate-100 space-y-6">
         <h2 className="text-xl font-bold text-primary-custom">Artículos</h2>
 
-        {/* Filtros de Categoría */}
         {!loadingPosts && (
           <div className="flex flex-wrap gap-2 pt-1 pb-2 border-b border-slate-100">
             <button
@@ -221,7 +203,6 @@ export default function AreaPrivadaPage() {
           </p>
         ) : (
           <div className="relative group">
-            {/* Contenedor del Carrusel Peek */}
             <div 
               ref={carouselRef}
               className="flex gap-5 overflow-x-auto snap-x snap-mandatory scroll-smooth py-4 px-4 scrollbar-none"
@@ -232,7 +213,6 @@ export default function AreaPrivadaPage() {
                   key={post.id} 
                   className="snap-center shrink-0 w-[72%] md:w-[48%] lg:w-[38%] h-[380px] bg-slate-50 border border-slate-200 rounded-2xl p-5 flex flex-col justify-between shadow-sm hover:shadow-md transition relative"
                 >
-                  {/* Bloque Superior: Portada y Título */}
                   <div className="space-y-3">
                     {post.coverImageUrl ? (
                       <img 
@@ -255,7 +235,6 @@ export default function AreaPrivadaPage() {
                     </h3>
                   </div>
 
-                  {/* Bloque Inferior: Botones */}
                   <div className="pt-3 space-y-2 mt-auto relative">
                     <button
                       onClick={() => setSelectedPostSlug(post.slug)}
@@ -295,7 +274,6 @@ export default function AreaPrivadaPage() {
               ))}
             </div>
 
-            {/* Flechas de Navegación Flotantes */}
             {filteredPosts.length > 1 && (
               <>
                 <button 
@@ -318,7 +296,6 @@ export default function AreaPrivadaPage() {
         )}
       </div>
 
-      {/* Popup / Modal Popup */}
       {selectedPostSlug && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95">

@@ -5,7 +5,7 @@ import nodemailer from 'nodemailer';
 
 export async function POST(request) {
   try {
-    
+    console.log("In")
     // 1. Extraer el token de autorización de la cabecera
     const authHeader = request.headers.get("authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -71,15 +71,7 @@ export async function POST(request) {
       }
     }
 
-    // 6. Generar el enlace de restablecimiento de contraseña
-    const firebaseLink = await adminAuth.generatePasswordResetLink(targetEmail);
-
-    const urlObj = new URL(firebaseLink);
-    const oobCode = urlObj.searchParams.get("oobCode");
-
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    const customPasswordLink = `${baseUrl}/es/area-privada/actualizar-password?oobCode=${oobCode}`;
-
+    console.log("Get users")
     // 7. Obtener los datos del usuario a activar y cambiar estado a activo
     const userRef = adminDb.collection("usuarios_autorizados").doc(targetEmail);
     const userSnap = await userRef.get();
@@ -96,6 +88,15 @@ export async function POST(request) {
       updatedAt: new Date(),
     });
 
+    console.log("Set Area Privada")
+    const userAreaPrivadaRef = adminDb.collection('usuarios_areaprivada').doc(targetEmail);
+    await userAreaPrivadaRef.set({
+      email: targetEmail,
+      fechaActivacion: new Date().toISOString(),
+    });
+
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
     // 8. Enviar notificación por correo mediante Nodemailer
     const mailOptions = {
       from: `"${process.env.GMAIL_FROM_NAME || 'EmmaPediatra'}" <${process.env.GMAIL_USER}>`,
@@ -105,10 +106,10 @@ export async function POST(request) {
         <div style="font-family: Arial, sans-serif; background-color: #ffffff; color: #d01156; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
           <h2 style="background-color: #ffffff; color: #d01156; text-align: center;">¡Bienvenido/a al Área Privada!</h2>
           <p>Hola ${userName},</p>
-          <p>Tu solicitud ha sido aprobada. Ya puedes configurar tu contraseña de acceso haciendo clic en el siguiente botón:</p>
+          <p>Tu solicitud ha sido aprobada. Ya puedes acceder haciendo clic en el siguiente botón:</p>
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${customPasswordLink}" style="background-color: #d01156; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
-              Establecer mi contraseña
+            <a href="${baseUrl}/area-privada" style="background-color: #d01156; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+              Acceder al área privada
             </a>
           </div>
           <p style="font-size: 12px; background-color: #ffffff; color: #d01156; text-align: center;">Si no has solicitado este acceso, puedes ignorar este mensaje.</p>
@@ -116,6 +117,7 @@ export async function POST(request) {
       `,
     };
 
+    console.log("Send email")
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
