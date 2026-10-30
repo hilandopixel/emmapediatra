@@ -210,7 +210,7 @@ export default function AuthSimpleForm({ onVerifySuccess }) {
               />
               <label htmlFor="politica" className="text-[11px] text-slate-600 leading-snug cursor-pointer select-none">
                 He leído y acepto la{' '}
-                <a href="/politica-de-privacidad" target="_blank" className="text-primary-custom underline font-semibold">
+                <a href="/assets/politica-privacidad-es.pdf" target="_blank" className="text-primary-custom underline font-semibold">
                   Política de Privacidad
                 </a>.
               </label>
