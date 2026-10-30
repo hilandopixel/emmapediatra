@@ -1,7 +1,8 @@
 // components/AuthForm.jsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { Turnstile } from "@marsidev/react-turnstile";
 
 export default function AuthSimpleForm({ onVerifySuccess }) {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -14,9 +15,13 @@ export default function AuthSimpleForm({ onVerifySuccess }) {
   const [origenEncuentro, setOrigenEncuentro] = useState('');
   const [aceptaPolitica, setAceptaPolitica] = useState(false);
   
-  // Estados y mensajes
+  // Captcha, estados y mensajes
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const turnstileRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   // 1. Manejo del acceso rápido por Email
   const handleAccessSubmit = async (e) => {
@@ -60,6 +65,11 @@ export default function AuthSimpleForm({ onVerifySuccess }) {
       return;
     }
 
+    if (!turnstileToken) {
+      setMessage({ type: 'error', text: 'Por favor, completa la verificación de seguridad.' });
+      return;
+    }
+
     setLoading(true);
     setMessage({ type: '', text: '' });
 
@@ -72,6 +82,7 @@ export default function AuthSimpleForm({ onVerifySuccess }) {
           nombre: `${nombre} ${apellidos}`.trim(),
           telefono,
           origenEncuentro,
+          tokenTurnstile: turnstileToken,
         }),
       });
 
@@ -88,6 +99,8 @@ export default function AuthSimpleForm({ onVerifySuccess }) {
         setTelefono('');
         setOrigenEncuentro('');
         setAceptaPolitica(false);
+        setTurnstileToken('');
+        if (turnstileRef.current) turnstileRef.current.reset();
       } else {
         setMessage({ type: 'error', text: data.error || 'Hubo un error al procesar tu solicitud.' });
       }
@@ -202,10 +215,21 @@ export default function AuthSimpleForm({ onVerifySuccess }) {
                 </a>.
               </label>
             </div>
+
+            {/* Captcha de Cloudflare */}
+            <div className="flex justify-center py-2">
+          <Turnstile
+            ref={turnstileRef}
+            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+            onSuccess={(token) => setTurnstileToken(token)}
+            onExpire={() => setTurnstileToken(null)}
+            onError={() => setTurnstileToken(null)}
+          />
+        </div>
           </div>
         )}
 
-        {/* Mensajes de Alerta Destacados */}
+        {/* Mensajes de Alerta */}
         {message.text && (
           <div
             className={`p-4 rounded-xl text-xs font-medium leading-relaxed shadow-sm transition-all animate-in fade-in ${
@@ -219,10 +243,10 @@ export default function AuthSimpleForm({ onVerifySuccess }) {
           </div>
         )}
 
-        {/* Botón principal con Spinner y deshabilitado dinámico */}
+        {/* Botón condicional: Deshabilitado si no se ha aceptado la política o validado el captcha en modo registro */}
         <button
           type="submit"
-          disabled={loading || (isRegistering && !aceptaPolitica)}
+          disabled={loading || (isRegistering && (!aceptaPolitica || !turnstileToken))}
           className="w-full py-3 bg-primary-custom hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
@@ -263,6 +287,7 @@ export default function AuthSimpleForm({ onVerifySuccess }) {
             onClick={() => {
               setMessage({ type: '', text: '' });
               setIsRegistering(false);
+              setTurnstileToken('');
             }}
             className="text-xs text-slate-500 hover:text-primary-custom font-semibold"
           >
