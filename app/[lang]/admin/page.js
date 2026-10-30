@@ -1,7 +1,7 @@
 // app/admin/page.js
 'use client';
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { 
   signInWithEmailAndPassword, 
   onAuthStateChanged, 
@@ -47,6 +47,19 @@ export default function AdminDashboardPage() {
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
 
+  // --- ESTADOS: FILTROS, ORDEN Y BÚSQUEDA ---
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+
+  // Resetear filtros al cambiar de pestaña
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setSearchTerm("");
+    setSortConfig({ key: null, direction: 'asc' });
+    setMensaje("");
+    setError("");
+  };
+
   // --- ESTADOS: CONSULTAS ---
   const [consultas, setConsultas] = useState([]);
   const [loadingConsultas, setLoadingConsultas] = useState(false);
@@ -59,7 +72,7 @@ export default function AdminDashboardPage() {
   const [confirmUserEmailInput, setConfirmUserEmailInput] = useState("");
   const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
   const [canDeleteUsers, setCanDeleteUsers] = useState(false);
-  const userFormRef = useRef(null); // Reference para el formulario de usuarios
+  const userFormRef = useRef(null);
 
   // --- ESTADOS Y REFERENCIA: RECURSOS BLOG ---
   const [articles, setArticles] = useState([]);
@@ -68,7 +81,7 @@ export default function AdminDashboardPage() {
   const [activeArticleModal, setActiveArticleModal] = useState(null);
   const [articleToDelete, setArticleToDelete] = useState(null);
   const [confirmArticleTitleInput, setConfirmArticleTitleInput] = useState("");
-  const articleFormRef = useRef(null); // Reference para el formulario de recursos
+  const articleFormRef = useRef(null);
 
   // Scroll automático para edición/creación de USUARIOS
   useEffect(() => {
@@ -134,6 +147,138 @@ export default function AdminDashboardPage() {
 
     return () => unsubscribe();
   }, []);
+
+  // Helper de Ordenación
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // Helper para Exportar CSV en UTF-8 (Compatible con Excel)
+  const exportToCSV = (data, filename, headers) => {
+    if (!data || !data.length) return;
+
+    const csvRows = [];
+    
+    // Encabezados
+    csvRows.push(headers.map(h => `"${h.label}"`).join(","));
+
+    // Filas
+    for (const row of data) {
+      const values = headers.map(h => {
+        let val = h.accessor(row);
+        if (val === null || val === undefined) val = "";
+        val = String(val).replace(/"/g, '""'); // Escapar comillas dobles
+        return `"${val}"`;
+      });
+      csvRows.push(values.join(","));
+    }
+
+    const csvString = "\uFEFF" + csvRows.join("\n"); // BOM UTF-8 para Excel
+    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${filename}_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // --- FILTRADO Y ORDENACIÓN PROCESADA ---
+  const processedConsultas = useMemo(() => {
+    let result = [...consultas];
+
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(item => 
+        item.nombre?.toLowerCase().includes(term) ||
+        item.apellidos?.toLowerCase().includes(term) ||
+        item.email?.toLowerCase().includes(term) ||
+        item.telefono?.toLowerCase().includes(term) ||
+        item.motivo?.toLowerCase().includes(term) ||
+        item.mensaje?.toLowerCase().includes(term)
+      );
+    }
+
+    if (sortConfig.key) {
+      result.sort((a, b) => {
+        let aVal = a[sortConfig.key] || "";
+        let bVal = b[sortConfig.key] || "";
+        if (sortConfig.key === 'createdAt') {
+          aVal = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+          bVal = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+        }
+        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return result;
+  }, [consultas, searchTerm, sortConfig]);
+
+  const processedUsuarios = useMemo(() => {
+    let result = [...usuarios];
+
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(u => 
+        u.id?.toLowerCase().includes(term) ||
+        u.nombre?.toLowerCase().includes(term) ||
+        u.telefono?.toLowerCase().includes(term) ||
+        u.observaciones?.toLowerCase().includes(term) ||
+        u.origenEncuentro?.toLowerCase().includes(term)
+      );
+    }
+
+    if (sortConfig.key) {
+      result.sort((a, b) => {
+        let aVal = a[sortConfig.key] || "";
+        let bVal = b[sortConfig.key] || "";
+        if (sortConfig.key === 'updatedAt') {
+          aVal = a.updatedAt?.toDate ? a.updatedAt.toDate().getTime() : 0;
+          bVal = b.updatedAt?.toDate ? b.updatedAt.toDate().getTime() : 0;
+        }
+        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return result;
+  }, [usuarios, searchTerm, sortConfig]);
+
+  const processedArticles = useMemo(() => {
+    let result = [...articles];
+
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(art => 
+        art.title?.toLowerCase().includes(term) ||
+        art.slug?.toLowerCase().includes(term)
+      );
+    }
+
+    if (sortConfig.key) {
+      result.sort((a, b) => {
+        let aVal = a[sortConfig.key] || "";
+        let bVal = b[sortConfig.key] || "";
+        if (sortConfig.key === 'updatedAt') {
+          aVal = a.updatedAt?.toDate ? a.updatedAt.toDate().getTime() : 0;
+          bVal = b.updatedAt?.toDate ? b.updatedAt.toDate().getTime() : 0;
+        }
+        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return result;
+  }, [articles, searchTerm, sortConfig]);
 
   // Login protegido con Captcha
   const handleLogin = async (e) => {
@@ -260,6 +405,7 @@ export default function AdminDashboardPage() {
           nombre: formData.nombre,
           telefono: formData.telefono,
           origenEncuentro: formData.origenEncuentro,
+          observaciones: formData.observaciones || "",
           activo: formData.activo,
           aceptaPolitica: formData.aceptaPolitica,
           roles: formData.roles,
@@ -278,6 +424,7 @@ export default function AdminDashboardPage() {
           nombre: formData.nombre,
           telefono: formData.telefono,
           origenEncuentro: formData.origenEncuentro,
+          observaciones: formData.observaciones || "",
           activo: formData.activo,
           aceptaPolitica: formData.aceptaPolitica,
           roles: formData.roles,
@@ -418,7 +565,6 @@ export default function AdminDashboardPage() {
     return <div className="text-center py-24 text-slate-500">Verificando sesión y permisos...</div>;
   }
 
-  // Pantalla de Login si no hay permisos o sesión
   if (!user || !hasPermission) {
     return (
       <div className="max-w-md mx-auto my-24 bg-white p-8 rounded-2xl shadow-md border border-slate-100">
@@ -502,9 +648,9 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Navegación por Pestañas */}
-      <div className="flex flex-wrap gap-2 mb-8 border-b border-slate-200 pb-3">
+      <div className="flex flex-wrap gap-2 mb-6 border-b border-slate-200 pb-3">
         <button
-          onClick={() => { setActiveTab("consultas"); setMensaje(""); setError(""); }}
+          onClick={() => handleTabChange("consultas")}
           className={`px-5 py-2.5 rounded-xl font-bold text-sm transition ${
             activeTab === "consultas"
               ? "bg-primary-custom text-white shadow-sm"
@@ -515,7 +661,7 @@ export default function AdminDashboardPage() {
         </button>
 
         <button
-          onClick={() => { setActiveTab("usuarios"); setMensaje(""); setError(""); }}
+          onClick={() => handleTabChange("usuarios")}
           className={`px-5 py-2.5 rounded-xl font-bold text-sm transition ${
             activeTab === "usuarios"
               ? "bg-primary-custom text-white shadow-sm"
@@ -526,7 +672,7 @@ export default function AdminDashboardPage() {
         </button>
 
         <button
-          onClick={() => { setActiveTab("articulos"); setMensaje(""); setError(""); }}
+          onClick={() => handleTabChange("articulos")}
           className={`px-5 py-2.5 rounded-xl font-bold text-sm transition ${
             activeTab === "articulos"
               ? "bg-primary-custom text-white shadow-sm"
@@ -535,6 +681,70 @@ export default function AdminDashboardPage() {
         >
           📝 Recursos ({articles.length})
         </button>
+      </div>
+
+      {/* Barra de Filtro de Búsqueda Global para Pestaña Activa */}
+      <div className="mb-6 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-3 items-center justify-between">
+        <div className="w-full sm:max-w-md relative">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder={`Buscar en ${activeTab}...`}
+            className="w-full pl-9 pr-4 py-2 border rounded-xl text-sm text-slate-700 bg-white focus:outline-none focus:border-primary-custom"
+          />
+          <span className="absolute left-3 top-2.5 text-slate-400 text-sm">🔍</span>
+        </div>
+
+        {/* Botones de Exportar a CSV */}
+        {activeTab === "consultas" && (
+          <button
+            onClick={() => exportToCSV(processedConsultas, "solicitudes", [
+              { label: "Fecha", accessor: row => row.createdAt?.toDate ? row.createdAt.toDate().toLocaleDateString() : "" },
+              { label: "Nombre", accessor: row => row.nombre || "" },
+              { label: "Apellidos", accessor: row => row.apellidos || "" },
+              { label: "Email", accessor: row => row.email || "" },
+              { label: "Teléfono", accessor: row => row.telefono || "" },
+              { label: "Motivo", accessor: row => row.motivo || "" },
+              { label: "Mensaje", accessor: row => row.mensaje || "" },
+              { label: "Estado", accessor: row => row.estado || "pendiente" }
+            ])}
+            className="w-full sm:w-auto px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition border border-slate-200 flex items-center justify-center gap-1"
+          >
+            📥 Exportar Solicitudes (CSV)
+          </button>
+        )}
+
+        {activeTab === "usuarios" && (
+          <button
+            onClick={() => exportToCSV(processedUsuarios, "usuarios_autorizados", [
+              { label: "Email/ID", accessor: row => row.id || "" },
+              { label: "Nombre", accessor: row => row.nombre || "" },
+              { label: "Teléfono", accessor: row => row.telefono || "" },
+              { label: "Origen", accessor: row => row.origenEncuentro || "" },
+              { label: "Observaciones", accessor: row => row.observaciones || "" },
+              { label: "Estado", accessor: row => row.activo !== false ? "Activo" : "Inactivo" },
+              { label: "Roles", accessor: row => row.roles ? row.roles.join(", ") : "" }
+            ])}
+            className="w-full sm:w-auto px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition border border-slate-200 flex items-center justify-center gap-1"
+          >
+            📥 Exportar Usuarios (CSV)
+          </button>
+        )}
+
+        {activeTab === "articulos" && (
+          <button
+            onClick={() => exportToCSV(processedArticles, "recursos_blog", [
+              { label: "Título", accessor: row => row.title || "" },
+              { label: "Slug", accessor: row => row.slug || "" },
+              { label: "Categorías", accessor: row => row.categoryIds ? row.categoryIds.map(cId => categoriesMap[cId] || cId).join(", ") : "" },
+              { label: "URL PDF", accessor: row => row.pdfUrl || "" }
+            ])}
+            className="w-full sm:w-auto px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition border border-slate-200 flex items-center justify-center gap-1"
+          >
+            📥 Exportar Recursos (CSV)
+          </button>
+        )}
       </div>
 
       {/* Alertas globales */}
@@ -553,15 +763,15 @@ export default function AdminDashboardPage() {
 
           {loadingConsultas ? (
             <p className="text-center py-12 text-slate-500">Cargando solicitudes...</p>
-          ) : consultas.length === 0 ? (
+          ) : processedConsultas.length === 0 ? (
             <div className="bg-white rounded-2xl p-8 text-center text-slate-500 border border-slate-100 shadow-sm">
-              No hay solicitudes registradas todavía.
+              No hay solicitudes que coincidan con la búsqueda.
             </div>
           ) : (
             <div>
               {/* VISTA TARJETAS (Móvil) */}
               <div className="grid grid-cols-1 gap-4 md:hidden">
-                {consultas.map((item) => (
+                {processedConsultas.map((item) => (
                   <div key={item.id} className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm space-y-3 text-sm">
                     <div className="flex justify-between items-start gap-2 border-b border-slate-100 pb-3">
                       <div>
@@ -624,18 +834,28 @@ export default function AdminDashboardPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-slate-100 text-slate-700 text-sm uppercase">
-                        <th className="p-4">Fecha</th>
-                        <th className="p-4">Paciente</th>
-                        <th className="p-4">Contacto</th>
-                        <th className="p-4">Motivo</th>
+                      <tr className="bg-slate-100 text-slate-700 text-sm uppercase select-none">
+                        <th onClick={() => handleSort('createdAt')} className="p-4 cursor-pointer hover:bg-slate-200">
+                          Fecha {sortConfig.key === 'createdAt' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
+                        </th>
+                        <th onClick={() => handleSort('nombre')} className="p-4 cursor-pointer hover:bg-slate-200">
+                          Paciente {sortConfig.key === 'nombre' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
+                        </th>
+                        <th onClick={() => handleSort('email')} className="p-4 cursor-pointer hover:bg-slate-200">
+                          Contacto {sortConfig.key === 'email' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
+                        </th>
+                        <th onClick={() => handleSort('motivo')} className="p-4 cursor-pointer hover:bg-slate-200">
+                          Motivo {sortConfig.key === 'motivo' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
+                        </th>
                         <th className="p-4">Mensaje</th>
-                        <th className="p-4">Estado</th>
+                        <th onClick={() => handleSort('estado')} className="p-4 cursor-pointer hover:bg-slate-200">
+                          Estado {sortConfig.key === 'estado' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
+                        </th>
                         <th className="p-4 text-center">Acciones</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
-                      {consultas.map((item) => (
+                      {processedConsultas.map((item) => (
                         <tr key={item.id} className="hover:bg-slate-50 transition">
                           <td className="p-4 text-slate-500 whitespace-nowrap">
                             {item.createdAt?.toDate ? item.createdAt.toDate().toLocaleDateString() : "Reciente"}
@@ -698,7 +918,6 @@ export default function AdminDashboardPage() {
             </button>
           </div>
 
-          {/* Formulario envuelto en la referencia para scroll suave */}
           {activeUserModal && (
             <div ref={userFormRef} className="scroll-mt-6">
               <UserFormModal 
@@ -749,15 +968,15 @@ export default function AdminDashboardPage() {
 
           {loadingUsuarios ? (
             <p className="text-center py-12 text-slate-500">Cargando usuarios...</p>
-          ) : usuarios.length === 0 ? (
+          ) : processedUsuarios.length === 0 ? (
             <div className="bg-white rounded-2xl p-8 text-center text-slate-500 border border-slate-100 shadow-sm">
-              No hay usuarios registrados.
+              No hay usuarios que coincidan con la búsqueda.
             </div>
           ) : (
             <div>
               {/* VISTA TARJETAS (Móvil) */}
               <div className="grid grid-cols-1 gap-4 md:hidden">
-                {usuarios.map((u) => (
+                {processedUsuarios.map((u) => (
                   <div key={u.id} className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm space-y-4 text-sm">
                     <div className="flex justify-between items-start gap-2 border-b border-slate-100 pb-3">
                       <div className="space-y-0.5">
@@ -791,6 +1010,13 @@ export default function AdminDashboardPage() {
                         </span>
                       </div>
                     </div>
+
+                    {u.observaciones && (
+                      <div className="p-2.5 bg-amber-50/60 rounded-xl border border-amber-100 text-xs text-amber-900 italic">
+                        <span className="block not-italic font-bold text-[10px] uppercase text-amber-700">Observaciones:</span>
+                        {u.observaciones}
+                      </div>
+                    )}
 
                     <div className="pt-1">
                       <span className="block font-bold text-slate-400 uppercase text-[10px] mb-1">Roles Asignados</span>
@@ -830,28 +1056,30 @@ export default function AdminDashboardPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-slate-100 text-slate-700 text-sm uppercase">
-                        <th className="p-4">Email / ID</th>
-                        <th className="p-4">Nombre</th>
+                      <tr className="bg-slate-100 text-slate-700 text-sm uppercase select-none">
+                        <th onClick={() => handleSort('id')} className="p-4 cursor-pointer hover:bg-slate-200">
+                          Email / ID {sortConfig.key === 'id' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
+                        </th>
+                        <th onClick={() => handleSort('nombre')} className="p-4 cursor-pointer hover:bg-slate-200">
+                          Nombre {sortConfig.key === 'nombre' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
+                        </th>
                         <th className="p-4">Teléfono</th>
-                        <th className="p-4">Origen</th>
-                        <th className="p-4">Modificación</th>
-                        <th className="p-4 text-center">Estado</th>
+                        <th className="p-4">Observaciones</th>
+                        <th onClick={() => handleSort('activo')} className="p-4 text-center cursor-pointer hover:bg-slate-200">
+                          Estado {sortConfig.key === 'activo' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
+                        </th>
                         <th className="p-4">Roles</th>
                         <th className="p-4 text-center">Acciones</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
-                      {usuarios.map((u) => (
+                      {processedUsuarios.map((u) => (
                         <tr key={u.id} className="hover:bg-slate-50 transition">
                           <td className="p-4 font-semibold">{u.id}</td>
                           <td className="p-4">{u.nombre || "-"}</td>
                           <td className="p-4">{u.telefono || "-"}</td>
-                          <td className="p-4 text-xs">{u.origenEncuentro || "-"}</td>
-                          <td className="p-4 text-xs">
-                            {u.updatedAt?.toDate 
-                              ? u.updatedAt.toDate().toLocaleString() 
-                              : (u.createdAt?.toDate ? u.createdAt.toDate().toLocaleString() : "Reciente")}
+                          <td className="p-4 text-xs max-w-xs truncate text-slate-600" title={u.observaciones}>
+                            {u.observaciones || "-"}
                           </td>
                           <td className="p-4 text-center">
                             <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${u.activo !== false ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
@@ -909,7 +1137,6 @@ export default function AdminDashboardPage() {
             </button>
           </div>
 
-          {/* Formulario envuelto en la referencia para scroll suave */}
           {activeArticleModal && (
             <div ref={articleFormRef} className="scroll-mt-6">
               <ArticleFormModal
@@ -959,15 +1186,15 @@ export default function AdminDashboardPage() {
 
           {loadingArticles ? (
             <p className="text-center py-12 text-slate-500">Cargando recursos...</p>
-          ) : articles.length === 0 ? (
+          ) : processedArticles.length === 0 ? (
             <div className="bg-white rounded-2xl p-8 text-center text-slate-500 border border-slate-100 shadow-sm">
-              No hay recursos publicados.
+              No hay recursos que coincidan con la búsqueda.
             </div>
           ) : (
             <div>
               {/* VISTA TARJETAS (Móvil) */}
               <div className="grid grid-cols-1 gap-4 md:hidden">
-                {articles.map((art) => (
+                {processedArticles.map((art) => (
                   <div key={art.id} className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm space-y-4 text-sm">
                     <div className="flex gap-3 items-start border-b border-slate-100 pb-3">
                       {art.coverImageUrl ? (
@@ -1044,17 +1271,21 @@ export default function AdminDashboardPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-slate-100 text-slate-700 text-sm uppercase">
+                      <tr className="bg-slate-100 text-slate-700 text-sm uppercase select-none">
                         <th className="p-4">Portada</th>
-                        <th className="p-4">Título / Slug</th>
+                        <th onClick={() => handleSort('title')} className="p-4 cursor-pointer hover:bg-slate-200">
+                          Título / Slug {sortConfig.key === 'title' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
+                        </th>
                         <th className="p-4">Categorías</th>
                         <th className="p-4 text-center">PDF</th>
-                        <th className="p-4">Modificación</th>
+                        <th onClick={() => handleSort('updatedAt')} className="p-4 cursor-pointer hover:bg-slate-200">
+                          Modificación {sortConfig.key === 'updatedAt' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
+                        </th>
                         <th className="p-4 text-center">Acciones</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
-                      {articles.map((art) => (
+                      {processedArticles.map((art) => (
                         <tr key={art.id} className="hover:bg-slate-50 transition">
                           <td className="p-4">
                             {art.coverImageUrl ? (
