@@ -15,9 +15,10 @@ export default function UserFormModal({ userToEdit, isGlobalAdmin, onClose, onSu
   const [email, setEmail] = useState(userToEdit?.id || "");
   const [telefono, setTelefono] = useState(userToEdit?.telefono || "");
   const [origenEncuentro, setOrigenEncuentro] = useState(userToEdit?.origenEncuentro || "");
+  const [observaciones, setObservaciones] = useState(userToEdit?.observaciones || ""); // Nuevo campo
   
   const [activo, setActivo] = useState(isEditing ? (userToEdit.activo !== false) : false);
-  const [aceptaPolitica, setAceptaPolitica] = useState(userToEdit?.aceptaPolitica || false); // Estado de política
+  const [aceptaPolitica, setAceptaPolitica] = useState(userToEdit?.aceptaPolitica || false);
   
   const [rolesSeleccionados, setRolesSeleccionados] = useState(userToEdit?.roles || ["paciente"]);
   const [permisos, setPermisos] = useState(userToEdit?.permisos ? userToEdit.permisos.join(", ") : "");
@@ -49,8 +50,9 @@ export default function UserFormModal({ userToEdit, isGlobalAdmin, onClose, onSu
       nombre: nombre.trim(),
       telefono: telefono.trim(),
       origenEncuentro,
+      observaciones: observaciones.trim(), // Se incluye en el submit
       activo,
-      aceptaPolitica, // Incluimos el campo
+      aceptaPolitica,
       roles: rolesSeleccionados,
       permisos: permisosArray,
       recursosPermitidos: recursosPermitidos ? recursosPermitidos.split(",").map(r => r.trim()).filter(Boolean) : [],
@@ -121,6 +123,18 @@ export default function UserFormModal({ userToEdit, isGlobalAdmin, onClose, onSu
               <option value="Otro">Otro</option>
             </select>
           </div>
+        </div>
+
+        {/* Nuevo Campo: Observaciones */}
+        <div>
+          <label className="block text-sm font-medium mb-1 text-slate-700">Observaciones / Notas internas</label>
+          <textarea
+            rows={3}
+            value={observaciones}
+            onChange={(e) => setObservaciones(e.target.value)}
+            placeholder="Añade notas o comentarios sobre el paciente o usuario..."
+            className="w-full border rounded-lg p-3 text-slate-700 bg-white focus:outline-none focus:border-primary-custom text-sm"
+          />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

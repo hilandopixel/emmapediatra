@@ -5,7 +5,7 @@ import { adminDb } from '@/lib/firebaseAdmin';
 
 export async function POST(request) {
   try {
-    const { email, nombre, telefono, origenEncuentro } = await request.json();
+    const { email, nombre, telefono, origenEncuentro, aceptaPolitica } = await request.json();
 
     if (!email) {
       return NextResponse.json({ error: 'El correo electrónico es obligatorio.' }, { status: 400 });
@@ -23,8 +23,9 @@ export async function POST(request) {
         nombre: nombre || '',
         telefono: telefono || '',
         origenEncuentro: origenEncuentro || '',
-        activo: false, // Por defecto inactivo hasta que el administrador lo active
-        roles: ['usuario'],
+        aceptaPolitica: true,
+        activo: false,
+        roles: [],
         fechaSolicitud: new Date().toISOString(),
       });
     }

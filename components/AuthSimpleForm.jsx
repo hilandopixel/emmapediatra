@@ -82,6 +82,7 @@ export default function AuthSimpleForm({ onVerifySuccess }) {
           nombre: `${nombre} ${apellidos}`.trim(),
           telefono,
           origenEncuentro,
+          aceptaPolitica,
           tokenTurnstile: turnstileToken,
         }),
       });

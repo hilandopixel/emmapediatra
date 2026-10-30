@@ -158,7 +158,7 @@ export default function ArticleFormModal({ articleToEdit, onClose, onSubmit }) {
       await onSubmit(formData, isEditing);
     } catch (err) {
       console.error("Error al procesar el formulario:", err);
-      alert(err.message || "Hubo un error al generar la miniatura o guardar el artículo.");
+      alert(err.message || "Hubo un error al generar la miniatura o guardar el recurso.");
     } finally {
       setLoading(false);
       setUploadStatus("");
@@ -168,8 +168,8 @@ export default function ArticleFormModal({ articleToEdit, onClose, onSubmit }) {
   return (
     <div className="mb-8 bg-white p-8 rounded-2xl shadow-md border border-slate-200">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-secondary-custom">
-          {isEditing ? `Editando artículo: ${articleToEdit.title}` : "Crear nuevo artículo"}
+        <h2 className="text-xl font-bold text-primary-custom">
+          {isEditing ? `Editando recurso: ${articleToEdit.title}` : "Crear nuevo recurso"}
         </h2>
         <button onClick={onClose} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
       </div>
@@ -177,7 +177,7 @@ export default function ArticleFormModal({ articleToEdit, onClose, onSubmit }) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1 text-slate-700">Título del Artículo *</label>
+            <label className="block text-sm font-medium mb-1 text-slate-700">Título del Recurso *</label>
             <input
               type="text"
               value={title}
@@ -274,13 +274,13 @@ export default function ArticleFormModal({ articleToEdit, onClose, onSubmit }) {
 
         <div>
           <label className="block text-sm font-medium mb-1 text-slate-700">
-            Contenido del Artículo <span className="text-xs text-slate-400 font-normal">(opcional)</span>
+            Contenido del Recurso <span className="text-xs text-slate-400 font-normal">(opcional)</span>
           </label>
           <textarea
             rows={8}
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Escribe aquí el texto del artículo (opcional)..."
+            placeholder="Escribe aquí el texto del recurso (opcional)..."
             className="w-full border rounded-lg p-3 text-slate-700 bg-white"
           />
         </div>
@@ -291,7 +291,7 @@ export default function ArticleFormModal({ articleToEdit, onClose, onSubmit }) {
             disabled={loading}
             className="px-6 py-3 bg-primary-custom hover:bg-[#266360] text-white font-bold rounded-xl text-sm transition disabled:opacity-50"
           >
-            {loading ? (uploadStatus || "Procesando...") : (isEditing ? "Actualizar artículo" : "Publicar artículo")}
+            {loading ? (uploadStatus || "Procesando...") : (isEditing ? "Actualizar recurso" : "Publicar recurso")}
           </button>
           <button
             type="button"

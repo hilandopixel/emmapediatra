@@ -23,7 +23,7 @@ import {
 import { auth, db } from "@/lib/firebaseConfig";
 import UserFormModal from "@/components/UserFormModal";
 import ArticleFormModal from "@/components/ArticleFormModal";
-import { Turnstile } from "@marsidev/react-turnstile"; // 1. Importar Turnstile
+import { Turnstile } from "@marsidev/react-turnstile";
 
 export default function AdminDashboardPage() {
   const [user, setUser] = useState(null);
@@ -51,7 +51,7 @@ export default function AdminDashboardPage() {
   const [consultas, setConsultas] = useState([]);
   const [loadingConsultas, setLoadingConsultas] = useState(false);
 
-  // --- ESTADOS: USUARIOS ---
+  // --- ESTADOS Y REFERENCIA: USUARIOS ---
   const [usuarios, setUsuarios] = useState([]);
   const [loadingUsuarios, setLoadingUsuarios] = useState(false);
   const [activeUserModal, setActiveUserModal] = useState(null);
@@ -59,17 +59,25 @@ export default function AdminDashboardPage() {
   const [confirmUserEmailInput, setConfirmUserEmailInput] = useState("");
   const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
   const [canDeleteUsers, setCanDeleteUsers] = useState(false);
+  const userFormRef = useRef(null); // Reference para el formulario de usuarios
 
-  // --- ESTADOS: ARTÍCULOS BLOG ---
+  // --- ESTADOS Y REFERENCIA: RECURSOS BLOG ---
   const [articles, setArticles] = useState([]);
   const [categoriesMap, setCategoriesMap] = useState({});
   const [loadingArticles, setLoadingArticles] = useState(false);
   const [activeArticleModal, setActiveArticleModal] = useState(null);
   const [articleToDelete, setArticleToDelete] = useState(null);
   const [confirmArticleTitleInput, setConfirmArticleTitleInput] = useState("");
-  const articleFormRef = useRef(null);
+  const articleFormRef = useRef(null); // Reference para el formulario de recursos
 
-  // Scroll automático para edición de artículos
+  // Scroll automático para edición/creación de USUARIOS
+  useEffect(() => {
+    if (activeUserModal && userFormRef.current) {
+      userFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [activeUserModal]);
+
+  // Scroll automático para edición/creación de RECURSOS
   useEffect(() => {
     if (activeArticleModal && articleFormRef.current) {
       articleFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -138,7 +146,6 @@ export default function AdminDashboardPage() {
     }
 
     try {
-      // Validar el token del captcha en el servidor
       const captchaRes = await fetch("/api/verify-captcha", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -160,7 +167,6 @@ export default function AdminDashboardPage() {
         setLoginError("Credenciales incorrectas o usuario no autorizado.");
       }
     } finally {
-      // Resetear el captcha tras el intento
       setAdminCaptchaToken(null);
       if (turnstileRef.current) {
         turnstileRef.current.reset();
@@ -217,27 +223,20 @@ export default function AdminDashboardPage() {
 
   const llamarApiActivarUsuario = async (targetEmail) => {
     try {
-    // 1. Obtener el usuario activo en Firebase Auth
-    const currentUser = auth.currentUser;
-    if (!currentUser) {
-      throw new Error("No hay un usuario autenticado activo.");
-    }
+      const currentUser = auth.currentUser;
+      if (!currentUser) throw new Error("No hay un usuario autenticado activo.");
 
-    // 2. Extraer el ID Token firmado de Firebase
-    const token = await currentUser.getIdToken();
+      const token = await currentUser.getIdToken();
 
-    // 3. Enviar la petición fetch con la cabecera Authorization: Bearer <token>
-    const response = await fetch("/api/admin/activar-usuario", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`, // 👈 Inyección del token Bearer
-      },
-      body: JSON.stringify({
-        email: targetEmail,
-      }),
-    });
-    
+      const response = await fetch("/api/admin/activar-usuario", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ email: targetEmail }),
+      });
+      
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Error al activar en el servidor");
     } catch (err) {
@@ -328,7 +327,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // --- MÉTODOS ARTÍCULOS ---
+  // --- MÉTODOS RECURSOS ---
   const fetchArticlesAndCategories = async () => {
     setLoadingArticles(true);
     try {
@@ -346,7 +345,7 @@ export default function AdminDashboardPage() {
       }));
       setArticles(data);
     } catch (err) {
-      console.error("Error al cargar artículos:", err);
+      console.error("Error al cargar recursos:", err);
     } finally {
       setLoadingArticles(false);
     }
@@ -367,7 +366,7 @@ export default function AdminDashboardPage() {
           pdfUrl: formData.pdfUrl,
           updatedAt: serverTimestamp(),
         });
-        setMensaje(`Artículo "${formData.title}" actualizado con éxito.`);
+        setMensaje(`Recurso "${formData.title}" actualizado con éxito.`);
       } else {
         await addDoc(collection(db, "posts"), {
           title: formData.title,
@@ -379,14 +378,14 @@ export default function AdminDashboardPage() {
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         });
-        setMensaje(`Artículo "${formData.title}" creado con éxito.`);
+        setMensaje(`Recurso "${formData.title}" creado con éxito.`);
       }
 
       setActiveArticleModal(null);
       fetchArticlesAndCategories();
     } catch (err) {
-      console.error("Error al guardar artículo:", err);
-      setError("Hubo un error al guardar los datos del artículo.");
+      console.error("Error al guardar recurso:", err);
+      setError("Hubo un error al guardar los datos del recurso.");
     }
   };
 
@@ -403,13 +402,13 @@ export default function AdminDashboardPage() {
 
     try {
       await deleteDoc(doc(db, "posts", articleToDelete.id));
-      setMensaje(`Artículo "${articleToDelete.title}" eliminado correctamente.`);
+      setMensaje(`Recurso "${articleToDelete.title}" eliminado correctamente.`);
       setArticleToDelete(null);
       setConfirmArticleTitleInput("");
       fetchArticlesAndCategories();
     } catch (err) {
-      console.error("Error al eliminar artículo:", err);
-      setError("Hubo un error al eliminar el artículo.");
+      console.error("Error al eliminar recurso:", err);
+      setError("Hubo un error al eliminar el recurso.");
       setArticleToDelete(null);
       setConfirmArticleTitleInput("");
     }
@@ -456,7 +455,6 @@ export default function AdminDashboardPage() {
             />
           </div>
 
-          {/* Widget del Captcha en el Login de Admin */}
           <div className="flex justify-center py-2">
             <Turnstile
               ref={turnstileRef}
@@ -524,7 +522,7 @@ export default function AdminDashboardPage() {
               : "bg-slate-100 text-primary-custom hover:bg-slate-200"
           }`}
         >
-          👥 Gestión de Usuarios ({usuarios.length})
+          👥 Usuarios ({usuarios.length})
         </button>
 
         <button
@@ -535,7 +533,7 @@ export default function AdminDashboardPage() {
               : "bg-slate-100 text-primary-custom hover:bg-slate-200"
           }`}
         >
-          📝 Artículos de Blog ({articles.length})
+          📝 Recursos ({articles.length})
         </button>
       </div>
 
@@ -547,7 +545,7 @@ export default function AdminDashboardPage() {
       {activeTab === "consultas" && (
         <section className="space-y-6">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-slate-800">Solicitudes de Consulta Recibidas</h2>
+            <h2 className="text-xl font-bold text-primary-custom">Gestión de Solicitudes</h2>
             <button onClick={fetchConsultas} className="text-xs text-primary-custom hover:underline font-semibold">
               🔄 Actualizar lista
             </button>
@@ -561,7 +559,7 @@ export default function AdminDashboardPage() {
             </div>
           ) : (
             <div>
-              {/* VISTA TARJETAS (Móvil: < md) */}
+              {/* VISTA TARJETAS (Móvil) */}
               <div className="grid grid-cols-1 gap-4 md:hidden">
                 {consultas.map((item) => (
                   <div key={item.id} className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm space-y-3 text-sm">
@@ -621,7 +619,7 @@ export default function AdminDashboardPage() {
                 ))}
               </div>
 
-              {/* VISTA TABLA (Escritorio: >= md) */}
+              {/* VISTA TABLA (Escritorio) */}
               <div className="hidden md:block bg-white rounded-2xl shadow-md overflow-hidden border border-slate-100">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
@@ -691,7 +689,7 @@ export default function AdminDashboardPage() {
       {activeTab === "usuarios" && (
         <section className="space-y-6">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-slate-800">Gestión de Usuarios</h2>
+            <h2 className="text-xl font-bold text-primary-custom">Gestión de Usuarios</h2>
             <button
               onClick={() => setActiveUserModal("create")}
               className="px-4 py-2 bg-primary-custom hover:bg-[#266360] text-white text-xs font-bold rounded-xl transition"
@@ -700,21 +698,16 @@ export default function AdminDashboardPage() {
             </button>
           </div>
 
-          {activeUserModal === "create" && (
-            <UserFormModal 
-              isGlobalAdmin={isGlobalAdmin} 
-              onClose={() => setActiveUserModal(null)} 
-              onSubmit={handleUserFormSubmit} 
-            />
-          )}
-
-          {activeUserModal && activeUserModal !== "create" && (
-            <UserFormModal 
-              userToEdit={activeUserModal} 
-              isGlobalAdmin={isGlobalAdmin} 
-              onClose={() => setActiveUserModal(null)} 
-              onSubmit={handleUserFormSubmit} 
-            />
+          {/* Formulario envuelto en la referencia para scroll suave */}
+          {activeUserModal && (
+            <div ref={userFormRef} className="scroll-mt-6">
+              <UserFormModal 
+                userToEdit={activeUserModal !== "create" ? activeUserModal : null} 
+                isGlobalAdmin={isGlobalAdmin} 
+                onClose={() => setActiveUserModal(null)} 
+                onSubmit={handleUserFormSubmit} 
+              />
+            </div>
           )}
 
           {userToDelete && (
@@ -762,7 +755,7 @@ export default function AdminDashboardPage() {
             </div>
           ) : (
             <div>
-              {/* VISTA TARJETAS (Móvil: < md) */}
+              {/* VISTA TARJETAS (Móvil) */}
               <div className="grid grid-cols-1 gap-4 md:hidden">
                 {usuarios.map((u) => (
                   <div key={u.id} className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm space-y-4 text-sm">
@@ -821,20 +814,18 @@ export default function AdminDashboardPage() {
                       >
                         ✏️ Modificar
                       </button>
-                      
-                        <button
-                          onClick={() => { setUserToDelete(u); setConfirmUserEmailInput(""); }}
-                          className="bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold py-2.5 px-4 rounded-xl transition text-center"
-                        >
-                          🗑️ Eliminar
-                        </button>
-                      
+                      <button
+                        onClick={() => { setUserToDelete(u); setConfirmUserEmailInput(""); }}
+                        className="bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold py-2.5 px-4 rounded-xl transition text-center"
+                      >
+                        🗑️ Eliminar
+                      </button>
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* VISTA TABLA (Escritorio: >= md) */}
+              {/* VISTA TABLA (Escritorio) */}
               <div className="hidden md:block bg-white rounded-2xl shadow-md overflow-hidden border border-slate-100">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
@@ -887,14 +878,12 @@ export default function AdminDashboardPage() {
                             >
                               Modificar
                             </button>
-                            
-                              <button
-                                onClick={() => { setUserToDelete(u); setConfirmUserEmailInput(""); }}
-                                className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold rounded-lg transition"
-                              >
-                                Eliminar
-                              </button>
-                            
+                            <button
+                              onClick={() => { setUserToDelete(u); setConfirmUserEmailInput(""); }}
+                              className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold rounded-lg transition"
+                            >
+                              Eliminar
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -907,19 +896,20 @@ export default function AdminDashboardPage() {
         </section>
       )}
 
-      {/* ==================== PESTAÑA 3: ARTÍCULOS BLOG ==================== */}
+      {/* ==================== PESTAÑA 3: RECURSOS BLOG ==================== */}
       {activeTab === "articulos" && (
         <section className="space-y-6">
           <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold text-slate-800">Gestión de Artículos del Blog Exclusivo</h2>
+            <h2 className="text-xl font-bold text-primary-custom">Gestión de Recursos</h2>
             <button
               onClick={() => setActiveArticleModal("create")}
               className="px-4 py-2 bg-primary-custom hover:bg-[#266360] text-white text-xs font-bold rounded-xl transition"
             >
-              + Crear nuevo artículo
+              + Crear nuevo recurso
             </button>
           </div>
 
+          {/* Formulario envuelto en la referencia para scroll suave */}
           {activeArticleModal && (
             <div ref={articleFormRef} className="scroll-mt-6">
               <ArticleFormModal
@@ -933,7 +923,7 @@ export default function AdminDashboardPage() {
           {articleToDelete && (
             <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
               <div className="bg-white max-w-md w-full p-6 rounded-2xl shadow-lg border border-slate-200 space-y-4">
-                <h3 className="text-xl font-bold text-red-600">¿Estás seguro de eliminar este artículo?</h3>
+                <h3 className="text-xl font-bold text-red-600">¿Estás seguro de eliminar este recurso?</h3>
                 <p className="text-sm text-slate-700 leading-relaxed">
                   Esta acción es irreversible. Escribe el título exacto: <strong className="text-slate-900">{articleToDelete.title}</strong>
                 </p>
@@ -968,14 +958,14 @@ export default function AdminDashboardPage() {
           )}
 
           {loadingArticles ? (
-            <p className="text-center py-12 text-slate-500">Cargando artículos...</p>
+            <p className="text-center py-12 text-slate-500">Cargando recursos...</p>
           ) : articles.length === 0 ? (
             <div className="bg-white rounded-2xl p-8 text-center text-slate-500 border border-slate-100 shadow-sm">
-              No hay artículos publicados.
+              No hay recursos publicados.
             </div>
           ) : (
             <div>
-              {/* VISTA TARJETAS (Móvil: < md) */}
+              {/* VISTA TARJETAS (Móvil) */}
               <div className="grid grid-cols-1 gap-4 md:hidden">
                 {articles.map((art) => (
                   <div key={art.id} className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm space-y-4 text-sm">
@@ -1049,7 +1039,7 @@ export default function AdminDashboardPage() {
                 ))}
               </div>
 
-              {/* VISTA TABLA (Escritorio: >= md) */}
+              {/* VISTA TABLA (Escritorio) */}
               <div className="hidden md:block bg-white rounded-2xl shadow-md overflow-hidden border border-slate-100">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
