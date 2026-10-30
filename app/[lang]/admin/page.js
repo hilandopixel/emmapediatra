@@ -315,6 +315,7 @@ export default function AdminDashboardPage() {
 
     try {
       await deleteDoc(doc(db, "usuarios_autorizados", userToDelete.id));
+      await deleteDoc(doc(db, "usuarios_areaprivada", userToDelete.id));
       setMensaje(`Usuario ${userToDelete.id} eliminado correctamente.`);
       setUserToDelete(null);
       setConfirmUserEmailInput("");
