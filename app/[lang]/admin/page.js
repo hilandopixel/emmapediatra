@@ -47,15 +47,25 @@ export default function AdminDashboardPage() {
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
 
-  // --- ESTADOS: FILTROS, ORDEN Y BÚSQUEDA ---
+  // --- ESTADOS: BÚSQUEDA Y ORDENACIÓN ---
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+
+  // --- ESTADOS: FILTROS ESPECÍFICOS ---
+  const [filterEstadoConsulta, setFilterEstadoConsulta] = useState("all");
+  const [filterEstadoUsuario, setFilterEstadoUsuario] = useState("all");
+  const [filterRolUsuario, setFilterRolUsuario] = useState("all");
+  const [filterCategoriaRecurso, setFilterCategoriaRecurso] = useState("all");
 
   // Resetear filtros al cambiar de pestaña
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setSearchTerm("");
     setSortConfig({ key: null, direction: 'asc' });
+    setFilterEstadoConsulta("all");
+    setFilterEstadoUsuario("all");
+    setFilterRolUsuario("all");
+    setFilterCategoriaRecurso("all");
     setMensaje("");
     setError("");
   };
@@ -157,27 +167,24 @@ export default function AdminDashboardPage() {
     setSortConfig({ key, direction });
   };
 
-  // Helper para Exportar CSV en UTF-8 (Compatible con Excel)
+  // Helper para Exportar CSV
   const exportToCSV = (data, filename, headers) => {
     if (!data || !data.length) return;
 
     const csvRows = [];
-    
-    // Encabezados
     csvRows.push(headers.map(h => `"${h.label}"`).join(","));
 
-    // Filas
     for (const row of data) {
       const values = headers.map(h => {
         let val = h.accessor(row);
         if (val === null || val === undefined) val = "";
-        val = String(val).replace(/"/g, '""'); // Escapar comillas dobles
+        val = String(val).replace(/"/g, '""');
         return `"${val}"`;
       });
       csvRows.push(values.join(","));
     }
 
-    const csvString = "\uFEFF" + csvRows.join("\n"); // BOM UTF-8 para Excel
+    const csvString = "\uFEFF" + csvRows.join("\n");
     const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -191,6 +198,10 @@ export default function AdminDashboardPage() {
   // --- FILTRADO Y ORDENACIÓN PROCESADA ---
   const processedConsultas = useMemo(() => {
     let result = [...consultas];
+
+    if (filterEstadoConsulta !== "all") {
+      result = result.filter(c => (c.estado || "pendiente") === filterEstadoConsulta);
+    }
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -219,10 +230,19 @@ export default function AdminDashboardPage() {
     }
 
     return result;
-  }, [consultas, searchTerm, sortConfig]);
+  }, [consultas, searchTerm, filterEstadoConsulta, sortConfig]);
 
   const processedUsuarios = useMemo(() => {
     let result = [...usuarios];
+
+    if (filterEstadoUsuario !== "all") {
+      const esActivoDeseado = filterEstadoUsuario === "activo";
+      result = result.filter(u => (u.activo !== false) === esActivoDeseado);
+    }
+
+    if (filterRolUsuario !== "all") {
+      result = result.filter(u => u.roles && u.roles.includes(filterRolUsuario));
+    }
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -240,8 +260,8 @@ export default function AdminDashboardPage() {
         let aVal = a[sortConfig.key] || "";
         let bVal = b[sortConfig.key] || "";
         if (sortConfig.key === 'updatedAt') {
-          aVal = a.updatedAt?.toDate ? a.updatedAt.toDate().getTime() : 0;
-          bVal = b.updatedAt?.toDate ? b.updatedAt.toDate().getTime() : 0;
+          aVal = a.updatedAt?.toDate ? a.updatedAt.toDate().getTime() : (a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0);
+          bVal = b.updatedAt?.toDate ? b.updatedAt.toDate().getTime() : (b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0);
         }
         if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
         if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
@@ -250,10 +270,14 @@ export default function AdminDashboardPage() {
     }
 
     return result;
-  }, [usuarios, searchTerm, sortConfig]);
+  }, [usuarios, searchTerm, filterEstadoUsuario, filterRolUsuario, sortConfig]);
 
   const processedArticles = useMemo(() => {
     let result = [...articles];
+
+    if (filterCategoriaRecurso !== "all") {
+      result = result.filter(art => art.categoryIds && art.categoryIds.includes(filterCategoriaRecurso));
+    }
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -278,7 +302,7 @@ export default function AdminDashboardPage() {
     }
 
     return result;
-  }, [articles, searchTerm, sortConfig]);
+  }, [articles, searchTerm, filterCategoriaRecurso, sortConfig]);
 
   // Login protegido con Captcha
   const handleLogin = async (e) => {
@@ -407,7 +431,7 @@ export default function AdminDashboardPage() {
           origenEncuentro: formData.origenEncuentro,
           observaciones: formData.observaciones || "",
           activo: formData.activo,
-          aceptaPolitica: formData.aceptaPolitica,
+          aceptaPolitica: formData.aceptaPolitica, // Se actualiza el booleano
           roles: formData.roles,
           permisos: formData.permisos,
           recursosPermitidos: formData.recursosPermitidos,
@@ -426,7 +450,7 @@ export default function AdminDashboardPage() {
           origenEncuentro: formData.origenEncuentro,
           observaciones: formData.observaciones || "",
           activo: formData.activo,
-          aceptaPolitica: formData.aceptaPolitica,
+          aceptaPolitica: formData.aceptaPolitica, // Se guarda la elección
           roles: formData.roles,
           permisos: formData.permisos,
           recursosPermitidos: formData.recursosPermitidos,
@@ -683,17 +707,71 @@ export default function AdminDashboardPage() {
         </button>
       </div>
 
-      {/* Barra de Filtro de Búsqueda Global para Pestaña Activa */}
-      <div className="mb-6 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-3 items-center justify-between">
-        <div className="w-full sm:max-w-md relative">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder={`Buscar en ${activeTab}...`}
-            className="w-full pl-9 pr-4 py-2 border rounded-xl text-sm text-slate-700 bg-white focus:outline-none focus:border-primary-custom"
-          />
-          <span className="absolute left-3 top-2.5 text-slate-400 text-sm">🔍</span>
+      {/* BARRA DE FILTROS Y EXPORTACIÓN */}
+      <div className="mb-6 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
+        <div className="flex flex-col sm:flex-row gap-3 flex-1">
+          {/* Campo de Búsqueda General */}
+          <div className="w-full sm:max-w-xs relative">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder={`Buscar en ${activeTab}...`}
+              className="w-full pl-9 pr-4 py-2 border rounded-xl text-sm text-slate-700 bg-white focus:outline-none focus:border-primary-custom"
+            />
+            <span className="absolute left-3 top-2.5 text-slate-400 text-sm">🔍</span>
+          </div>
+
+          {/* Filtros Específicos por Pestaña */}
+          {activeTab === "consultas" && (
+            <select
+              value={filterEstadoConsulta}
+              onChange={(e) => setFilterEstadoConsulta(e.target.value)}
+              className="border rounded-xl px-3 py-2 text-sm text-slate-700 bg-white focus:outline-none focus:border-primary-custom"
+            >
+              <option value="all">Todos los estados</option>
+              <option value="pendiente">Pendientes</option>
+              <option value="aprobada">Aprobadas</option>
+            </select>
+          )}
+
+          {activeTab === "usuarios" && (
+            <>
+              <select
+                value={filterEstadoUsuario}
+                onChange={(e) => setFilterEstadoUsuario(e.target.value)}
+                className="border rounded-xl px-3 py-2 text-sm text-slate-700 bg-white focus:outline-none focus:border-primary-custom"
+              >
+                <option value="all">Todos los estados</option>
+                <option value="activo">Activos</option>
+                <option value="inactivo">Inactivos</option>
+              </select>
+
+              <select
+                value={filterRolUsuario}
+                onChange={(e) => setFilterRolUsuario(e.target.value)}
+                className="border rounded-xl px-3 py-2 text-sm text-slate-700 bg-white focus:outline-none focus:border-primary-custom"
+              >
+                <option value="all">Todos los roles</option>
+                <option value="administrador_global">Admin Global</option>
+                <option value="administrador">Administrador</option>
+                <option value="paciente">Paciente</option>
+              </select>
+            </>
+          )}
+
+          {activeTab === "articulos" && (
+            <select
+              value={filterCategoriaRecurso}
+              onChange={(e) => setFilterCategoriaRecurso(e.target.value)}
+              className="border rounded-xl px-3 py-2 text-sm text-slate-700 bg-white focus:outline-none focus:border-primary-custom"
+            >
+              <option value="all">Todas las categorías</option>
+              {Object.entries(categoriesMap).map(([catId, catName]) => (
+                <option key={catId} value={catId}>{catName}</option>
+              ))}
+            </select>
+          )}
         </div>
 
         {/* Botones de Exportar a CSV */}
@@ -709,7 +787,7 @@ export default function AdminDashboardPage() {
               { label: "Mensaje", accessor: row => row.mensaje || "" },
               { label: "Estado", accessor: row => row.estado || "pendiente" }
             ])}
-            className="w-full sm:w-auto px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition border border-slate-200 flex items-center justify-center gap-1"
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition border border-slate-200 flex items-center justify-center gap-1 shrink-0"
           >
             📥 Exportar Solicitudes (CSV)
           </button>
@@ -724,9 +802,11 @@ export default function AdminDashboardPage() {
               { label: "Origen", accessor: row => row.origenEncuentro || "" },
               { label: "Observaciones", accessor: row => row.observaciones || "" },
               { label: "Estado", accessor: row => row.activo !== false ? "Activo" : "Inactivo" },
+              { label: "Acepta Política", accessor: row => row.aceptaPolitica ? "Sí" : "No" },
+              { label: "Última Modificación", accessor: row => row.updatedAt?.toDate ? row.updatedAt.toDate().toLocaleString() : (row.createdAt?.toDate ? row.createdAt.toDate().toLocaleString() : "") },
               { label: "Roles", accessor: row => row.roles ? row.roles.join(", ") : "" }
             ])}
-            className="w-full sm:w-auto px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition border border-slate-200 flex items-center justify-center gap-1"
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition border border-slate-200 flex items-center justify-center gap-1 shrink-0"
           >
             📥 Exportar Usuarios (CSV)
           </button>
@@ -740,7 +820,7 @@ export default function AdminDashboardPage() {
               { label: "Categorías", accessor: row => row.categoryIds ? row.categoryIds.map(cId => categoriesMap[cId] || cId).join(", ") : "" },
               { label: "URL PDF", accessor: row => row.pdfUrl || "" }
             ])}
-            className="w-full sm:w-auto px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition border border-slate-200 flex items-center justify-center gap-1"
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition border border-slate-200 flex items-center justify-center gap-1 shrink-0"
           >
             📥 Exportar Recursos (CSV)
           </button>
@@ -765,7 +845,7 @@ export default function AdminDashboardPage() {
             <p className="text-center py-12 text-slate-500">Cargando solicitudes...</p>
           ) : processedConsultas.length === 0 ? (
             <div className="bg-white rounded-2xl p-8 text-center text-slate-500 border border-slate-100 shadow-sm">
-              No hay solicitudes que coincidan con la búsqueda.
+              No hay solicitudes que coincidan con la búsqueda o filtro seleccionado.
             </div>
           ) : (
             <div>
@@ -970,7 +1050,7 @@ export default function AdminDashboardPage() {
             <p className="text-center py-12 text-slate-500">Cargando usuarios...</p>
           ) : processedUsuarios.length === 0 ? (
             <div className="bg-white rounded-2xl p-8 text-center text-slate-500 border border-slate-100 shadow-sm">
-              No hay usuarios que coincidan con la búsqueda.
+              No hay usuarios que coincidan con la búsqueda o filtro seleccionado.
             </div>
           ) : (
             <div>
@@ -996,6 +1076,12 @@ export default function AdminDashboardPage() {
                       <div>
                         <span className="block font-bold text-slate-400 uppercase text-[10px] mb-0.5">Teléfono</span>
                         <span>{u.telefono || "-"}</span>
+                      </div>
+                      <div>
+                        <span className="block font-bold text-slate-400 uppercase text-[10px] mb-0.5">Política Privacidad</span>
+                        <span className={`font-semibold ${u.aceptaPolitica ? "text-green-700" : "text-red-400"}`}>
+                          {u.aceptaPolitica ? "✓ Aceptada" : "✗ No aceptada"}
+                        </span>
                       </div>
                       <div>
                         <span className="block font-bold text-slate-400 uppercase text-[10px] mb-0.5">Origen</span>
@@ -1064,6 +1150,10 @@ export default function AdminDashboardPage() {
                           Nombre {sortConfig.key === 'nombre' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
                         </th>
                         <th className="p-4">Teléfono</th>
+                        <th className="p-4 text-center">Política</th>
+                        <th onClick={() => handleSort('updatedAt')} className="p-4 cursor-pointer hover:bg-slate-200 whitespace-nowrap">
+                          Última mod. {sortConfig.key === 'updatedAt' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
+                        </th>
                         <th className="p-4">Observaciones</th>
                         <th onClick={() => handleSort('activo')} className="p-4 text-center cursor-pointer hover:bg-slate-200">
                           Estado {sortConfig.key === 'activo' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
@@ -1078,6 +1168,16 @@ export default function AdminDashboardPage() {
                           <td className="p-4 font-semibold">{u.id}</td>
                           <td className="p-4">{u.nombre || "-"}</td>
                           <td className="p-4">{u.telefono || "-"}</td>
+                          <td className="p-4 text-center">
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${u.aceptaPolitica !== false ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                              {u.aceptaPolitica !== false ? "Si" : "No"}
+                            </span>
+                          </td>
+                          <td className="p-4 text-xs whitespace-nowrap text-slate-500">
+                            {u.updatedAt?.toDate 
+                              ? u.updatedAt.toDate().toLocaleString() 
+                              : (u.createdAt?.toDate ? u.createdAt.toDate().toLocaleString() : "-")}
+                          </td>
                           <td className="p-4 text-xs max-w-xs truncate text-slate-600" title={u.observaciones}>
                             {u.observaciones || "-"}
                           </td>
@@ -1188,7 +1288,7 @@ export default function AdminDashboardPage() {
             <p className="text-center py-12 text-slate-500">Cargando recursos...</p>
           ) : processedArticles.length === 0 ? (
             <div className="bg-white rounded-2xl p-8 text-center text-slate-500 border border-slate-100 shadow-sm">
-              No hay recursos que coincidan con la búsqueda.
+              No hay recursos que coincidan con la búsqueda o categoría seleccionada.
             </div>
           ) : (
             <div>

@@ -15,15 +15,22 @@ export default function UserFormModal({ userToEdit, isGlobalAdmin, onClose, onSu
   const [email, setEmail] = useState(userToEdit?.id || "");
   const [telefono, setTelefono] = useState(userToEdit?.telefono || "");
   const [origenEncuentro, setOrigenEncuentro] = useState(userToEdit?.origenEncuentro || "");
-  const [observaciones, setObservaciones] = useState(userToEdit?.observaciones || ""); // Nuevo campo
+  const [observaciones, setObservaciones] = useState(userToEdit?.observaciones || "");
   
   const [activo, setActivo] = useState(isEditing ? (userToEdit.activo !== false) : false);
-  const [aceptaPolitica, setAceptaPolitica] = useState(userToEdit?.aceptaPolitica || false);
+  const [aceptaPolitica, setAceptaPolitica] = useState(userToEdit?.aceptaPolitica || false); // Permite editar
   
   const [rolesSeleccionados, setRolesSeleccionados] = useState(userToEdit?.roles || ["paciente"]);
   const [permisos, setPermisos] = useState(userToEdit?.permisos ? userToEdit.permisos.join(", ") : "");
   const [recursosPermitidos, setRecursosPermitidos] = useState(userToEdit?.recursosPermitidos ? userToEdit.recursosPermitidos.join(", ") : "");
   const [loading, setLoading] = useState(false);
+
+  // Formatear fecha de última modificación para visualización
+  const ultimaModificacionFormatted = userToEdit?.updatedAt?.toDate
+    ? userToEdit.updatedAt.toDate().toLocaleString()
+    : userToEdit?.createdAt?.toDate
+    ? userToEdit.createdAt.toDate().toLocaleString()
+    : "Sin registro";
 
   const handleRoleChange = (roleId) => {
     if (roleId === "administrador_global" && !isGlobalAdmin) return;
@@ -50,9 +57,9 @@ export default function UserFormModal({ userToEdit, isGlobalAdmin, onClose, onSu
       nombre: nombre.trim(),
       telefono: telefono.trim(),
       origenEncuentro,
-      observaciones: observaciones.trim(), // Se incluye en el submit
+      observaciones: observaciones.trim(),
       activo,
-      aceptaPolitica,
+      aceptaPolitica, // Incluido en los datos a guardar
       roles: rolesSeleccionados,
       permisos: permisosArray,
       recursosPermitidos: recursosPermitidos ? recursosPermitidos.split(",").map(r => r.trim()).filter(Boolean) : [],
@@ -125,7 +132,7 @@ export default function UserFormModal({ userToEdit, isGlobalAdmin, onClose, onSu
           </div>
         </div>
 
-        {/* Nuevo Campo: Observaciones */}
+        {/* Observaciones */}
         <div>
           <label className="block text-sm font-medium mb-1 text-slate-700">Observaciones / Notas internas</label>
           <textarea
@@ -137,8 +144,9 @@ export default function UserFormModal({ userToEdit, isGlobalAdmin, onClose, onSu
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+        {/* Estado, Aceptación de Política y Fecha de Modificación */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
             <input 
               type="checkbox" 
               id="activoCheck"
@@ -146,7 +154,23 @@ export default function UserFormModal({ userToEdit, isGlobalAdmin, onClose, onSu
               onChange={(e) => setActivo(e.target.checked)}
               className="w-4 h-4 text-primary-custom rounded" 
             />
-            <label htmlFor="activoCheck" className="text-sm font-medium text-slate-700">Usuario Activo</label>
+            <label htmlFor="activoCheck" className="text-sm font-medium text-slate-700 cursor-pointer">Usuario Activo</label>
+          </div>
+
+          <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+            <input 
+              type="checkbox" 
+              id="politicaCheck"
+              checked={aceptaPolitica}
+              onChange={(e) => setAceptaPolitica(e.target.checked)}
+              className="w-4 h-4 text-primary-custom rounded" 
+            />
+            <label htmlFor="politicaCheck" className="text-sm font-medium text-slate-700 cursor-pointer">Acepta Política Privacidad</label>
+          </div>
+
+          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex flex-col justify-center">
+            <span className="text-[10px] font-bold uppercase text-slate-400 block">Última Modificación</span>
+            <span className="text-xs font-semibold text-slate-700">{isEditing ? ultimaModificacionFormatted : "Se generará al guardar"}</span>
           </div>
         </div>
 
