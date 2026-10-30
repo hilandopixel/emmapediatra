@@ -113,16 +113,13 @@ export default function AuthSimpleForm({ onVerifySuccess }) {
   };
 
   return (
+    
     <div className="bg-white p-8 rounded-2xl shadow-md border border-slate-100 text-center space-y-6">
       <h1 className="text-2xl font-bold text-primary-custom">
-        {isRegistering ? 'Solicitar Registro Gratuito' : 'Acceso al Área Privada'}
-      </h1>
-
-      <p className="text-l font-bold text-primary-custom">
         {isRegistering
-          ? 'Rellena el siguiente formulario para solicitar tu acceso gratuito al contenido exclusivo de recursos y recetas para toda la familia'
+          ? 'Registro gratuito al área privada: contenido exclusivo de recursos y recetas para toda la familia'
           : 'En esta sección encontrarás recursos y recetas para toda la familia.'}
-      </p>
+      </h1>
       
       <p className="text-slate-600 text-xs">
         {isRegistering

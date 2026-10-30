@@ -230,9 +230,12 @@ export default function AreaPrivadaPage() {
                       </div>
                     )}
 
-                    <h3 className="font-bold text-slate-800 text-base leading-snug line-clamp-2">
+                    <h3 className="font-bold text-primary-custom  text-base leading-snug line-clamp-2">
                       {post.title}
                     </h3>
+                    <div className="text-slate-800 text-base leading-snug line-clamp-2">
+                      {post.content}
+                    </div>
                   </div>
 
                   <div className="pt-3 space-y-2 mt-auto relative">

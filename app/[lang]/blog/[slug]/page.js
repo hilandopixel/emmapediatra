@@ -2,55 +2,48 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebaseConfig';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebaseConfig';
 import AuthSimpleForm from '@/components/AuthSimpleForm';
 import PdfViewerWrapper from '@/components/PdfViewerWrapper';
 import ProtectedImage from '@/components/ProtectedImage';
 
 export default function BlogPostPage({ params }) {
-  // En Next.js 15+, params es una promesa que se desempaqueta con React.use()
+  // Desempaquetar slug en Next.js 15+
   const { slug } = use(params);
 
-  const [user, setUser] = useState(null);
+  // Estados de verificación de sesión (vía localStorage)
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userData, setUserData] = useState(null);
-  const [loadingAuth, setLoadingAuth] = useState(true);
 
+  // Estados del recurso
   const [post, setPost] = useState(null);
-  const [loadingPost, setLoadingPost] = useState(true);
+  const [loadingPost, setLoadingPost] = useState(false);
   const [notFound, setNotFound] = useState(false);
 
-  // 1. Verificar autenticación y permisos de usuario activo
+  // 1. Comprobar sesión guardada en localStorage sin mostrar parpadeos
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
-      if (currentUser && currentUser.email) {
-        try {
-          const userRef = doc(db, 'usuarios_autorizados', currentUser.email.toLowerCase());
-          const userSnap = await getDoc(userRef);
-
-          if (userSnap.exists()) {
-            setUserData(userSnap.data());
-          } else {
-            setUserData({ activo: false, roles: [] });
-          }
-        } catch (err) {
-          console.error('Error al verificar autorización:', err);
-          setUserData({ activo: false, roles: [] });
+    try {
+      const savedUser = localStorage.getItem('areaPrivadaUser');
+      if (savedUser) {
+        const parsedUser = JSON.parse(savedUser);
+        if (parsedUser) {
+          setUserData(parsedUser);
+          setIsAuthenticated(true);
         }
-      } else {
-        setUserData(null);
       }
-      setLoadingAuth(false);
-    });
-
-    return () => unsubscribe();
+    } catch (e) {
+      console.error('Error al comprobar sesión guardada:', e);
+      localStorage.removeItem('areaPrivadaUser');
+    } finally {
+      setIsCheckingAuth(false);
+    }
   }, []);
 
-  // 2. Cargar datos del post si el usuario está autenticado y activo
+  // 2. Cargar únicamente el artículo solicitado por `slug` si el usuario está autenticado
   useEffect(() => {
-    if (!user || userData?.activo === false) return;
+    if (!isAuthenticated) return;
 
     const fetchPost = async () => {
       try {
@@ -64,7 +57,7 @@ export default function BlogPostPage({ params }) {
           setPost(querySnapshot.docs[0].data());
         }
       } catch (err) {
-        console.error('Error al obtener el artículo:', err);
+        console.error('Error al obtener el recurso del blog:', err);
         setNotFound(true);
       } finally {
         setLoadingPost(false);
@@ -72,88 +65,135 @@ export default function BlogPostPage({ params }) {
     };
 
     fetchPost();
-  }, [slug, user, userData]);
+  }, [slug, isAuthenticated]);
 
-  // A. Estado de Carga Inicial
-  if (loadingAuth) {
+  const handleVerifySuccess = (user) => {
+    const userToSave = user || { email: 'Usuario' };
+    setUserData(userToSave);
+    setIsAuthenticated(true);
+    localStorage.setItem('areaPrivadaUser', JSON.stringify(userToSave));
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('areaPrivadaUser');
+    setIsAuthenticated(false);
+    setUserData(null);
+    setPost(null);
+  };
+
+  // --------------------------------------------------------------------------
+  // PASO A: Comprobando autenticación (evita que aparezca el formulario antes de tiempo)
+  // --------------------------------------------------------------------------
+  if (isCheckingAuth) {
     return (
-      <div className="text-center py-24 text-primary-custom font-medium">
-        Verificando permisos de acceso...
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <svg className="animate-spin h-8 w-8 text-primary-custom" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span className="text-xs font-semibold text-slate-500">Verificando acceso...</span>
+        </div>
       </div>
     );
   }
 
-  // B. Si NO está logueado -> Formulario de Login / Registro
-  if (!user) {
+  // --------------------------------------------------------------------------
+  // PASO B: Si NO está autenticado -> Formulario de login/registro
+  // --------------------------------------------------------------------------
+  if (!isAuthenticated) {
     return (
-      <div className="py-16">
-        <p className="text-center text-primary-custom mb-6 text-sm">
-          Debes iniciar sesión con tu cuenta para ver este artículo del área privada.
-        </p>
-        <AuthSimpleForm />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full space-y-4">
+          <p className="text-center text-xs text-slate-500">
+            Debes acceder para ver este recurso exclusivo.
+          </p>
+          <AuthSimpleForm onVerifySuccess={handleVerifySuccess} />
+        </div>
       </div>
     );
   }
 
-  // C. Si está logueado pero su cuenta está INACTIVA (pendiente de activación por el admin)
-  if (userData && userData.activo === false) {
-    return (
-      <div className="max-w-lg mx-auto my-24 bg-white p-8 rounded-2xl shadow-md border border-slate-100 text-center space-y-6">
-        <h2 className="text-2xl font-bold text-primary-custom">Cuenta pendiente de validación</h2>
-        <p className="text-primary-custom leading-relaxed text-sm">
-          Hola <strong className="text-primary-custom">{userData.nombre || user.email}</strong>, tu cuenta ha sido registrada pero <strong className="text-primary-custom">aún no ha sido activada</strong> por un administrador para leer artículos.
-        </p>
-        <button 
-          onClick={() => signOut(auth)} 
-          className="px-6 py-2.5 button-primary-custom text-xs font-bold rounded-xl transition"
-        >
-          Cerrar sesión
-        </button>
-      </div>
-    );
-  }
-
-  // D. Carga del artículo en progreso
+  // --------------------------------------------------------------------------
+  // PASO C: Cargando recurso del post
+  // --------------------------------------------------------------------------
   if (loadingPost) {
     return (
-      <div className="text-center py-24 text-primary-customfont-medium">
-        Cargando artículo...
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="flex items-center gap-2 text-primary-custom text-sm font-medium">
+          <svg className="animate-spin h-5 w-5 text-primary-custom" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>Cargando artículo...</span>
+        </div>
       </div>
     );
   }
 
-  // E. Artículo no encontrado
+  // --------------------------------------------------------------------------
+  // PASO D: Recurso no encontrado
+  // --------------------------------------------------------------------------
   if (notFound || !post) {
     return (
-      <div className="max-w-md mx-auto my-24 bg-white p-8 rounded-2xl shadow-md border border-slate-100 text-center space-y-4">
-        <h2 className="text-xl font-bold text-primary-custom">Artículo no encontrado</h2>
-        <p className="text-primary-custom text-sm">
-          El artículo que buscas no existe o ha sido eliminado.
-        </p>
+      <div className="min-h-screen bg-slate-50 py-12 px-4 flex flex-col items-center justify-center">
+        <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-md border border-slate-100 text-center space-y-4">
+          <h2 className="text-xl font-bold text-primary-custom">Recurso no encontrado</h2>
+          <p className="text-slate-600 text-xs">
+            El recurso que buscas no existe o ha sido eliminado.
+          </p>
+        </div>
       </div>
     );
   }
 
-  // F. Usuario AUTENTICADO y ACTIVO -> Muestra el contenido del artículo
+  // --------------------------------------------------------------------------
+  // PASO E: AUTENTICADO -> Muestra el artículo del blog específico
+  // --------------------------------------------------------------------------
   return (
-    <article className="max-w-3xl mx-auto py-8 px-4">
-      <h1 className="text-3xl font-extrabold text-primary-custom mb-4">{post.title}</h1>
-
-      {!post.pdfUrl && post.coverImageUrl && (
-        <ProtectedImage src={post.coverImageUrl} alt={post.title} />
-      )}
-
-      {post.content && (
-        <div className="prose text-slate-700 leading-relaxed mb-8 whitespace-pre-wrap">
-          {post.content}
+    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto space-y-6">
+        
+        {/* Cabecera superior con email y cerrar sesión */}
+        <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+          <span className="text-xs text-slate-600">
+            Acceso activo: <strong className="text-slate-800">{userData?.email || 'Verificado'}</strong>
+          </span>
+          <button
+            onClick={handleLogout}
+            type="button"
+            className="text-xs text-red-600 font-bold hover:underline bg-red-50 px-2.5 py-1 rounded-lg transition"
+          >
+            Cerrar sesión
+          </button>
         </div>
-      )}
 
-      {post.pdfUrl && (
-        <section className="mt-8 border-t border-slate-100 pt-6">
-          <PdfViewerWrapper pdfUrl={post.pdfUrl} />
-        </section>
-      )}
-    </article>
+        {/* Cuerpo del artículo */}
+        <article className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-primary-custom leading-snug">
+            {post.title}
+          </h1>
+
+          {!post.pdfUrl && post.coverImageUrl && (
+            <div className="rounded-xl overflow-hidden border border-slate-100">
+              <ProtectedImage src={post.coverImageUrl} alt={post.title} />
+            </div>
+          )}
+
+          {post.content && (
+            <div className="prose text-slate-700 leading-relaxed text-sm whitespace-pre-wrap">
+              {post.content}
+            </div>
+          )}
+
+          {post.pdfUrl && (
+            <section className="pt-4 border-t border-slate-100">
+              <PdfViewerWrapper pdfUrl={post.pdfUrl} />
+            </section>
+          )}
+        </article>
+
+      </div>
+    </div>
   );
 }

@@ -7,7 +7,8 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+// Forzar siempre protocolo seguro https:// para evitar bloqueos de protocolo/CSP
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export default function CanvasPdfViewer({ pdfUrl }) {
   const [numPages, setNumPages] = useState(0);
@@ -19,7 +20,7 @@ export default function CanvasPdfViewer({ pdfUrl }) {
   useEffect(() => {
     const updateWidth = () => {
       if (containerRef.current) {
-        // Restamos el padding interno (32px si hay p-4) para que no desborde
+        // Restamos el padding interno para que no desborde
         const width = containerRef.current.clientWidth - 32;
         setContainerWidth(width > 0 ? width : 300);
       }
@@ -36,6 +37,11 @@ export default function CanvasPdfViewer({ pdfUrl }) {
     setLoading(false);
   }
 
+  function onDocumentLoadError(error) {
+    console.error('Error al cargar el PDF:', error);
+    setLoading(false);
+  }
+
   return (
     <div 
       ref={containerRef}
@@ -47,6 +53,7 @@ export default function CanvasPdfViewer({ pdfUrl }) {
       <Document
         file={pdfUrl}
         onLoadSuccess={onDocumentLoadSuccess}
+        onLoadError={onDocumentLoadError}
         loading=""
         error={<p className="text-red-500 text-xs py-4">No se pudo cargar el archivo PDF.</p>}
       >
@@ -56,7 +63,7 @@ export default function CanvasPdfViewer({ pdfUrl }) {
               pageNumber={index + 1} 
               renderTextLayer={false}
               renderAnnotationLayer={false}
-              width={containerWidth || 600} // Se adapta al ancho del contenedor
+              width={containerWidth || 600}
             />
           </div>
         ))}
