@@ -46,7 +46,7 @@ export async function POST(request) {
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
           <h2 style="color: #d01156;">Nueva solicitud de registro en el Área Privada</h2>
-          <p>Se ha creado el registro inactivo en Firestore para el siguiente usuario:</p>
+          <p>Se ha creado el registro inactivo para el siguiente usuario:</p>
           <ul>
             <li><strong>Email:</strong> ${cleanEmail}</li>
             <li><strong>Nombre completo:</strong> ${nombre || 'No proporcionado'}</li>
@@ -54,6 +54,8 @@ export async function POST(request) {
             <li><strong>Origen:</strong> ${origenEncuentro || 'No indicado'}</li>
             <li><strong>Estado:</strong> Inactivo (pendiente de activación)</li>
           </ul>
+          <p>Puedes revisarlo en la sección usuarios </p>
+          <a href="https://emmapediatra.com/admin" target="_blank" style="color: #d01156;">Pulsa aquí para ir al admin</a>
         </div>
       `,
     };

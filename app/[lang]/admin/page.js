@@ -844,7 +844,7 @@ export default function AdminDashboardPage() {
       {/* ==================== PESTAÑA 1: CONSULTAS ==================== */}
       {activeTab === "consultas" && (
         <section className="space-y-6">
-          <div className="flex justify-between items-center">
+          <div id="solicitudes" className="flex justify-between items-center">
             <h2 className="text-xl font-bold text-primary-custom">Gestión de Solicitudes</h2>
             <button onClick={fetchConsultas} className="text-xs text-primary-custom hover:underline font-semibold">
               🔄 Actualizar lista
@@ -997,7 +997,7 @@ export default function AdminDashboardPage() {
 
       {/* ==================== PESTAÑA 2: USUARIOS ==================== */}
       {activeTab === "usuarios" && (
-        <section className="space-y-6">
+        <section id="usuarios" className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-bold text-primary-custom">Gestión de Usuarios</h2>
             <button
@@ -1236,7 +1236,7 @@ export default function AdminDashboardPage() {
 
       {/* ==================== PESTAÑA 3: RECURSOS BLOG ==================== */}
       {activeTab === "articulos" && (
-        <section className="space-y-6">
+        <section id="recursos" className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-bold text-primary-custom">Gestión de Recursos</h2>
             <button
