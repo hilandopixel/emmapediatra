@@ -105,7 +105,7 @@ export default function AdminDashboardPage() {
   const [canDeleteUsers, setCanDeleteUsers] = useState(false);
   const userFormRef = useRef(null);
 
-  // --- ESTADOS Y REFERENCIA: RECURSOS BLOG ---
+  // --- ESTADOS Y REFERENCIA: RECURSOS ---
   const [articles, setArticles] = useState([]);
   const [categoriesMap, setCategoriesMap] = useState({});
   const [loadingArticles, setLoadingArticles] = useState(false);
@@ -1498,7 +1498,7 @@ export default function AdminDashboardPage() {
                         <h3 className="font-extrabold text-slate-800 text-base leading-snug line-clamp-2">
                           {art.title}
                         </h3>
-                        <p className="text-xs text-slate-500 truncate">/blog/{art.slug}</p>
+                        <p className="text-xs text-slate-500 truncate">/area-privada/{art.slug}</p>
                       </div>
                     </div>
 
@@ -1585,7 +1585,7 @@ export default function AdminDashboardPage() {
                           </td>
                           <td className="p-4 font-semibold text-slate-800 max-w-xs">
                             <div className="truncate">{art.title}</div>
-                            <div className="text-xs text-slate-500 font-normal truncate">/blog/{art.slug}</div>
+                            <div className="text-xs text-slate-500 font-normal truncate">/area-privada/{art.slug}</div>
                           </td>
                           <td className="p-4">
                             <div className="flex flex-wrap gap-1">
