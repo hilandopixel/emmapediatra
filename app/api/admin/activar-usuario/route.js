@@ -99,7 +99,7 @@ export async function POST(request) {
 
     // 8. Enviar notificación por correo mediante Nodemailer
     const mailOptions = {
-      from: `"${process.env.GMAIL_FROM_NAME || 'EmmaPediatra'}" <${process.env.GMAIL_USER}>`,
+      from: `"${process.env.GMAIL_FROM_NAME || 'EmmaPediatra'}" <${process.env.SMTP_USER}>`,
       to: [targetEmail],
       subject: `${userName}, tu cuenta en EmmaPediatra ha sido activada`,
       html: `
@@ -117,14 +117,19 @@ export async function POST(request) {
       `,
     };
 
-    console.log("Send email")
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD,
-      },
-    });
+        host: process.env.SMTP_HOST || 'smtp.ionos.es',
+        port: 465, //Number(process.env.SMTP_PORT) || 587,
+        secure: true, // false para puerto 587 (usa STARTTLS); true para puerto 465
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+        // Desactivar rechazo de certificados solo si estás en localhost
+        tls: {
+          rejectUnauthorized: false
+        }
+      });
 
     await transporter.sendMail(mailOptions);
 

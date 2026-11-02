@@ -32,16 +32,22 @@ export async function POST(request) {
 
     // 2. Enviar notificación por correo al administrador mediante Nodemailer
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD,
-      },
-    });
+        host: process.env.SMTP_HOST || 'smtp.ionos.es',
+        port: 465, //Number(process.env.SMTP_PORT) || 587,
+        secure: true, // false para puerto 587 (usa STARTTLS); true para puerto 465
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+        // Desactivar rechazo de certificados solo si estás en localhost
+        tls: {
+          rejectUnauthorized: false
+        }
+      });
 
     const mailOptions = {
-      from: `"${process.env.GMAIL_FROM_NAME || 'EmmaPediatra'}" <${process.env.GMAIL_USER}>`,
-      to: process.env.GMAIL_USER,
+      from: `"${process.env.GMAIL_FROM_NAME || 'EmmaPediatra'}" <${process.env.SMTP_USER}>`,
+      to: process.env.SMTP_USER,
       subject: `📥 Nueva solicitud de registro: ${nombre || cleanEmail}`,
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
