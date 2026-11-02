@@ -1,7 +1,7 @@
-// app/admin/page.js
+// app/[lang]/admin/page.js
 'use client';
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, Fragment } from "react";
 import { 
   signInWithEmailAndPassword, 
   onAuthStateChanged, 
@@ -24,6 +24,7 @@ import { auth, db } from "@/lib/firebaseConfig";
 import UserFormModal from "@/components/UserFormModal";
 import ArticleFormModal from "@/components/ArticleFormModal";
 import ConsultaDetailForm from "@/components/ConsultaDetailForm";
+import PageFormModal from "@/components/PageFormModal";
 import { Turnstile } from "@marsidev/react-turnstile";
 
 export default function AdminDashboardPage() {
@@ -32,7 +33,7 @@ export default function AdminDashboardPage() {
   const [hasPermission, setHasPermission] = useState(false);
   const [currentUserEmail, setCurrentUserEmail] = useState("");
 
-  // Pestaña activa ('consultas' | 'usuarios' | 'articulos' | 'historial')
+  // Pestaña activa ('consultas' | 'usuarios' | 'articulos' | 'historial' | 'paginas')
   const [activeTab, setActiveTab] = useState("consultas");
 
   // Formulario de login
@@ -78,6 +79,8 @@ export default function AdminDashboardPage() {
       setSortConfig({ key: 'createdAt', direction: 'desc' });
     } else if (tab === "historial") {
       setSortConfig({ key: 'ultimoAcceso', direction: 'desc' });
+    } else if (tab === "paginas") {
+      setSortConfig({ key: 'id', direction: 'asc' });
     } else {
       setSortConfig({ key: 'updatedAt', direction: 'desc' });
     }
@@ -105,7 +108,7 @@ export default function AdminDashboardPage() {
   const [canDeleteUsers, setCanDeleteUsers] = useState(false);
   const userFormRef = useRef(null);
 
-  // --- ESTADOS Y REFERENCIA: RECURSOS ---
+  // --- ESTADOS Y REFERENCIA: RECURSOS BLOG ---
   const [articles, setArticles] = useState([]);
   const [categoriesMap, setCategoriesMap] = useState({});
   const [loadingArticles, setLoadingArticles] = useState(false);
@@ -119,6 +122,14 @@ export default function AdminDashboardPage() {
   const [mapaUltimoAcceso, setMapaUltimoAcceso] = useState({});
   const [loadingHistorial, setLoadingHistorial] = useState(false);
 
+  // --- ESTADOS Y REFERENCIA: PÁGINAS DINÁMICAS ---
+  const [pagesList, setPagesList] = useState([]);
+  const [loadingPages, setLoadingPages] = useState(false);
+  const [activePageModal, setActivePageModal] = useState(null);
+  const [pageToDelete, setPageToDelete] = useState(null);
+  const [confirmPageIdInput, setConfirmPageIdInput] = useState("");
+  const pageFormRef = useRef(null);
+
   useEffect(() => {
     if (activeUserModal && userFormRef.current) {
       userFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -130,6 +141,12 @@ export default function AdminDashboardPage() {
       articleFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [activeArticleModal]);
+
+  useEffect(() => {
+    if (activePageModal && pageFormRef.current) {
+      pageFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [activePageModal]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -163,6 +180,7 @@ export default function AdminDashboardPage() {
               fetchUsuarios();
               fetchArticlesAndCategories();
               fetchHistorialAccesos();
+              fetchPages();
             } else {
               setHasPermission(false);
             }
@@ -350,6 +368,30 @@ export default function AdminDashboardPage() {
 
     return result;
   }, [historialAgrupado, searchTerm, sortConfig]);
+
+  const processedPages = useMemo(() => {
+    let result = [...pagesList];
+
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(p => 
+        p.id?.toLowerCase().includes(term) ||
+        p.seo?.es?.title?.toLowerCase().includes(term)
+      );
+    }
+
+    if (sortConfig.key) {
+      result.sort((a, b) => {
+        let aVal = a[sortConfig.key] || "";
+        let bVal = b[sortConfig.key] || "";
+        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return result;
+  }, [pagesList, searchTerm, sortConfig]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -631,7 +673,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // --- MÉTODOS HISTORIAL ACCESOS (AGRUPADO POR EMAIL) ---
+  // --- MÉTODOS HISTORIAL ACCESOS ---
   const fetchHistorialAccesos = async () => {
     setLoadingHistorial(true);
     try {
@@ -647,8 +689,6 @@ export default function AdminDashboardPage() {
         mapa[userEmail] = fechaUltimo;
 
         let accesosLista = Array.isArray(data.accesos) ? [...data.accesos] : [];
-        
-        // Ordenar accesos individualmente de más reciente a más antiguo
         accesosLista.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
         listaAgrupada.push({
@@ -659,7 +699,6 @@ export default function AdminDashboardPage() {
         });
       });
 
-      // Ordenar usuarios por su acceso más reciente por defecto
       listaAgrupada.sort((a, b) => {
         const timeA = a.ultimoAccesoDate ? a.ultimoAccesoDate.getTime() : 0;
         const timeB = b.ultimoAccesoDate ? b.ultimoAccesoDate.getTime() : 0;
@@ -672,6 +711,68 @@ export default function AdminDashboardPage() {
       console.error("Error al cargar historial de accesos:", err);
     } finally {
       setLoadingHistorial(false);
+    }
+  };
+
+  // --- MÉTODOS PÁGINAS DINÁMICAS ---
+  const fetchPages = async () => {
+    setLoadingPages(true);
+    try {
+      const querySnapshot = await getDocs(collection(db, "pages"));
+      const data = querySnapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
+      }));
+      setPagesList(data);
+    } catch (err) {
+      console.error("Error al cargar páginas:", err);
+    } finally {
+      setLoadingPages(false);
+    }
+  };
+
+  const handlePageFormSubmit = async (formData, isEditing) => {
+    setMensaje("");
+    setError("");
+    try {
+      const pageRef = doc(db, "pages", formData.id);
+      await setDoc(pageRef, {
+        seo: formData.seo,
+        content: formData.content,
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+
+      setMensaje(`¡Página "${formData.id}" guardada con éxito en Firestore!`);
+      setActivePageModal(null);
+      fetchPages();
+    } catch (err) {
+      console.error("Error al guardar la página:", err);
+      setError("Hubo un error al guardar la página en Firebase.");
+    }
+  };
+
+  const handleDeletePageConfirm = async (e) => {
+    e.preventDefault();
+    if (!pageToDelete) return;
+
+    if (confirmPageIdInput.trim().toLowerCase() !== pageToDelete.id.toLowerCase()) {
+      setError("El identificador introducido no coincide. Operación cancelada.");
+      setPageToDelete(null);
+      setConfirmPageIdInput("");
+      return;
+    }
+
+    try {
+      await deleteDoc(doc(db, "pages", pageToDelete.id));
+      setMensaje(`Página "${pageToDelete.id}" eliminada de Firestore.`);
+      setPageToDelete(null);
+      setConfirmPageIdInput("");
+      fetchPages();
+    } catch (err) {
+      console.error("Error al eliminar página:", err);
+      setError("Hubo un error al eliminar la página.");
+      setPageToDelete(null);
+      setConfirmPageIdInput("");
     }
   };
 
@@ -815,6 +916,17 @@ export default function AdminDashboardPage() {
         >
           📋 Histórico Accesos ({historialAgrupado.length})
         </button>
+
+        <button
+          onClick={() => handleTabChange("paginas")}
+          className={`px-5 py-2.5 rounded-xl font-bold text-sm transition ${
+            activeTab === "paginas"
+              ? "bg-primary-custom text-white shadow-sm"
+              : "bg-slate-100 text-primary-custom hover:bg-slate-200"
+          }`}
+        >
+          🌐 Páginas ({pagesList.length})
+        </button>
       </div>
 
       {/* BARRA DE FILTROS Y EXPORTACIÓN */}
@@ -832,7 +944,6 @@ export default function AdminDashboardPage() {
             <span className="absolute left-3 top-2.5 text-slate-400 text-sm">🔍</span>
           </div>
 
-          {/* Filtros Específicos por Pestaña */}
           {activeTab === "consultas" && (
             <select
               value={filterEstadoConsulta}
@@ -942,7 +1053,6 @@ export default function AdminDashboardPage() {
         {activeTab === "historial" && (
           <button
             onClick={() => {
-              // Aplanamos todos los accesos para la exportación completa
               const listaExportar = [];
               processedHistorial.forEach(u => {
                 u.accesos.forEach(acc => {
@@ -987,93 +1097,7 @@ export default function AdminDashboardPage() {
             </div>
           ) : (
             <div>
-              {/* VISTA TARJETAS (Móvil) */}
-              <div className="grid grid-cols-1 gap-4 md:hidden">
-                {processedConsultas.map((item) => (
-                  <div key={item.id} className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm space-y-3 text-sm">
-                    <div className="flex justify-between items-start gap-2 border-b border-slate-100 pb-3">
-                      <div>
-                        <h3 className="font-extrabold text-slate-800 text-base">
-                          {item.nombre} {item.apellidos}
-                        </h3>
-                        <p className="text-xs text-slate-400">
-                          {item.createdAt?.toDate ? item.createdAt.toDate().toLocaleDateString() : "Reciente"}
-                        </p>
-                      </div>
-                      <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold shrink-0 ${
-                        item.estado === "completada" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
-                      }`}>
-                        {item.estado || "pendiente"}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 text-xs text-slate-600">
-                      <div>
-                        <span className="block font-bold text-slate-400 uppercase text-[10px]">Email</span>
-                        <span className="truncate block">{item.email}</span>
-                      </div>
-                      <div>
-                        <span className="block font-bold text-slate-400 uppercase text-[10px]">Teléfono</span>
-                        <span>{item.telefono || "-"}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2 pt-1 text-xs">
-                      {item.isRegistered ? (
-                        <span title="Usuario registrado" className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md font-semibold text-[11px] border border-blue-200">
-                          👤 Registrado
-                        </span>
-                      ) : (
-                        <span title="No registrado" className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded-md text-[11px] border border-slate-200">
-                          ⚪ No registrado
-                        </span>
-                      )}
-
-                      {item.isActive ? (
-                        <span title="Cuenta activa" className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md font-semibold text-[11px] border border-emerald-200">
-                          🟢 Activo
-                        </span>
-                      ) : (
-                        <span title="Cuenta inactiva" className="px-2 py-0.5 bg-rose-50 text-rose-700 rounded-md font-semibold text-[11px] border border-rose-200">
-                          🔴 Inactivo
-                        </span>
-                      )}
-                    </div>
-
-                    <div>
-                      <span className="block font-bold text-slate-400 uppercase text-[10px] mb-0.5">Motivo</span>
-                      <span className="inline-block px-2.5 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-semibold">
-                        {item.motivo}
-                      </span>
-                    </div>
-
-                    {item.mensaje && (
-                      <div className="p-3 bg-slate-50 rounded-xl text-xs text-slate-700 italic border border-slate-100 line-clamp-3">
-                        "{item.mensaje}"
-                      </div>
-                    )}
-
-                    <div className="pt-2 border-t border-slate-100 flex gap-2">
-                      <button
-                        onClick={() => setSelectedConsultaModal(item)}
-                        className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition"
-                      >
-                        👁️ Ver detalle
-                      </button>
-                      {item.estado !== "completada" && (
-                        <button
-                          onClick={() => completarSolicitud(item.id)}
-                          className="flex-1 py-2.5 bg-green-700 hover:bg-[#266360] text-white text-xs font-bold rounded-xl transition"
-                        >
-                          Completar
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* VISTA TABLA (Escritorio) */}
+              {/* VISTA TABLA */}
               <div className="hidden md:block bg-white rounded-2xl shadow-md overflow-hidden border border-slate-100">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
@@ -1224,189 +1248,101 @@ export default function AdminDashboardPage() {
               No hay usuarios que coincidan con la búsqueda o filtro seleccionado.
             </div>
           ) : (
-            <div>
-              {/* VISTA TARJETAS (Móvil) */}
-              <div className="grid grid-cols-1 gap-4 md:hidden">
-                {processedUsuarios.map((u) => {
-                  const fechaUltimoAcceso = mapaUltimoAcceso[u.id.toLowerCase()];
+            <div className="hidden md:block bg-white rounded-2xl shadow-md overflow-hidden border border-slate-100">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100 text-slate-700 text-sm uppercase select-none">
+                      <th onClick={() => handleSort('id')} className="p-4 cursor-pointer hover:bg-slate-200">
+                        Email / ID {sortConfig.key === 'id' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
+                      </th>
+                      <th onClick={() => handleSort('nombre')} className="p-4 cursor-pointer hover:bg-slate-200">
+                        Nombre {sortConfig.key === 'nombre' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
+                      </th>
+                      <th className="p-4">Teléfono</th>
+                      <th className="p-4 whitespace-nowrap">Último Acceso</th>
+                      <th className="p-4 text-center">Política</th>
+                      <th onClick={() => handleSort('updatedAt')} className="p-4 cursor-pointer hover:bg-slate-200 whitespace-nowrap">
+                        Última mod. {sortConfig.key === 'updatedAt' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
+                      </th>
+                      <th className="p-4">Observaciones</th>
+                      <th onClick={() => handleSort('activo')} className="p-4 text-center cursor-pointer hover:bg-slate-200">
+                        Estado {sortConfig.key === 'activo' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
+                      </th>
+                      <th className="p-4">Roles</th>
+                      <th className="p-4 text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
+                    {processedUsuarios.map((u) => {
+                      const fechaUltimoAcceso = mapaUltimoAcceso[u.id.toLowerCase()];
 
-                  return (
-                    <div key={u.id} className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm space-y-4 text-sm">
-                      <div className="flex justify-between items-start gap-2 border-b border-slate-100 pb-3">
-                        <div className="space-y-0.5">
-                          <h3 className="font-extrabold text-slate-800 text-base leading-snug">
-                            {u.nombre || "Sin nombre registrado"}
-                          </h3>
-                          <p className="text-xs text-slate-500 font-mono break-all">{u.id}</p>
-                        </div>
-                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold shrink-0 ${
-                          u.activo !== false ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                        }`}>
-                          {u.activo !== false ? "Activo" : "Inactivo"}
-                        </span>
-                      </div>
+                      return (
+                        <tr key={u.id} className="hover:bg-slate-50 transition">
+                          <td className="p-4 font-semibold">{u.id}</td>
+                          <td className="p-4">{u.nombre || "-"}</td>
+                          <td className="p-4">{u.telefono || "-"}</td>
 
-                      <div className="grid grid-cols-2 gap-3 text-xs text-slate-600">
-                        <div>
-                          <span className="block font-bold text-slate-400 uppercase text-[10px] mb-0.5">Teléfono</span>
-                          <span>{u.telefono || "-"}</span>
-                        </div>
-                        <div>
-                          <span className="block font-bold text-slate-400 uppercase text-[10px] mb-0.5">Último Acceso</span>
-                          <span className="font-semibold text-slate-700">
-                            {fechaUltimoAcceso ? fechaUltimoAcceso.toLocaleDateString() : "Sin accesos"}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="block font-bold text-slate-400 uppercase text-[10px] mb-0.5">Política Privacidad</span>
-                          <span className={`font-semibold ${u.aceptaPolitica ? "text-green-700" : "text-red-400"}`}>
-                            {u.aceptaPolitica ? "✓ Aceptada" : "✗ No aceptada"}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="block font-bold text-slate-400 uppercase text-[10px] mb-0.5">Origen</span>
-                          <span className="truncate block">{u.origenEncuentro || "-"}</span>
-                        </div>
-                      </div>
-
-                      {u.observaciones && (
-                        <div className="p-2.5 bg-amber-50/60 rounded-xl border border-amber-100 text-xs text-amber-900 italic">
-                          <span className="block not-italic font-bold text-[10px] uppercase text-amber-700">Observaciones:</span>
-                          {u.observaciones}
-                        </div>
-                      )}
-
-                      <div className="pt-1">
-                        <span className="block font-bold text-slate-400 uppercase text-[10px] mb-1">Roles Asignados</span>
-                        <div className="flex flex-wrap gap-1">
-                          {u.roles && u.roles.length > 0 ? (
-                            u.roles.map((r) => (
-                              <span key={r} className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md text-[11px] font-medium border border-slate-200">
-                                {r}
+                          <td className="p-4 text-xs whitespace-nowrap">
+                            {fechaUltimoAcceso ? (
+                              <span className="font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">
+                                🕒 {fechaUltimoAcceso.toLocaleString()}
                               </span>
-                            ))
-                          ) : (
-                            <span className="text-slate-400 text-xs italic">Sin roles</span>
-                          )}
-                        </div>
-                      </div>
+                            ) : (
+                              <span className="text-slate-400 italic">Sin accesos</span>
+                            )}
+                          </td>
 
-                      <div className="pt-2 flex gap-2 border-t border-slate-100">
-                        <button
-                          onClick={() => setActiveUserModal(u)}
-                          className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold py-2.5 px-3 rounded-xl transition text-center"
-                        >
-                          ✏️ Modificar
-                        </button>
-                        <button
-                          onClick={() => { setUserToDelete(u); setConfirmUserEmailInput(""); }}
-                          className="bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold py-2.5 px-4 rounded-xl transition text-center"
-                        >
-                          🗑️ Eliminar
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* VISTA TABLA (Escritorio) */}
-              <div className="hidden md:block bg-white rounded-2xl shadow-md overflow-hidden border border-slate-100">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-slate-100 text-slate-700 text-sm uppercase select-none">
-                        <th onClick={() => handleSort('id')} className="p-4 cursor-pointer hover:bg-slate-200">
-                          Email / ID {sortConfig.key === 'id' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
-                        </th>
-                        <th onClick={() => handleSort('nombre')} className="p-4 cursor-pointer hover:bg-slate-200">
-                          Nombre {sortConfig.key === 'nombre' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
-                        </th>
-                        <th className="p-4">Teléfono</th>
-                        <th className="p-4 whitespace-nowrap">Último Acceso</th>
-                        <th className="p-4 text-center">Política</th>
-                        <th onClick={() => handleSort('updatedAt')} className="p-4 cursor-pointer hover:bg-slate-200 whitespace-nowrap">
-                          Última mod. {sortConfig.key === 'updatedAt' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
-                        </th>
-                        <th className="p-4">Observaciones</th>
-                        <th onClick={() => handleSort('activo')} className="p-4 text-center cursor-pointer hover:bg-slate-200">
-                          Estado {sortConfig.key === 'activo' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
-                        </th>
-                        <th className="p-4">Roles</th>
-                        <th className="p-4 text-center">Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
-                      {processedUsuarios.map((u) => {
-                        const fechaUltimoAcceso = mapaUltimoAcceso[u.id.toLowerCase()];
-
-                        return (
-                          <tr key={u.id} className="hover:bg-slate-50 transition">
-                            <td className="p-4 font-semibold">{u.id}</td>
-                            <td className="p-4">{u.nombre || "-"}</td>
-                            <td className="p-4">{u.telefono || "-"}</td>
-
-                            <td className="p-4 text-xs whitespace-nowrap">
-                              {fechaUltimoAcceso ? (
-                                <span className="font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">
-                                  🕒 {fechaUltimoAcceso.toLocaleString()}
-                                </span>
+                          <td className="p-4 text-center">
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${u.aceptaPolitica !== false ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                              {u.aceptaPolitica !== false ? "Si" : "No"}
+                            </span>
+                          </td>
+                          <td className="p-4 text-xs whitespace-nowrap text-slate-500">
+                            {u.updatedAt?.toDate 
+                              ? u.updatedAt.toDate().toLocaleString() 
+                              : (u.createdAt?.toDate ? u.createdAt.toDate().toLocaleString() : "-")}
+                          </td>
+                          <td className="p-4 text-xs max-w-xs truncate text-slate-600" title={u.observaciones}>
+                            {u.observaciones || "-"}
+                          </td>
+                          <td className="p-4 text-center">
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${u.activo !== false ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                              {u.activo !== false ? "Activo" : "Inactivo"}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex flex-wrap gap-1">
+                              {u.roles && u.roles.length > 0 ? (
+                                u.roles.map((r) => (
+                                  <span key={r} className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md text-xs font-medium border border-slate-200">
+                                    {r}
+                                  </span>
+                                ))
                               ) : (
-                                <span className="text-slate-400 italic">Sin accesos</span>
+                                <span className="text-slate-400 text-xs">Sin roles</span>
                               )}
-                            </td>
-
-                            <td className="p-4 text-center">
-                              <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${u.aceptaPolitica !== false ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
-                                {u.aceptaPolitica !== false ? "Si" : "No"}
-                              </span>
-                            </td>
-                            <td className="p-4 text-xs whitespace-nowrap text-slate-500">
-                              {u.updatedAt?.toDate 
-                                ? u.updatedAt.toDate().toLocaleString() 
-                                : (u.createdAt?.toDate ? u.createdAt.toDate().toLocaleString() : "-")}
-                            </td>
-                            <td className="p-4 text-xs max-w-xs truncate text-slate-600" title={u.observaciones}>
-                              {u.observaciones || "-"}
-                            </td>
-                            <td className="p-4 text-center">
-                              <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${u.activo !== false ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
-                                {u.activo !== false ? "Activo" : "Inactivo"}
-                              </span>
-                            </td>
-                            <td className="p-4">
-                              <div className="flex flex-wrap gap-1">
-                                {u.roles && u.roles.length > 0 ? (
-                                  u.roles.map((r) => (
-                                    <span key={r} className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md text-xs font-medium border border-slate-200">
-                                      {r}
-                                    </span>
-                                  ))
-                                ) : (
-                                  <span className="text-slate-400 text-xs">Sin roles</span>
-                                )}
-                              </div>
-                            </td>
-                            <td className="p-4 text-center space-x-2 whitespace-nowrap">
-                              <button
-                                onClick={() => setActiveUserModal(u)}
-                                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition"
-                              >
-                                Modificar
-                              </button>
-                              <button
-                                onClick={() => { setUserToDelete(u); setConfirmUserEmailInput(""); }}
-                                className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold rounded-lg transition"
-                              >
-                                Eliminar
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                            </div>
+                          </td>
+                          <td className="p-4 text-center space-x-2 whitespace-nowrap">
+                            <button
+                              onClick={() => setActiveUserModal(u)}
+                              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition"
+                            >
+                              Modificar
+                            </button>
+                            <button
+                              onClick={() => { setUserToDelete(u); setConfirmUserEmailInput(""); }}
+                              className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold rounded-lg transition"
+                            >
+                              Eliminar
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}
@@ -1480,166 +1416,89 @@ export default function AdminDashboardPage() {
               No hay recursos que coincidan con la búsqueda o categoría seleccionada.
             </div>
           ) : (
-            <div>
-              {/* VISTA TARJETAS (Móvil) */}
-              <div className="grid grid-cols-1 gap-4 md:hidden">
-                {processedArticles.map((art) => (
-                  <div key={art.id} className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm space-y-4 text-sm">
-                    <div className="flex gap-3 items-start border-b border-slate-100 pb-3">
-                      {art.coverImageUrl ? (
-                        <img src={art.coverImageUrl} alt={art.title} className="w-14 h-14 object-cover rounded-xl border shrink-0" />
-                      ) : (
-                        <div className="w-14 h-14 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 text-[10px] shrink-0 font-medium">
-                          Sin foto
-                        </div>
-                      )}
-
-                      <div className="space-y-0.5 overflow-hidden">
-                        <h3 className="font-extrabold text-slate-800 text-base leading-snug line-clamp-2">
-                          {art.title}
-                        </h3>
-                        <p className="text-xs text-slate-500 truncate">/area-privada/{art.slug}</p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 text-xs text-slate-600">
-                      <div>
-                        <span className="block font-bold text-slate-400 uppercase text-[10px] mb-0.5">Categorías</span>
-                        <div className="flex flex-wrap gap-1">
-                          {art.categoryIds && art.categoryIds.length > 0 ? (
-                            art.categoryIds.map((cId) => (
-                              <span key={cId} className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md text-[10px] font-medium border border-slate-200">
-                                {categoriesMap[cId] || cId}
-                              </span>
-                            ))
+            <div className="hidden md:block bg-white rounded-2xl shadow-md overflow-hidden border border-slate-100">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100 text-slate-700 text-sm uppercase select-none">
+                      <th className="p-4">Portada</th>
+                      <th onClick={() => handleSort('title')} className="p-4 cursor-pointer hover:bg-slate-200">
+                        Título / Slug {sortConfig.key === 'title' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
+                      </th>
+                      <th className="p-4">Categorías</th>
+                      <th className="p-4 text-center">PDF</th>
+                      <th onClick={() => handleSort('updatedAt')} className="p-4 cursor-pointer hover:bg-slate-200">
+                        Modificación {sortConfig.key === 'updatedAt' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
+                      </th>
+                      <th className="p-4 text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
+                    {processedArticles.map((art) => (
+                      <tr key={art.id} className="hover:bg-slate-50 transition">
+                        <td className="p-4">
+                          {art.coverImageUrl ? (
+                            <img src={art.coverImageUrl} alt={art.title} className="w-12 h-12 object-cover rounded-lg border" />
                           ) : (
-                            <span className="text-slate-400 text-xs italic">Sin categoría</span>
+                            <span className="text-xs text-slate-400">Sin foto</span>
                           )}
-                        </div>
-                      </div>
-
-                      <div>
-                        <span className="block font-bold text-slate-400 uppercase text-[10px] mb-0.5">Archivo PDF</span>
-                        {art.pdfUrl ? (
-                          <a href={art.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary-custom font-bold hover:underline inline-block pt-0.5">
-                            📄 Ver PDF
-                          </a>
-                        ) : (
-                          <span className="text-slate-400 text-xs italic">No adjunto</span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="text-xs text-slate-400 border-t border-slate-50 pt-2">
-                      <span className="font-bold text-slate-400 uppercase text-[10px]">Última modificación: </span>
-                      {art.updatedAt?.toDate 
-                        ? art.updatedAt.toDate().toLocaleDateString() 
-                        : (art.createdAt?.toDate ? art.createdAt.toDate().toLocaleDateString() : "Reciente")}
-                    </div>
-
-                    <div className="pt-1 flex gap-2 border-t border-slate-100">
-                      <button
-                        onClick={() => setActiveArticleModal(art)}
-                        className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold py-2.5 px-3 rounded-xl transition text-center"
-                      >
-                        ✏️ Modificar
-                      </button>
-                      <button
-                        onClick={() => { setArticleToDelete(art); setConfirmArticleTitleInput(""); }}
-                        className="bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold py-2.5 px-4 rounded-xl transition text-center"
-                      >
-                        🗑️ Eliminar
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* VISTA TABLA (Escritorio) */}
-              <div className="hidden md:block bg-white rounded-2xl shadow-md overflow-hidden border border-slate-100">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-slate-100 text-slate-700 text-sm uppercase select-none">
-                        <th className="p-4">Portada</th>
-                        <th onClick={() => handleSort('title')} className="p-4 cursor-pointer hover:bg-slate-200">
-                          Título / Slug {sortConfig.key === 'title' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
-                        </th>
-                        <th className="p-4">Categorías</th>
-                        <th className="p-4 text-center">PDF</th>
-                        <th onClick={() => handleSort('updatedAt')} className="p-4 cursor-pointer hover:bg-slate-200">
-                          Modificación {sortConfig.key === 'updatedAt' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
-                        </th>
-                        <th className="p-4 text-center">Acciones</th>
+                        </td>
+                        <td className="p-4 font-semibold text-slate-800 max-w-xs">
+                          <div className="truncate">{art.title}</div>
+                          <div className="text-xs text-slate-500 font-normal truncate">/area-privada/{art.slug}</div>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex flex-wrap gap-1">
+                            {art.categoryIds && art.categoryIds.length > 0 ? (
+                              art.categoryIds.map((cId) => (
+                                <span key={cId} className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md text-xs font-medium border border-slate-200">
+                                  {categoriesMap[cId] || cId}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-slate-400 text-xs">Sin categoría</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-4 text-center">
+                          {art.pdfUrl ? (
+                            <a href={art.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary-custom font-bold hover:underline">
+                              Ver PDF
+                            </a>
+                          ) : (
+                            <span className="text-xs text-slate-400">-</span>
+                          )}
+                        </td>
+                        <td className="p-4 text-xs">
+                          {art.updatedAt?.toDate 
+                            ? art.updatedAt.toDate().toLocaleString() 
+                            : (art.createdAt?.toDate ? art.createdAt.toDate().toLocaleString() : "Reciente")}
+                        </td>
+                        <td className="p-4 text-center space-x-2 whitespace-nowrap">
+                          <button
+                            onClick={() => setActiveArticleModal(art)}
+                            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition"
+                          >
+                            Modificar
+                          </button>
+                          <button
+                            onClick={() => { setArticleToDelete(art); setConfirmArticleTitleInput(""); }}
+                            className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold rounded-lg transition"
+                          >
+                            Eliminar
+                          </button>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
-                      {processedArticles.map((art) => (
-                        <tr key={art.id} className="hover:bg-slate-50 transition">
-                          <td className="p-4">
-                            {art.coverImageUrl ? (
-                              <img src={art.coverImageUrl} alt={art.title} className="w-12 h-12 object-cover rounded-lg border" />
-                            ) : (
-                              <span className="text-xs text-slate-400">Sin foto</span>
-                            )}
-                          </td>
-                          <td className="p-4 font-semibold text-slate-800 max-w-xs">
-                            <div className="truncate">{art.title}</div>
-                            <div className="text-xs text-slate-500 font-normal truncate">/area-privada/{art.slug}</div>
-                          </td>
-                          <td className="p-4">
-                            <div className="flex flex-wrap gap-1">
-                              {art.categoryIds && art.categoryIds.length > 0 ? (
-                                art.categoryIds.map((cId) => (
-                                  <span key={cId} className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md text-xs font-medium border border-slate-200">
-                                    {categoriesMap[cId] || cId}
-                                  </span>
-                                ))
-                              ) : (
-                                <span className="text-slate-400 text-xs">Sin categoría</span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="p-4 text-center">
-                            {art.pdfUrl ? (
-                              <a href={art.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary-custom font-bold hover:underline">
-                                Ver PDF
-                              </a>
-                            ) : (
-                              <span className="text-xs text-slate-400">-</span>
-                            )}
-                          </td>
-                          <td className="p-4 text-xs">
-                            {art.updatedAt?.toDate 
-                              ? art.updatedAt.toDate().toLocaleString() 
-                              : (art.createdAt?.toDate ? art.createdAt.toDate().toLocaleString() : "Reciente")}
-                          </td>
-                          <td className="p-4 text-center space-x-2 whitespace-nowrap">
-                            <button
-                              onClick={() => setActiveArticleModal(art)}
-                              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition"
-                            >
-                              Modificar
-                            </button>
-                            <button
-                              onClick={() => { setArticleToDelete(art); setConfirmArticleTitleInput(""); }}
-                              className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold rounded-lg transition"
-                            >
-                              Eliminar
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}
         </section>
       )}
 
-      {/* ==================== PESTAÑA 4: HISTORIAL DE ACCESOS (AGRUPADO) ==================== */}
+      {/* ==================== PESTAÑA 4: HISTORIAL DE ACCESOS ==================== */}
       {activeTab === "historial" && (
         <section id="historial-accesos" className="space-y-6">
           <div className="flex justify-between items-center">
@@ -1656,173 +1515,240 @@ export default function AdminDashboardPage() {
               No hay registros de acceso que coincidan con la búsqueda por correo.
             </div>
           ) : (
-            <div>
-              {/* VISTA TARJETAS COLLAPSIBLE (Móvil) */}
-              <div className="grid grid-cols-1 gap-4 md:hidden">
-                {processedHistorial.map((u) => {
-                  const isExpanded = !!expandedEmails[u.email];
-                  const ultimoAccesoStr = u.ultimoAccesoDate ? u.ultimoAccesoDate.toLocaleString() : "Sin fecha";
+            <div className="hidden md:block bg-white rounded-2xl shadow-md overflow-hidden border border-slate-100">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100 text-slate-700 text-sm uppercase select-none">
+                      <th className="p-4 w-12 text-center"></th>
+                      <th onClick={() => handleSort('email')} className="p-4 cursor-pointer hover:bg-slate-200">
+                        Usuario (Email) {sortConfig.key === 'email' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
+                      </th>
+                      <th className="p-4 text-center">Total Accesos</th>
+                      <th onClick={() => handleSort('ultimoAcceso')} className="p-4 cursor-pointer hover:bg-slate-200">
+                        Último Acceso {sortConfig.key === 'ultimoAcceso' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
+                      </th>
+                      <th className="p-4 text-center">Último Dispositivo</th>
+                      <th className="p-4 text-right">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
+                    {processedHistorial.map((u) => {
+                      const isExpanded = !!expandedEmails[u.email];
+                      const ultimoAccesoStr = u.ultimoAccesoDate ? u.ultimoAccesoDate.toLocaleString() : "Sin fecha";
+                      const ultimoAccesoObj = u.accesos[0] || {};
 
-                  return (
-                    <div key={u.email} className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm space-y-3 text-sm">
-                      <div 
-                        onClick={() => toggleExpandEmail(u.email)}
-                        className="flex justify-between items-start gap-2 cursor-pointer select-none"
-                      >
-                        <div>
-                          <h3 className="font-extrabold text-slate-800 text-base break-all">
-                            {u.email}
-                          </h3>
-                          <p className="text-xs text-slate-500 mt-0.5">
-                            Último acceso: <strong className="text-slate-700">{ultimoAccesoStr}</strong>
-                          </p>
-                        </div>
-                        <span className="px-2.5 py-1 bg-slate-100 text-primary-custom rounded-full text-xs font-bold shrink-0 flex items-center gap-1">
-                          <span>{u.totalAccesos} accesos</span>
-                          <span>{isExpanded ? '▲' : '▼'}</span>
-                        </span>
-                      </div>
-
-                      {/* Lista desplegable móvil */}
-                      {isExpanded && (
-                        <div className="pt-3 border-t border-slate-100 space-y-2 animate-in fade-in">
-                          <span className="block text-[10px] font-bold uppercase text-slate-400">Desglose de Accesos (Descendente)</span>
-                          {u.accesos.map((acc, idx) => (
-                            <div key={idx} className="p-3 bg-slate-50 rounded-xl text-xs space-y-1 border border-slate-100">
-                              <div className="flex justify-between text-slate-700 font-semibold">
-                                <span>🕒 {acc.fecha ? new Date(acc.fecha).toLocaleString() : 'Reciente'}</span>
-                                <span className={`px-2 py-0.5 rounded text-[10px] ${
-                                  acc.dispositivo === 'Móvil' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                      return (
+                        <Fragment key={u.email}>
+                          <tr 
+                            onClick={() => toggleExpandEmail(u.email)} 
+                            className="hover:bg-slate-50 transition cursor-pointer select-none"
+                          >
+                            <td className="p-4 text-center text-slate-400 font-bold">
+                              {isExpanded ? '▲' : '▼'}
+                            </td>
+                            <td className="p-4 font-semibold text-slate-800">
+                              {u.email}
+                            </td>
+                            <td className="p-4 text-center">
+                              <span className="px-2.5 py-1 bg-slate-100 text-slate-700 font-bold rounded-full text-xs">
+                                {u.totalAccesos}
+                              </span>
+                            </td>
+                            <td className="p-4 text-xs whitespace-nowrap text-slate-600">
+                              🕒 {ultimoAccesoStr}
+                            </td>
+                            <td className="p-4 text-center">
+                              {ultimoAccesoObj.dispositivo ? (
+                                <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                                  ultimoAccesoObj.dispositivo === 'Móvil' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
                                 }`}>
-                                  {acc.dispositivo}
+                                  {ultimoAccesoObj.dispositivo === 'Móvil' ? '📱 Móvil' : '💻 Escritorio'}
                                 </span>
-                              </div>
-                              <div className="text-slate-500 flex gap-4 text-[11px]">
-                                <span>IP: <strong className="font-mono text-slate-700">{acc.ip}</strong></span>
-                                <span>S.O.: <strong className="text-slate-700">{acc.detallesSO}</strong></span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+                              ) : '-'}
+                            </td>
+                            <td className="p-4 text-right">
+                              <button className="text-xs font-bold text-primary-custom hover:underline">
+                                {isExpanded ? 'Ocultar historial' : 'Ver todos los accesos'}
+                              </button>
+                            </td>
+                          </tr>
 
-              {/* VISTA TABLA ACCORDION / COLLAPSE (Escritorio) */}
-              <div className="hidden md:block bg-white rounded-2xl shadow-md overflow-hidden border border-slate-100">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-slate-100 text-slate-700 text-sm uppercase select-none">
-                        <th className="p-4 w-12 text-center"></th>
-                        <th onClick={() => handleSort('email')} className="p-4 cursor-pointer hover:bg-slate-200">
-                          Usuario (Email) {sortConfig.key === 'email' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
-                        </th>
-                        <th className="p-4 text-center">Total Accesos</th>
-                        <th onClick={() => handleSort('ultimoAcceso')} className="p-4 cursor-pointer hover:bg-slate-200">
-                          Último Acceso {sortConfig.key === 'ultimoAcceso' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
-                        </th>
-                        <th className="p-4 text-center">Último Dispositivo</th>
-                        <th className="p-4 text-right">Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
-                      {processedHistorial.map((u) => {
-                        const isExpanded = !!expandedEmails[u.email];
-                        const ultimoAccesoStr = u.ultimoAccesoDate ? u.ultimoAccesoDate.toLocaleString() : "Sin fecha";
-                        const ultimoAccesoObj = u.accesos[0] || {};
+                          {isExpanded && (
+                            <tr className="bg-slate-50/70">
+                              <td colSpan="6" className="p-4 pl-12 border-t border-b border-slate-200">
+                                <div className="space-y-2">
+                                  <h4 className="text-xs font-bold uppercase text-slate-500 mb-2">
+                                    Histórico Completo de Accesos para <span className="text-slate-800">{u.email}</span> ({u.accesos.length})
+                                  </h4>
 
-                        return (
-                          <React.Fragment key={u.email}>
-                            <tr 
-                              onClick={() => toggleExpandEmail(u.email)} 
-                              className="hover:bg-slate-50 transition cursor-pointer select-none"
-                            >
-                              <td className="p-4 text-center text-slate-400 font-bold">
-                                {isExpanded ? '▲' : '▼'}
-                              </td>
-                              <td className="p-4 font-semibold text-slate-800">
-                                {u.email}
-                              </td>
-                              <td className="p-4 text-center">
-                                <span className="px-2.5 py-1 bg-slate-100 text-slate-700 font-bold rounded-full text-xs">
-                                  {u.totalAccesos}
-                                </span>
-                              </td>
-                              <td className="p-4 text-xs whitespace-nowrap text-slate-600">
-                                🕒 {ultimoAccesoStr}
-                              </td>
-                              <td className="p-4 text-center">
-                                {ultimoAccesoObj.dispositivo ? (
-                                  <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                                    ultimoAccesoObj.dispositivo === 'Móvil' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                                  }`}>
-                                    {ultimoAccesoObj.dispositivo === 'Móvil' ? '📱 Móvil' : '💻 Escritorio'}
-                                  </span>
-                                ) : '-'}
-                              </td>
-                              <td className="p-4 text-right">
-                                <button className="text-xs font-bold text-primary-custom hover:underline">
-                                  {isExpanded ? 'Ocultar historial' : 'Ver todos los accesos'}
-                                </button>
+                                  <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                                    <table className="w-full text-left text-xs">
+                                      <thead>
+                                        <tr className="bg-slate-100/70 text-slate-600 uppercase border-b border-slate-200">
+                                          <th className="p-2.5">Fecha y Hora</th>
+                                          <th className="p-2.5">IP</th>
+                                          <th className="p-2.5">Dispositivo</th>
+                                          <th className="p-2.5">Sistema Operativo</th>
+                                          <th className="p-2.5">User Agent</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody className="divide-y divide-slate-100 text-slate-600">
+                                        {u.accesos.map((acc, idx) => (
+                                          <tr key={idx} className="hover:bg-slate-50">
+                                            <td className="p-2.5 font-medium whitespace-nowrap text-slate-700">
+                                              {acc.fecha ? new Date(acc.fecha).toLocaleString() : 'Reciente'}
+                                            </td>
+                                            <td className="p-2.5 font-mono text-slate-700">{acc.ip || '-'}</td>
+                                            <td className="p-2.5">
+                                              <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                                                acc.dispositivo === 'Móvil' ? 'bg-purple-50 text-purple-700 border border-purple-200' : 'bg-blue-50 text-blue-700 border border-blue-200'
+                                              }`}>
+                                                {acc.dispositivo}
+                                              </span>
+                                            </td>
+                                            <td className="p-2.5">{acc.detallesSO || '-'}</td>
+                                            <td className="p-2.5 font-mono text-[10px] text-slate-400 max-w-xs truncate" title={acc.userAgent}>
+                                              {acc.userAgent || '-'}
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
                               </td>
                             </tr>
+                          )}
+                        </Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
 
-                            {/* FILA DESPLEGABLE CON DETALLES DE ACCESO */}
-                            {isExpanded && (
-                              <tr className="bg-slate-50/70">
-                                <td colSpan="6" className="p-4 pl-12 border-t border-b border-slate-200">
-                                  <div className="space-y-2">
-                                    <h4 className="text-xs font-bold uppercase text-slate-500 mb-2">
-                                      Histórico Completo de Accesos para <span className="text-slate-800">{u.email}</span> ({u.accesos.length})
-                                    </h4>
+      {/* ==================== PESTAÑA 5: PÁGINAS DINÁMICAS ==================== */}
+      {activeTab === "paginas" && (
+        <section id="paginas" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-bold text-primary-custom">Gestión de Páginas Dinámicas</h2>
+            <button
+              onClick={() => setActivePageModal("create")}
+              className="px-4 py-2 bg-primary-custom hover:bg-[#266360] text-white text-xs font-bold rounded-xl transition"
+            >
+              + Crear / Configurar Nueva Página
+            </button>
+          </div>
 
-                                    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-                                      <table className="w-full text-left text-xs">
-                                        <thead>
-                                          <tr className="bg-slate-100/70 text-slate-600 uppercase border-b border-slate-200">
-                                            <th className="p-2.5">Fecha y Hora</th>
-                                            <th className="p-2.5">IP</th>
-                                            <th className="p-2.5">Dispositivo</th>
-                                            <th className="p-2.5">Sistema Operativo</th>
-                                            <th className="p-2.5">User Agent</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-100 text-slate-600">
-                                          {u.accesos.map((acc, idx) => (
-                                            <tr key={idx} className="hover:bg-slate-50">
-                                              <td className="p-2.5 font-medium whitespace-nowrap text-slate-700">
-                                                {acc.fecha ? new Date(acc.fecha).toLocaleString() : 'Reciente'}
-                                              </td>
-                                              <td className="p-2.5 font-mono text-slate-700">{acc.ip || '-'}</td>
-                                              <td className="p-2.5">
-                                                <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                                                  acc.dispositivo === 'Móvil' ? 'bg-purple-50 text-purple-700 border border-purple-200' : 'bg-blue-50 text-blue-700 border border-blue-200'
-                                                }`}>
-                                                  {acc.dispositivo}
-                                                </span>
-                                              </td>
-                                              <td className="p-2.5">{acc.detallesSO || '-'}</td>
-                                              <td className="p-2.5 font-mono text-[10px] text-slate-400 max-w-xs truncate" title={acc.userAgent}>
-                                                {acc.userAgent || '-'}
-                                              </td>
-                                            </tr>
-                                          ))}
-                                        </tbody>
-                                      </table>
-                                    </div>
-                                  </div>
-                                </td>
-                              </tr>
-                            )}
-                          </React.Fragment>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+          {activePageModal && (
+            <div ref={pageFormRef} className="scroll-mt-6">
+              <PageFormModal
+                pageToEdit={activePageModal !== "create" ? activePageModal : null}
+                onClose={() => setActivePageModal(null)}
+                onSubmit={handlePageFormSubmit}
+              />
+            </div>
+          )}
+
+          {pageToDelete && (
+            <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white max-w-md w-full p-6 rounded-2xl shadow-lg border border-slate-200 space-y-4">
+                <h3 className="text-xl font-bold text-red-600">¿Estás seguro de eliminar esta página de Firestore?</h3>
+                <p className="text-sm text-slate-700 leading-relaxed">
+                  Escribe el ID de la página para confirmar: <strong className="text-slate-900">{pageToDelete.id}</strong>
+                </p>
+
+                <form onSubmit={handleDeletePageConfirm} className="space-y-4">
+                  <input
+                    type="text"
+                    value={confirmPageIdInput}
+                    onChange={(e) => setConfirmPageIdInput(e.target.value)}
+                    placeholder="Escribe el ID para confirmar"
+                    required
+                    className="w-full border rounded-lg p-3 text-slate-700 bg-white text-sm"
+                  />
+                  <div className="flex gap-3 justify-end pt-2">
+                    <button
+                      type="button"
+                      onClick={() => { setPageToDelete(null); setConfirmPageIdInput(""); }}
+                      className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs transition"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs transition"
+                    >
+                      Sí, eliminar definitivamente
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {loadingPages ? (
+            <p className="text-center py-12 text-slate-500">Cargando páginas desde Firestore...</p>
+          ) : processedPages.length === 0 ? (
+            <div className="bg-white rounded-2xl p-8 text-center text-slate-500 border border-slate-100 shadow-sm">
+              No hay páginas guardadas en Firestore que coincidan con la búsqueda.
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl shadow-md overflow-hidden border border-slate-100">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100 text-slate-700 text-sm uppercase select-none">
+                      <th onClick={() => handleSort('id')} className="p-4 cursor-pointer hover:bg-slate-200">
+                        ID Página / Ruta {sortConfig.key === 'id' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
+                      </th>
+                      <th className="p-4">Título SEO (ES)</th>
+                      <th className="p-4 text-center">Secciones (ES / EN / IT)</th>
+                      <th className="p-4 text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
+                    {processedPages.map((p) => {
+                      const countEs = Object.keys(p.content?.es?.sections || {}).length;
+                      const countEn = Object.keys(p.content?.en?.sections || {}).length;
+                      const countIt = Object.keys(p.content?.it?.sections || {}).length;
+
+                      return (
+                        <tr key={p.id} className="hover:bg-slate-50 transition">
+                          <td className="p-4 font-bold text-primary-custom font-mono">
+                            app/[lang]/{p.id}/page.js
+                          </td>
+                          <td className="p-4 font-medium text-slate-800 max-w-xs truncate">
+                            {p.seo?.es?.title || p.id}
+                          </td>
+                          <td className="p-4 text-center">
+                            <span className="px-2.5 py-1 bg-slate-100 rounded-full text-xs font-semibold text-slate-700">
+                              🇪🇸 {countEs} | 🇬🇧 {countEn} | 🇮🇹 {countIt}
+                            </span>
+                          </td>
+                          <td className="p-4 text-center space-x-2 whitespace-nowrap">
+                            <button
+                              onClick={() => setActivePageModal(p)}
+                              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition"
+                            >
+                              ✏️ Editar Secciones
+                            </button>
+                            <button
+                              onClick={() => { setPageToDelete(p); setConfirmPageIdInput(""); }}
+                              className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold rounded-lg transition"
+                            >
+                              🗑️ Eliminar
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}

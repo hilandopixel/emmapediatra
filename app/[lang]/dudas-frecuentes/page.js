@@ -1,7 +1,7 @@
 import ContentPageTemplate, { generatePageMetadata } from "@/components/ContentPageTemplate";
 import staticDocs from "./data.json";
 
-const PAGE_ID = "dudasFrecuentes";
+const PAGE_ID = "dudas-frecuentes";
 
 export async function generateMetadata({ params }) {
   return generatePageMetadata(PAGE_ID, staticDocs, params);

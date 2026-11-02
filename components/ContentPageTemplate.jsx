@@ -42,11 +42,18 @@ export default async function ContentPageTemplate({ pageId, staticDocs, params }
     console.error("Error al conectar con base de datos:", error);
   }
 
-  const contentTranslation = pageData?.content?.[lang] || staticDocs?.content[lang] || pageData?.content?.["es"];
+  // 1. Buscar primero en Firestore (idioma actual o español por defecto)
+  // 2. Si no existen datos en Firestore, recurrir al data.json estático
+  const contentTranslation = 
+    pageData?.content?.[lang] || 
+    pageData?.content?.["es"] || 
+    staticDocs?.content?.[lang] || 
+    staticDocs?.content?.["es"];
+
   const pageSettings = pageData?.content || staticDocs?.content;
   
   const sectionsArray = contentTranslation?.sections 
-    ? Object.entries(contentTranslation?.sections)
+    ? Object.entries(contentTranslation.sections)
         .map(([key, section]) => ({ id: key, ...section }))
         .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
     : [];
