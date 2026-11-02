@@ -45,7 +45,7 @@ export default function CanvasPdfViewer({ pdfUrl }) {
   return (
     <div 
       ref={containerRef}
-      className="w-full flex flex-col items-center select-none overflow-auto max-h-[800px] border border-slate-200 rounded-2xl bg-slate-50 p-4 shadow-inner"
+      className="w-full flex flex-col items-center select-none overflow-auto"
       onContextMenu={(e) => e.preventDefault()}
     >
       {loading && <p className="text-slate-500 text-xs py-4">Cargando documento...</p>}

@@ -1,4 +1,4 @@
-// app/blog/[slug]/page.jsx
+// app/area-privada/[slug]/page.jsx
 'use client';
 
 import { useState, useEffect, use } from 'react';
@@ -8,8 +8,7 @@ import AuthSimpleForm from '@/components/AuthSimpleForm';
 import PdfViewerWrapper from '@/components/PdfViewerWrapper';
 import ProtectedImage from '@/components/ProtectedImage';
 
-export default function BlogPostPage({ params }) {
-  // Desempaquetar slug en Next.js 15+
+export default function AreaPrivadaRecursoPage({ params }) {
   const { slug } = use(params);
 
   // Estados de verificación de sesión (vía localStorage)
@@ -57,7 +56,7 @@ export default function BlogPostPage({ params }) {
           setPost(querySnapshot.docs[0].data());
         }
       } catch (err) {
-        console.error('Error al obtener el recurso del blog:', err);
+        console.error('Error al obtener el recurso:', err);
         setNotFound(true);
       } finally {
         setLoadingPost(false);
@@ -125,7 +124,7 @@ export default function BlogPostPage({ params }) {
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <span>Cargando artículo...</span>
+          <span>Cargando recurso...</span>
         </div>
       </div>
     );
@@ -148,52 +147,27 @@ export default function BlogPostPage({ params }) {
   }
 
   // --------------------------------------------------------------------------
-  // PASO E: AUTENTICADO -> Muestra el recurso del blog específico
+  // PASO E: AUTENTICADO -> Muestra el recurso específico
   // --------------------------------------------------------------------------
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto space-y-6">
-        
-        {/* Cabecera superior con email y cerrar sesión */}
-        <div className="flex items-center justify-between border-b border-slate-200 pb-4">
-          <span className="text-xs text-slate-600">
-            Acceso activo: <strong className="text-slate-800">{userData?.email || 'Verificado'}</strong>
-          </span>
-          <button
-            onClick={handleLogout}
-            type="button"
-            className="text-xs text-red-600 font-bold hover:underline bg-red-50 px-2.5 py-1 rounded-lg transition"
-          >
-            Cerrar sesión
-          </button>
-        </div>
-
-        {/* Cuerpo del recurso */}
-        <article className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-primary-custom leading-snug">
-            {post.title}
-          </h1>
-
+    <div className="">
           {!post.pdfUrl && post.coverImageUrl && (
-            <div className="rounded-xl overflow-hidden border border-slate-100">
+            <div className="rounded-xl overflow-hidden">
               <ProtectedImage src={post.coverImageUrl} alt={post.title} />
             </div>
           )}
 
           {post.content && (
-            <div className="prose text-slate-700 leading-relaxed text-sm whitespace-pre-wrap">
+            <div className="flex justify-between items-center p-4 text-white text-l text-bold whitespace-pre-wrap">
               {post.content}
             </div>
           )}
 
           {post.pdfUrl && (
-            <section className="pt-4 border-t border-slate-100">
+            <section className="">
               <PdfViewerWrapper pdfUrl={post.pdfUrl} />
             </section>
           )}
-        </article>
-
-      </div>
     </div>
   );
 }

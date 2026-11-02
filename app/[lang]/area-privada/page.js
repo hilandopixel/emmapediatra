@@ -126,7 +126,7 @@ export default function AreaPrivadaPage() {
   };
 
   const handleCopyLink = (slug, postId) => {
-    const postUrl = `${window.location.origin}/blog/${slug}`;
+    const postUrl = `${window.location.origin}/area-privada/${slug}`;
     navigator.clipboard.writeText(postUrl);
     setCopiedPostId(postId);
     setTimeout(() => setCopiedPostId(null), 2000);
@@ -134,7 +134,7 @@ export default function AreaPrivadaPage() {
   };
 
   const handleShareWhatsApp = (title, slug) => {
-    const postUrl = `${window.location.origin}/blog/${slug}`;
+    const postUrl = `${window.location.origin}/area-privada/${slug}`;
     const text = encodeURIComponent(`Mira este recurso: *${title}*\n${postUrl}`);
     window.open(`https://api.whatsapp.com/send?text=${text}`, "_blank");
     setOpenShareMenuId(null);
@@ -313,23 +313,15 @@ export default function AreaPrivadaPage() {
       </div>
 
       {selectedPostSlug && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95">
-            <div className="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
-              <span className="text-xs font-semibold text-slate-500">Vista previa del recurso</span>
-              <button
-                onClick={() => setSelectedPostSlug(null)}
-                className="w-8 h-8 flex items-center justify-center bg-slate-200 hover:bg-slate-300 rounded-full text-slate-700 font-bold text-sm transition"
-              >
-                ✕
-              </button>
-            </div>
-
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={() => { setSelectedPostSlug(null);}}>
+          <div className="bg-primary-custom rounded-2xl w-full max-w-4xl h-[85vh] flex flex-col shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95"
+              onClick={(e) => e.stopPropagation()}>
             <div className="flex-1 w-full h-full bg-white">
               <iframe
-                src={`/blog/${selectedPostSlug}`}
+                src={`/area-privada/${selectedPostSlug}`}
                 className="w-full h-full border-0"
-                title="Detalle del recurso"
+                title="Recurso"
               />
             </div>
           </div>

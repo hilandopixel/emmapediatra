@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 
 const CanvasPdfViewer = dynamic(() => import('@/components/CanvasPdfViewer'), {
   ssr: false,
-  loading: () => <p className="text-center py-4 text-slate-500 text-xs">Cargando visor...</p>,
+  loading: () => <p className="text-center py-4 text-slate-500 text-xs">Cargando...</p>,
 });
 
 export default function PdfViewerWrapper({ pdfUrl }) {
