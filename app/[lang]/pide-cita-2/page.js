@@ -1,11 +1,14 @@
 // app/solicitar-consulta/page.js
-"use client";
+'use client';
+
+import { use } from 'react';
 
 import FormularioConsulta from "@/components/ConsultaForm";
 
 export default function SolicitarConsultaPage({ params }) {
-  // En caso de que uses enrutamiento por idioma (ej. [lang]/solicitar-consulta)
-  const lang = params?.lang || "es";
+  // Desempaquetamos la promesa `params` usando `use()`
+    const resolvedParams = use(params);
+    const lang = resolvedParams.lang;
 
   return (
     <main className="min-h-screen py-16 px-4 hilando-pixel-section">

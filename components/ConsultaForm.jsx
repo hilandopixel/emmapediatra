@@ -3,8 +3,6 @@
 
 import { useState, useRef } from 'react';
 import { Turnstile } from "@marsidev/react-turnstile";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "@/lib/firebaseConfig";
 
 export default function ConsultaForm({ lang }) {
   // Campos del formulario
@@ -39,19 +37,7 @@ export default function ConsultaForm({ lang }) {
     setMessage({ type: '', text: '' });
 
     try {
-      // 1. Guardar primero en Firestore (Colección "consultas")
-      await addDoc(collection(db, "consultas"), {
-        nombre,
-        apellidos,
-        email,
-        telefono,
-        motivo,
-        mensaje,
-        estado: "pendiente",
-        createdAt: serverTimestamp(),
-      });
-
-      // 2. Notificar al backend / API
+      // Llamada única a la API: Valida Captcha, calcula isRegistered e isActive, guarda en Firestore y envía el correo
       const res = await fetch('/api/admin/notificar-nueva-consulta', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -75,7 +61,7 @@ export default function ConsultaForm({ lang }) {
           text: '¡Solicitud enviada con éxito! Nos pondremos en contacto contigo muy pronto para revisar tu caso.',
         });
 
-        // Resetear campos del formulario
+        // Resetear formulario
         setNombre('');
         setApellidos('');
         setEmail('');
@@ -88,42 +74,44 @@ export default function ConsultaForm({ lang }) {
       } else {
         setMessage({
           type: 'error',
-          text: data.error || data.mensaje || 'La consulta se guardó pero hubo un error al enviar la notificación.',
+          text: data.error || data.mensaje || 'Hubo un error al enviar la solicitud.',
         });
       }
     } catch (err) {
       console.error('Error al procesar la consulta:', err);
-      setMessage({ type: 'error', text: 'Error al conectar con la base de datos o el servidor.' });
+      setMessage({ type: 'error', text: 'Error de conexión al procesar la solicitud.' });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-xl mx-auto my-12 bg-white p-8 hilando-pixel-section">
+    <div className="max-w-xl mx-auto my-12 bg-white p-8 rounded-2xl shadow-md border border-slate-100 text-slate-800">
+      <h2 className="text-2xl font-bold text-primary-custom mb-6">Solicita tu Videoconsulta</h2>
+
       <form onSubmit={handleSubmit} className="space-y-4 text-left">
         {/* Nombre y Apellidos */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-primary-custom mb-1">Nombre *</label>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Nombre *</label>
             <input
               type="text"
               required
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
-              placeholder="Ej: Emma"
-              className="w-full border border-slate-200 rounded-xl p-3 text-sm text-primary-custom bg-white focus:outline-none focus:border-primary-custom"
+              placeholder="Ej: María"
+              className="w-full border border-slate-200 rounded-xl p-3 text-sm text-slate-800 bg-white focus:outline-none focus:border-primary-custom"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-primary-custom mb-1">Apellidos *</label>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Apellidos *</label>
             <input
               type="text"
               required
               value={apellidos}
               onChange={(e) => setApellidos(e.target.value)}
-              placeholder="Ej: López Rubio"
-              className="w-full border border-slate-200 rounded-xl p-3 text-sm text-primary-custom bg-white focus:outline-none focus:border-primary-custom"
+              placeholder="Ej: García Pérez"
+              className="w-full border border-slate-200 rounded-xl p-3 text-sm text-slate-800 bg-white focus:outline-none focus:border-primary-custom"
             />
           </div>
         </div>
@@ -131,36 +119,36 @@ export default function ConsultaForm({ lang }) {
         {/* Email y Teléfono */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-primary-custom mb-1">Email *</label>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Email *</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="tu-email@ejemplo.com"
-              className="w-full border border-slate-200 rounded-xl p-3 text-sm text-primary-custom bg-white focus:outline-none focus:border-primary-custom"
+              className="w-full border border-slate-200 rounded-xl p-3 text-sm text-slate-800 bg-white focus:outline-none focus:border-primary-custom"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-primary-custom mb-1">Teléfono *</label>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Teléfono *</label>
             <input
               type="tel"
               required
               value={telefono}
               onChange={(e) => setTelefono(e.target.value)}
               placeholder="+34 600 000 000"
-              className="w-full border border-slate-200 rounded-xl p-3 text-sm text-primary-custom bg-white focus:outline-none focus:border-primary-custom"
+              className="w-full border border-slate-200 rounded-xl p-3 text-sm text-slate-800 bg-white focus:outline-none focus:border-primary-custom"
             />
           </div>
         </div>
 
         {/* Motivo de Consulta */}
         <div>
-          <label className="block text-xs font-semibold text-primary-custom mb-1">Motivo de consulta *</label>
+          <label className="block text-xs font-semibold text-slate-700 mb-1">Motivo de consulta *</label>
           <select
             value={motivo}
             onChange={(e) => setMotivo(e.target.value)}
-            className="w-full border border-slate-200 rounded-xl p-3 text-sm text-primary-custom bg-white focus:outline-none focus:border-primary-custom"
+            className="w-full border border-slate-200 rounded-xl p-3 text-sm text-slate-800 bg-white focus:outline-none focus:border-primary-custom"
           >
             <option value="videoconsulta">Videoconsulta</option>
             <option value="cursos">Cursos y Formación</option>
@@ -170,14 +158,14 @@ export default function ConsultaForm({ lang }) {
 
         {/* Mensaje */}
         <div>
-          <label className="block text-xs font-semibold text-primary-custom mb-1">Mensaje / Motivo *</label>
+          <label className="block text-xs font-semibold text-slate-700 mb-1">Mensaje / Motivo detallado *</label>
           <textarea
             rows="4"
             required
             value={mensaje}
             onChange={(e) => setMensaje(e.target.value)}
             placeholder="Describe brevemente el motivo de tu consulta..."
-            className="w-full border border-slate-200 rounded-xl p-3 text-sm text-primary-custom bg-white focus:outline-none focus:border-primary-custom"
+            className="w-full border border-slate-200 rounded-xl p-3 text-sm text-slate-800 bg-white focus:outline-none focus:border-primary-custom"
           ></textarea>
         </div>
 

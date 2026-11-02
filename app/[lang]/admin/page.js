@@ -23,6 +23,7 @@ import {
 import { auth, db } from "@/lib/firebaseConfig";
 import UserFormModal from "@/components/UserFormModal";
 import ArticleFormModal from "@/components/ArticleFormModal";
+import ConsultaDetailForm from "@/components/ConsultaDetailForm";
 import { Turnstile } from "@marsidev/react-turnstile";
 
 export default function AdminDashboardPage() {
@@ -49,7 +50,6 @@ export default function AdminDashboardPage() {
 
   // --- ESTADOS: BÚSQUEDA Y ORDENACIÓN ---
   const [searchTerm, setSearchTerm] = useState("");
-  // Por defecto en 'consultas' ordenamos por createdAt desc
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
 
   // --- ESTADOS: FILTROS ESPECÍFICOS ---
@@ -58,14 +58,12 @@ export default function AdminDashboardPage() {
   const [filterRolUsuario, setFilterRolUsuario] = useState("all");
   const [filterCategoriaRecurso, setFilterCategoriaRecurso] = useState("all");
 
-  // Configuración de ordenación predeterminada por pestaña
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setSearchTerm("");
     
-    // Asignar orden por defecto según pestaña activa
     if (tab === "usuarios") {
-      setSortConfig({ key: 'updatedAt', direction: 'desc' }); // Orden por defecto para Usuarios
+      setSortConfig({ key: 'updatedAt', direction: 'desc' });
     } else if (tab === "consultas") {
       setSortConfig({ key: 'createdAt', direction: 'desc' });
     } else {
@@ -80,9 +78,10 @@ export default function AdminDashboardPage() {
     setError("");
   };
 
-  // --- ESTADOS: CONSULTAS ---
+  // --- ESTADOS Y REFERENCIA: CONSULTAS ---
   const [consultas, setConsultas] = useState([]);
   const [loadingConsultas, setLoadingConsultas] = useState(false);
+  const [selectedConsultaModal, setSelectedConsultaModal] = useState(null);
 
   // --- ESTADOS Y REFERENCIA: USUARIOS ---
   const [usuarios, setUsuarios] = useState([]);
@@ -103,21 +102,18 @@ export default function AdminDashboardPage() {
   const [confirmArticleTitleInput, setConfirmArticleTitleInput] = useState("");
   const articleFormRef = useRef(null);
 
-  // Scroll automático para edición/creación de USUARIOS
   useEffect(() => {
     if (activeUserModal && userFormRef.current) {
       userFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [activeUserModal]);
 
-  // Scroll automático para edición/creación de RECURSOS
   useEffect(() => {
     if (activeArticleModal && articleFormRef.current) {
       articleFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [activeArticleModal]);
 
-  // Escuchar sesión y verificar permisos
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
@@ -168,7 +164,6 @@ export default function AdminDashboardPage() {
     return () => unsubscribe();
   }, []);
 
-  // Helper de Ordenación
   const handleSort = (key) => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -177,7 +172,6 @@ export default function AdminDashboardPage() {
     setSortConfig({ key, direction });
   };
 
-  // Helper para Exportar CSV
   const exportToCSV = (data, filename, headers) => {
     if (!data || !data.length) return;
 
@@ -205,7 +199,6 @@ export default function AdminDashboardPage() {
     document.body.removeChild(link);
   };
 
-  // --- FILTRADO Y ORDENACIÓN PROCESADA ---
   const processedConsultas = useMemo(() => {
     let result = [...consultas];
 
@@ -314,7 +307,6 @@ export default function AdminDashboardPage() {
     return result;
   }, [articles, searchTerm, filterCategoriaRecurso, sortConfig]);
 
-  // Login protegido con Captcha
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoginError("");
@@ -667,6 +659,15 @@ export default function AdminDashboardPage() {
 
   return (
     <main className="max-w-7xl mx-auto px-6 py-12">
+      {/* Modal de Detalle de Consulta */}
+      {selectedConsultaModal && (
+        <ConsultaDetailForm
+          consulta={selectedConsultaModal}
+          onClose={() => setSelectedConsultaModal(null)}
+          onCompletar={completarSolicitud}
+        />
+      )}
+
       {/* Header General */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
@@ -795,7 +796,9 @@ export default function AdminDashboardPage() {
               { label: "Teléfono", accessor: row => row.telefono || "" },
               { label: "Motivo", accessor: row => row.motivo || "" },
               { label: "Mensaje", accessor: row => row.mensaje || "" },
-              { label: "Estado", accessor: row => row.estado || "pendiente" }
+              { label: "Estado", accessor: row => row.estado || "pendiente" },
+              { label: "Registrado", accessor: row => row.isRegistered ? "Sí" : "No" },
+              { label: "Activo", accessor: row => row.isActive ? "Sí" : "No" }
             ])}
             className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition border border-slate-200 flex items-center justify-center gap-1 shrink-0"
           >
@@ -890,6 +893,28 @@ export default function AdminDashboardPage() {
                       </div>
                     </div>
 
+                    {/* Estado del usuario en el móvil */}
+                    <div className="flex gap-2 pt-1 text-xs">
+                      
+                      {item.isRegistered && item.isActive ? 
+                        <span title="Cuenta activa" className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md font-semibold text-[11px] border border-emerald-200">
+                          🟢 Activo
+                        </span>
+                       : ''}
+
+                       {item.isRegistered && !item.isActive ? 
+                        <span title="Cuenta activa" className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md font-semibold text-[11px] border border-emerald-200">
+                          🟠 Pte Activar
+                        </span>
+                       : ''}
+
+                       {!item.isRegistered ? 
+                        <span title="Cuenta inactiva" className="px-2 py-0.5 bg-rose-50 text-rose-700 rounded-md font-semibold text-[11px] border border-rose-200">
+                          🔴 No registrado
+                        </span>
+                       : ''}
+                    </div>
+
                     <div>
                       <span className="block font-bold text-slate-400 uppercase text-[10px] mb-0.5">Motivo</span>
                       <span className="inline-block px-2.5 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-semibold">
@@ -898,21 +923,25 @@ export default function AdminDashboardPage() {
                     </div>
 
                     {item.mensaje && (
-                      <div className="p-3 bg-slate-50 rounded-xl text-xs text-slate-700 italic border border-slate-100">
+                      <div className="p-3 bg-slate-50 rounded-xl text-xs text-slate-700 italic border border-slate-100 line-clamp-3">
                         "{item.mensaje}"
                       </div>
                     )}
 
-                    <div className="pt-2 border-t border-slate-100">
-                      {item.estado !== "completada" ? (
+                    <div className="pt-2 border-t border-slate-100 flex gap-2">
+                      <button
+                        onClick={() => setSelectedConsultaModal(item)}
+                        className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition"
+                      >
+                        👁️ Ver detalle
+                      </button>
+                      {item.estado !== "completada" && (
                         <button
                           onClick={() => completarSolicitud(item.id)}
-                          className="w-full py-2.5 bg-green-700 hover:bg-[#266360] text-white text-xs font-bold rounded-xl transition"
+                          className="flex-1 py-2.5 bg-green-700 hover:bg-[#266360] text-white text-xs font-bold rounded-xl transition"
                         >
-                          Completar solicitud
+                          Completar
                         </button>
-                      ) : (
-                        <span className="block text-center text-xs text-slate-400 font-medium py-1">Solicitud Completada</span>
                       )}
                     </div>
                   </div>
@@ -929,7 +958,7 @@ export default function AdminDashboardPage() {
                           Fecha {sortConfig.key === 'createdAt' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
                         </th>
                         <th onClick={() => handleSort('nombre')} className="p-4 cursor-pointer hover:bg-slate-200">
-                          Paciente {sortConfig.key === 'nombre' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
+                          Nombre {sortConfig.key === 'nombre' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
                         </th>
                         <th onClick={() => handleSort('email')} className="p-4 cursor-pointer hover:bg-slate-200">
                           Contacto {sortConfig.key === 'email' ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
@@ -954,8 +983,38 @@ export default function AdminDashboardPage() {
                             {item.nombre} {item.apellidos}
                           </td>
                           <td className="p-4">
-                            <div>{item.email}</div>
-                            <div className="text-xs text-slate-500">{item.telefono}</div>
+                          {item.isRegistered && item.isActive ? 
+                              <div>
+                                <div title="Cuenta activa" className="px-2 py-0.5 bg-rose-50 text-rose-700 rounded-md font-semibold text-[11px] border border-rose-200">
+                                    🟢  {item.email}
+                                  </div>
+                                  <div title="Cuenta activa" className="px-2 py-0.5 bg-rose-50 text-rose-700 rounded-md font-semibold text-[11px] border border-rose-200">
+                                    🟢  {item.telefono}
+                                  </div>
+                                </div>
+                            : ''}
+
+                            {item.isRegistered && !item.isActive ? 
+                              <div>
+                                <div title="Cuenta no activa" className="px-2 py-0.5 bg-rose-50 text-rose-700 rounded-md font-semibold text-[11px] border border-rose-200">
+                                    🟠  {item.email}
+                                  </div>
+                                  <div title="Cuenta no activa" className="px-2 py-0.5 bg-rose-50 text-rose-700 rounded-md font-semibold text-[11px] border border-rose-200">
+                                    🟠  {item.telefono}
+                                  </div>
+                                </div>
+                            : ''}
+
+                            {!item.isRegistered ? 
+                            <div>
+                                <div title="No registrado" className="px-2 py-0.5 bg-rose-50 text-rose-700 rounded-md font-semibold text-[11px] border border-rose-200">
+                                  🔴 {item.email}
+                                </div>
+                                <div title="No registrado" className="px-2 py-0.5 bg-rose-50 text-rose-700 rounded-md font-semibold text-[11px] border border-rose-200">
+                                  🔴 {item.telefono}
+                                </div>
+                              </div>
+                            : ''}
                           </td>
                           <td className="p-4">
                             <span className="px-2.5 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-semibold">
@@ -972,16 +1031,20 @@ export default function AdminDashboardPage() {
                               {item.estado || "pendiente"}
                             </span>
                           </td>
-                          <td className="p-4 text-center whitespace-nowrap">
-                            {item.estado !== "completada" ? (
+                          <td className="p-4 text-center whitespace-nowrap space-x-2">
+                            <button
+                              onClick={() => setSelectedConsultaModal(item)}
+                              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition"
+                            >
+                              Ver detalle
+                            </button>
+                            {item.estado !== "completada" && (
                               <button
                                 onClick={() => completarSolicitud(item.id)}
-                                className="px-4 py-2 bg-green-700 hover:bg-[#266360] text-white text-xs font-bold rounded-lg transition"
+                                className="px-3 py-1.5 bg-green-700 hover:bg-[#266360] text-white text-xs font-bold rounded-lg transition"
                               >
-                                Completar solicitud
+                                Completar
                               </button>
-                            ) : (
-                              <span className="text-xs text-slate-400 font-medium">Completada</span>
                             )}
                           </td>
                         </tr>
@@ -995,6 +1058,7 @@ export default function AdminDashboardPage() {
         </section>
       )}
 
+      {/* PESTAÑAS USUARIOS Y RECURSOS SE MANTIENEN IGUAL... */}
       {/* ==================== PESTAÑA 2: USUARIOS ==================== */}
       {activeTab === "usuarios" && (
         <section id="usuarios" className="space-y-6">
