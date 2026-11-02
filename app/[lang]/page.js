@@ -1,5 +1,6 @@
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebaseConfig";
+import FormularioConsulta from "@/components/ConsultaForm";
 
 const pageId = "inicio";
 const staticDocs = {
@@ -53,10 +54,9 @@ const staticDocs = {
                   buttonLink: "/es/dudas-frecuentes",
                   buttonText: "Consultas las dudas más frecuentes sobre el aparato digestivo infantil",
                 },
-                contacto:{
+                contact:{
                   order: 4,
                   title: "Contacto",
-                  htmlEmbbeded: "<iframe loading='lazy' src='https://docs.google.com/forms/d/e/1FAIpQLSfxM_IzTLc6uwlwELg1G7ktqmn2Qny-Gmwg23WB1NBBUEiaGw/viewform?embedded=true' width='100%' height='1800' frameborder='0' marginheight='0' marginwidth='0'>Cargando…</iframe>",
                 }
               }
             },
@@ -94,7 +94,6 @@ const staticDocs = {
               contact:{
                 order: 3,
                 title: "Contact",
-                htmlEmbbeded: "<iframe loading='lazy' src='https://docs.google.com/forms/d/e/1FAIpQLSfxM_IzTLc6uwlwELg1G7ktqmn2Qny-Gmwg23WB1NBBUEiaGw/viewform?embedded=true' width='100%' height='1800' frameborder='0' marginheight='0' marginwidth='0'>Cargando…</iframe>",
               }
             }
           },
@@ -132,7 +131,6 @@ const staticDocs = {
               contact:{
                 order: 3,
                 title: "Contatti",
-                htmlEmbbeded: "<iframe loading='lazy' src='https://docs.google.com/forms/d/e/1FAIpQLSfxM_IzTLc6uwlwELg1G7ktqmn2Qny-Gmwg23WB1NBBUEiaGw/viewform?embedded=true' width='100%' height='1800' frameborder='0' marginheight='0' marginwidth='0'>Cargando…</iframe>",
               }
             }
           }
@@ -252,12 +250,17 @@ export default async function InicioPage({ params }) {
                 {section.htmlEmbbeded && section.htmlEmbbeded.trim() !== "" && (
                   <div dangerouslySetInnerHTML={{ __html: section.htmlEmbbeded }} />
                 )}
+
+                { section.id === "contact" && ( <FormularioConsulta lang={lang}/> )}
                 
             </div>
 
           </section>
         );
       })}
+      <div>
+        
+      </div>
     </main>
   );
 }
