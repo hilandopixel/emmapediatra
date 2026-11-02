@@ -31,7 +31,7 @@ export async function POST(request) {
     const isActive = isRegistered ? userSnap.data()?.activo === true : false;
 
     // 2. Guardar la consulta en la colección "consultas" con las dos nuevas propiedades
-    await adminDb.collection('consultas').add({
+    let saved = await adminDb.collection('consultas').add({
       nombre: nombre || '',
       apellidos: apellidos || '',
       email: cleanEmail,
@@ -45,7 +45,15 @@ export async function POST(request) {
       createdAt: FieldValue.serverTimestamp(),
     });
 
+    if(saved){
+      console.log('consulta guardada')
+    }else{
+      error = 'ERROR: consulta no guardada'
+      console.log('ERROR: consulta no guardada')
+    }
+
     // 3. Configurar y enviar el correo electrónico al administrador
+    /*
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -53,8 +61,34 @@ export async function POST(request) {
         pass: process.env.GMAIL_APP_PASSWORD,
       },
     });
+    */
+
+    // 1. Crear el transporte SMTP para IONOS
+    /*
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'smtp.ionos.es',
+        port: Number(process.env.SMTP_PORT) || 587,
+        secure: false, // false para puerto 587 (usa STARTTLS); true para puerto 465
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+        // Configuración opcional si estás probando en entornos locales complejos:
+        tls: {
+          rejectUnauthorized: false,
+        },
+      });*/
+
 
     const nombreCompleto = `${nombre || ''} ${apellidos || ''}`.trim() || 'No proporcionado';
+    
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD,
+      },
+    });
 
     const mailOptions = {
       from: `"${process.env.GMAIL_FROM_NAME || 'EmmaPediatra'}" <${process.env.GMAIL_USER}>`,
@@ -86,8 +120,8 @@ export async function POST(request) {
       `,
     };
 
-    await transporter.sendMail(mailOptions);
-
+    let sendMail = await transporter.sendMail(mailOptions);
+    if(!sendMail) {error = 'Not mail sent ' + sendMail}
     return NextResponse.json({ 
       success: true, 
       message: 'Solicitud de consulta notificada y guardada correctamente.',
